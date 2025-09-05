@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -12,4 +6,70 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Currency {
+  code          String         @id @unique
+  name          String
+  symbol        String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscriptions Subscription[]
+  users         User[]
+}
+
+model User {
+  id                  String         @id @default(uuid())
+  name                String?
+  email               String         @unique
+  password            String
+  primaryCurrencyCode String
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  categories          Category[]
+  subscriptions       Subscription[]
+  primaryCurrency     Currency       @relation(fields: [primaryCurrencyCode], references: [code])
+}
+
+model Category {
+  id            Int            @id @default(autoincrement())
+  userId        String
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User           @relation(fields: [userId], references: [id])
+  subscriptions Subscription[]
+
+  @@unique([name, userId])
+}
+
+model Subscription {
+  id               String      @id @default(uuid())
+  userId           String
+  categoryId       Int
+  currencyCode     String
+  name             String
+  cost             Float
+  costType         CostType
+  billingFrequency Int
+  billingUnit      BillingUnit
+  firstPaymentDate DateTime
+  trialEndsOn      DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  category         Category    @relation(fields: [categoryId], references: [id])
+  currency         Currency    @relation(fields: [currencyCode], references: [code])
+  user             User        @relation(fields: [userId], references: [id])
+}
+
+enum CostType {
+  FIXDED
+  VARIABLE
+}
+
+enum BillingUnit {
+  DAYS
+  WEEKS
+  MONTHS
+  YEARS
 }

@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
@@ -35,7 +35,7 @@
     "eslint": "9.34.0",
     "nodemon": "3.1.10",
     "prettier": "3.6.2",
-    "prisma": "6.15.0",
+    "prisma": "^6.15.0",
     "ts-node": "10.9.2",
     "typescript": "5.9.2"
   }
