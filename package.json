@@ -1,0 +1,42 @@
+{
+  "name": "subscription_manager_backend",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DannyGuevara1/subscription_manager_backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DannyGuevara1/subscription_manager_backend/issues"
+  },
+  "homepage": "https://github.com/DannyGuevara1/subscription_manager_backend#readme",
+  "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "dotenv": "17.2.2",
+    "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "@types/node": "24.3.0",
+    "eslint": "9.34.0",
+    "nodemon": "3.1.10",
+    "prettier": "3.6.2",
+    "prisma": "6.15.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.2"
+  }
+}
