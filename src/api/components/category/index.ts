@@ -1,0 +1,1 @@
+export { default as categoryRouter } from '@/api/components/category/category.routes.ts'
