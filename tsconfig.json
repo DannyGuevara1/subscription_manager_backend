@@ -4,10 +4,15 @@
     // File Layout
     //"rootDir": "./src",
     "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+    },
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
+    "moduleResolution": "nodenext",
     "target": "esnext",
     // For nodejs:
     "lib": ["esnext"],
@@ -30,6 +35,8 @@
     // "noUnusedParameters": true,
     // "noFallthroughCasesInSwitch": true,
     // "noPropertyAccessFromIndexSignature": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
 
     // Recommended Options
     "strict": true,
