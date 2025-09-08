@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -19,7 +18,7 @@ model Currency {
 }
 
 model User {
-  id                  String         @id @default(uuid())
+  id                  String         @id @db.Uuid
   name                String?
   email               String         @unique
   password            String
@@ -44,7 +43,7 @@ model Category {
 }
 
 model Subscription {
-  id               String      @id @default(uuid())
+  id               String      @id @db.Uuid
   userId           String
   categoryId       Int
   currencyCode     String
