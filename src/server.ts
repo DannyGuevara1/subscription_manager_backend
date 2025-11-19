@@ -1,8 +1,15 @@
-import app from './app.ts'
-import 'dotenv/config'
+import app from '@/app.js';
+import 'dotenv/config';
+import { containerPromise } from '@/container/container.js';
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`)
-})
+async function startServer() {
+	await containerPromise;
+
+	app.listen(PORT, () => {
+		console.log(`Server running on http://localhost:${PORT}`);
+	});
+}
+
+startServer();
