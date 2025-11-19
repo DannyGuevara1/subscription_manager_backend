@@ -1,0 +1,27 @@
+### GET All Currencies
+GET http://localhost:3000/api/v1/currencies
+
+### Get Currencies by ID
+GET http://localhost:3000/api/v1/currencies/DMA
+
+### Create Currencies
+POST http://localhost:3000/api/v1/currencies
+content-type: application/json
+
+{
+    "code": "DMA",
+    "name": "Yen Japanese",
+    "symbol": "¥"
+}
+
+### Update Currencies
+PUT http://localhost:3000/api/v1/currencies/DMA
+content-type: application/json
+
+{
+    "name": "DMA",
+    "symbol": "¥"
+}
+
+### Delete Currencies
+DELETE http://localhost:3000/api/v1/currencies/DMA

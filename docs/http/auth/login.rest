@@ -1,0 +1,15 @@
+### Login
+POST http://localhost:3000/api/v1/auth/login
+content-type: application/json
+Origin: http://localhost:3000
+
+{
+    "email": "john.doe@example.com",
+    "password": "Coleccion12"
+}
+
+### Logout
+POST http://localhost:3000/api/v1/auth/logout
+content-type: application/json
+Origin: http://localhost:3000
+

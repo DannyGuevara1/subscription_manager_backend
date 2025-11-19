@@ -1,0 +1,35 @@
+### GET All Subscriptions
+GET http://localhost:3000/api/v1/subscriptions
+Origin: http://localhost:3000
+
+### Get Subscription by ID
+GET http://localhost:3000/api/v1/subscriptions/0199b1c1-01d5-725f-97bf-b309c3c61a5b
+Origin: http://localhost:3000
+
+### Create Subscription
+POST http://localhost:3000/api/v1/subscriptions
+content-type: application/json
+
+{
+    "userId": "01994fcc-a3da-74c0-a945-9871328f21b9",
+    "categoryId": 28,
+    "currencyCode": "USD",
+    "name": "Netflix",
+    "cost": 15.99,
+    "costType": "FIXDED",
+    "billingFrequency": 1,
+    "billingUnit": "MONTHS",
+    "firstPaymentDate": "8/27/2025"
+
+}
+
+### Update Subscription
+PUT http://localhost:3000/api/v1/subscriptions/0199b1c1-01d5-725f-97bf-b309c3c61a5b
+content-type: application/json
+
+{
+    "cost": 9.99
+}
+
+### Delete Subscription
+DELETE http://localhost:3000/api/v1/subscriptions/01998c45-4708-755c-a2b3-cfb3e4ee9902
