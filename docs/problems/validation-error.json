@@ -1,0 +1,12 @@
+{
+  "summary": "Validation Error (400 Bad Request)",
+  "description": "Este error ocurre cuando los datos enviados en la petición no cumplen con las reglas de validación del servidor.",
+  "remediation": {
+    "title": "¿Qué hacer?",
+    "points": [
+      "Revisa el campo 'extensions' en la respuesta del error para ver los detalles específicos.",
+      "Asegúrate de que todos los campos requeridos estén presentes.",
+      "Verifica que el formato de los datos sea el correcto (ej. un email válido)."
+    ]
+  }
+}
