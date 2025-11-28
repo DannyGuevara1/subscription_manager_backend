@@ -1,30 +1,31 @@
-import { Router } from "express";
+import { Router } from 'express';
+import { catchAsync } from '@/utils/catch.async.js';
+import type CurrencyController from './currency.controller.js';
 
-//Router
-const router = Router();
+export const path = '/currencies';
 
-// Currency Router
-router.get('/', (req, res) => {
-    res.send('Get all currencies');
-});
+export default function currencyRoutes(currencyController: CurrencyController) {
+	//Router
+	const router = Router();
 
-router.get('/:id', (req, res) => {
-    const { id } = req.params;
-    res.send(`Get currency ${id}`);
-});
+	// Currency Router
+	router
+		.route('/')
+		.get(
+			catchAsync(currencyController.getAllCurrencies.bind(currencyController)),
+		)
+		.post(
+			catchAsync(currencyController.createCurrency.bind(currencyController)),
+		);
 
-router.post('/', (req, res) => {
-    res.send('Create currency');
-});
-
-router.put('/:id', (req, res) => {
-    const { id } = req.params;
-    res.send(`Update currency ${id}`);
-});
-
-router.delete('/:id', (req, res) => {
-    const { id } = req.params;
-    res.send(`Delete currency ${id}`);
-});
-
-export default router;
+	router
+		.route('/:code')
+		.get(
+			catchAsync(currencyController.getCurrencyByCode.bind(currencyController)),
+		)
+		.put(catchAsync(currencyController.updateCurrency.bind(currencyController)))
+		.delete(
+			catchAsync(currencyController.deleteCurrency.bind(currencyController)),
+		);
+	return router;
+}

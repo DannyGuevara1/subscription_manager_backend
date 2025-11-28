@@ -6,7 +6,7 @@ import type {
 	AuthLoginResponse,
 	AuthUser,
 	JWTPayload,
-} from '@/api/features/auth/types/auth.types.js';
+} from '@/api/features/auth/types/auth.type.js';
 
 export default class AuthService {
 	private loginService: LoginService;

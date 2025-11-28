@@ -1,7 +1,19 @@
-import { z } from 'zod';
-export const safeUserSchema = z.object({
-  id: z.string(),
-  email: z.string().email(),
-  name: z.string(),
-});
-export type SafeUser = z.infer<typeof safeUserSchema>;
+// src/api/components/user/user.type.ts
+import type { User } from '@prisma/client';
+
+export interface CreateUserData {
+	id: string;
+	name?: string;
+	email: string;
+	password: string;
+	primaryCurrencyCode: string;
+}
+
+export interface UpdateUserData {
+	name?: string;
+	email?: string;
+	password?: string;
+	primaryCurrencyCode?: string;
+}
+
+export type SafeUser = Omit<User, 'password'>;

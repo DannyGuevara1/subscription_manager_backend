@@ -1,30 +1,49 @@
-import { Router } from 'express'
+import { Router } from 'express';
+import { authMiddleware } from '@/api/features/auth/middleware/auth.middleware.js';
+import { catchAsync } from '@/utils/catch.async.js';
+import type SubscriptionController from './subscription.controller.js';
+export const path = '/subscriptions';
 
-//Router
-const router = Router()
+export default function subscriptionRoutes(
+	subscriptionController: SubscriptionController,
+) {
+	//Router
+	const router = Router();
 
-// Subscription Router
-router.get('/', (req, res) => {
-    res.send('Get all subscriptions')
-})
+	// Subscription Router
+	router
+		.route('/')
+		.get(
+			authMiddleware,
+			catchAsync(
+				subscriptionController.getAllSubscriptions.bind(subscriptionController),
+			),
+		)
+		.post(
+			authMiddleware,
+			catchAsync(
+				subscriptionController.createSubscription.bind(subscriptionController),
+			),
+		);
 
-router.get('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Get subscription ${id}`)
-})
+	router
+		.route('/:id')
+		.get(
+			authMiddleware,
+			catchAsync(
+				subscriptionController.getSubscriptionById.bind(subscriptionController),
+			),
+		)
+		.put(
+			catchAsync(
+				subscriptionController.updateSubscription.bind(subscriptionController),
+			),
+		)
+		.delete(
+			catchAsync(
+				subscriptionController.deleteSubscription.bind(subscriptionController),
+			),
+		);
 
-router.post('/', (req, res) => {
-    res.send('Create subscription')
-})
-
-router.put('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Update subscription ${id}`)
-})
-
-router.delete('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Delete subscription ${id}`)
-})
-
-export default router
+	return router;
+}

@@ -1,38 +1,72 @@
-import { type Request, type Response } from "express";
-import { UserService } from "@/services/user.service.ts";
+// src/api/components/user/user.controller.ts
+import type { NextFunction, Request, Response } from 'express';
+import type UserService from '@/services/user.service.js';
 
 interface userParams {
-  id: string;
+	id: string;
 }
 
-export class UserController {
-  private userService: UserService;
+export default class UserController {
+	private userService: UserService;
 
-  constructor() {
-    this.userService = new UserService();
-  }
+	constructor(userService: UserService) {
+		this.userService = userService;
+	}
 
-  async getUserById(req: Request<userParams>, res: Response): Promise<void> {
-    try {
-        const { id } = req.params;
-        const user = await this.userService.getUserById(id);
-        if (!user) {
-          res.status(404).json({ message: "User not found" });
-          return;
-        }
-        res.status(200).json(user);
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  }
+	async getAllUsers(_req: Request, res: Response, _next: NextFunction) {
+		res.status(200).json({
+			status: 'success',
+			data: await this.userService.getAllUsers(),
+		});
+	}
 
-  async createUser(req: Request, res: Response): Promise<void> {
-    try {
-        const userData = req.body;
-        const newUser = await this.userService.createUser(userData);
-        res.status(201).json(newUser);
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }   
-}
+	async getUserById(
+		req: Request<userParams>,
+		res: Response,
+		_next: NextFunction,
+	) {
+		const { id } = req.params;
+		const user = await this.userService.getUserById(id);
+
+		res.status(200).json(user);
+	}
+
+	async createUser(req: Request, res: Response, _next: NextFunction) {
+		const userData = req.body;
+		const newUser = await this.userService.createUser(userData);
+
+		res.status(201).json({
+			status: 'success',
+			data: newUser,
+		});
+	}
+
+	async updateUser(
+		req: Request<userParams>,
+		res: Response,
+		_next: NextFunction,
+	) {
+		const { id } = req.params;
+		const userData = req.body;
+		const updatedUser = await this.userService.updateUser(id, userData);
+
+		res.status(200).json({
+			status: 'success',
+			data: updatedUser,
+		});
+	}
+
+	async deleteUser(
+		req: Request<userParams>,
+		res: Response,
+		_next: NextFunction,
+	) {
+		const { id } = req.params;
+		const deletedUser = await this.userService.deleteUser(id);
+
+		res.status(200).json({
+			status: 'success',
+			data: deletedUser,
+		});
+	}
 }

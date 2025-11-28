@@ -1,26 +1,32 @@
-import express from 'express'
-import { UserController } from '@/api/components/user/user.controller.ts'
-//Router
-const router = express.Router()
-const user = new UserController()
+// src/api/components/user/user.routes.ts
+import express from 'express';
+import type UserController from '@/api/components/user/user.controller.js';
+import { catchAsync } from '@/utils/catch.async.js';
 
-// User Router
-router.get('/', (req, res) => {
-    res.send('Get all users')
-})
+export const path = '/users';
 
-router.get('/:id', user.getUserById.bind(user))
+export default function userRoutes(
+	userController: UserController,
+): express.Router {
+	const router = express.Router();
+	// User Router
+	router.get('/', catchAsync(userController.getAllUsers.bind(userController)));
 
-router.post('/', user.createUser.bind(user))
+	router.get(
+		'/:id',
+		catchAsync(userController.getUserById.bind(userController)),
+	);
 
-router.put('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Update user ${id}`)
-})
+	router.post('/', catchAsync(userController.createUser.bind(userController)));
 
-router.delete('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Delete user ${id}`)
-})
+	router.put(
+		'/:id',
+		catchAsync(userController.updateUser.bind(userController)),
+	);
 
-export default router
+	router.delete(
+		'/:id',
+		catchAsync(userController.deleteUser.bind(userController)),
+	);
+	return router;
+}

@@ -1,30 +1,29 @@
-import { Router } from 'express'
+import { Router } from 'express';
+import { catchAsync } from '@/utils/catch.async.js';
+import type CategoryController from './category.controller.js';
 
-//Router
-const router = Router()
+export const path = '/categories';
 
-// Category Router
-router.get('/', (req, res) => {
-    res.send('Get all categories')
-})
+export default function categoryRoutes(categoryController: CategoryController) {
+	const router = Router();
+	// Category Router
+	router
+		.route('/')
+		.get(
+			catchAsync(categoryController.getAllCategories.bind(categoryController)),
+		)
+		.post(
+			catchAsync(categoryController.createCategory.bind(categoryController)),
+		);
 
-router.get('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Get category ${id}`)
-})
-
-router.post('/', (req, res) => {
-    res.send('Create category')
-})
-
-router.put('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Update category ${id}`)
-})
-
-router.delete('/:id', (req, res) => {
-    const { id } = req.params
-    res.send(`Delete category ${id}`)
-})
-
-export default router
+	router
+		.route('/:id')
+		.get(
+			catchAsync(categoryController.getByCategoryId.bind(categoryController)),
+		)
+		.put(catchAsync(categoryController.updateCategory.bind(categoryController)))
+		.delete(
+			catchAsync(categoryController.deleteCategory.bind(categoryController)),
+		);
+	return router;
+}
