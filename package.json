@@ -1,48 +1,66 @@
 {
-  "name": "subscription_manager_backend",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "main": "index.ts",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "nodemon --exec ts-node src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "db:migrate": "prisma migrate dev",
-    "db:generate": "prisma generate",
-    "db:deploy": "prisma migrate deploy"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/DannyGuevara1/subscription_manager_backend.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/DannyGuevara1/subscription_manager_backend/issues"
-  },
-  "homepage": "https://github.com/DannyGuevara1/subscription_manager_backend#readme",
-  "dependencies": {
-    "@prisma/client": "^6.15.0",
-    "bcrypt": "^6.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "17.2.2",
-    "express": "5.1.0",
-    "uuidv7": "^1.0.2",
-    "zod": "^4.1.5"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/cors": "^2.8.19",
-    "@types/express": "5.0.3",
-    "@types/node": "24.3.0",
-    "eslint": "9.34.0",
-    "nodemon": "3.1.10",
-    "prettier": "3.6.2",
-    "prisma": "^6.15.0",
-    "ts-node": "10.9.2",
-    "typescript": "5.9.2"
-  }
+	"name": "subscription_manager_backend",
+	"version": "1.0.0",
+	"description": "",
+	"imports": {
+		"#/*": "./dist/*"
+	},
+	"type": "module",
+	"main": "index.ts",
+	"scripts": {
+		"clean": "npx rimraf dist",
+		"build": "npm run clean && tsc && tsc-alias",
+		"start": "cross-env NODE_ENV=production dotenv -e .env.production -- node dist/server.js",
+		"dev": "cross-env NODE_ENV=development dotenv -e .env.development -- nodemon --exec tsx src/server.ts | pino-pretty",
+		"lint:fix": "npx @biomejs/biome lint --write ./src",
+		"format:fix": "npx @biomejs/biome format --write ./src",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"db:migrate": "dotenv -e .env.development -- prisma migrate dev",
+		"db:generate": "dotenv -e .env.development -- prisma generate",
+		"db:deploy": "dotenv -e .env.production -- prisma migrate deploy"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/DannyGuevara1/subscription_manager_backend.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/DannyGuevara1/subscription_manager_backend/issues"
+	},
+	"homepage": "https://github.com/DannyGuevara1/subscription_manager_backend#readme",
+	"dependencies": {
+		"@prisma/client": "^6.15.0",
+		"@types/stack-trace": "^0.0.33",
+		"awilix": "^12.0.5",
+		"bcrypt": "^6.0.0",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.5",
+		"dotenv": "17.2.2",
+		"express": "5.1.0",
+		"helmet": "^8.1.0",
+		"jsonwebtoken": "^9.0.2",
+		"pino": "^9.9.5",
+		"stack-trace": "^1.0.0-pre2",
+		"uuidv7": "^1.0.2",
+		"zod": "^4.1.5"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.4",
+		"@types/bcrypt": "^6.0.0",
+		"@types/cookie-parser": "^1.4.9",
+		"@types/cors": "^2.8.19",
+		"@types/express": "5.0.3",
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/node": "24.3.0",
+		"cross-env": "^10.1.0",
+		"dotenv-cli": "^10.0.0",
+		"nodemon": "3.1.10",
+		"pino-pretty": "^13.1.1",
+		"prisma": "^6.15.0",
+		"tsc-alias": "^1.8.16",
+		"tsx": "^4.20.5",
+		"typescript": "5.9.2"
+	}
 }

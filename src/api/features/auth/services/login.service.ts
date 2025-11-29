@@ -16,23 +16,18 @@ export default class LoginService {
 
 	async login(email: string, password: string): Promise<SafeLoginDto> {
 		// Validate input data
-		const validatedData = loginSchema.parse({ email, password });
-
-		// Check if user exists
-		const user = await this.userRepository.findByEmail(validatedData.email);
+		const user = await this.userRepository.findByEmail(email);
 
 		if (!user) {
-			throw ErrorFactory.notFoundError({
-				resource: 'User',
-				identifier: validatedData.email,
-				extensions: {
-					detail: `No se encontró ningún usuario con el correo ${validatedData.email}.`,
-				},
+			throw ErrorFactory.unauthorizedError({
+				detail:
+					'Credenciales inválidas. Por favor, verifica tu correo y contraseña.',
 			});
 		}
+
 		// Check password
 		const isPasswordValid = await bcrypt.compare(
-			validatedData.password,
+			password,
 			user.password,
 		);
 		if (!isPasswordValid) {
