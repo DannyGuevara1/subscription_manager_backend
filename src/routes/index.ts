@@ -1,6 +1,6 @@
 // src/routes/index.ts
 import express, { type Router } from 'express';
-import { containerPromise } from '@/container/container.js';
+import { containerPromise } from '@/shared/container/container.js';
 
 const container = await containerPromise;
 

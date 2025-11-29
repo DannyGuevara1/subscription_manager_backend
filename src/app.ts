@@ -4,8 +4,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
-import { errorHandler } from '@/middleware/error.handler.js';
-import { errorNormalizer } from '@/middleware/error.normalizer.js';
+import { errorHandler } from '@/shared/middleware/error.handler.js';
+import { errorNormalizer } from '@/shared/middleware/error.normalizer.js';
 import v1 from '@/routes/index.js';
 
 /*
