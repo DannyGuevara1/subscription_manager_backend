@@ -1,6 +1,6 @@
-// src/api/components/user/user.controller.ts
+// src/modules/user/user.controller.ts
 import type { NextFunction, Request, Response } from 'express';
-import type UserService from '@/modules/user/user.service.js';
+import type { UserService } from '@/modules/user/index.js';
 
 interface userParams {
 	id: string;
