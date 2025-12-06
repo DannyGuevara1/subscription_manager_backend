@@ -11,7 +11,7 @@ export const authMiddleware = (
 		const accessToken = req.cookies.accessToken;
 		if (!accessToken) {
 			return next(
-				ErrorFactory.internalError({
+				ErrorFactory.unauthorizedError({
 					detail: 'Access token is missing',
 				}),
 			);
@@ -41,7 +41,7 @@ export const authMiddleware = (
 		next();
 	} catch (error) {
 		return next(
-			ErrorFactory.internalError({
+			ErrorFactory.unauthorizedError({
 				detail: 'Invalid access token',
 			}),
 		);
