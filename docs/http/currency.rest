@@ -1,11 +1,14 @@
 ### GET All Currencies
 GET http://localhost:3000/api/v1/currencies
+Origin: http://localhost:3000
 
 ### Get Currencies by ID
 GET http://localhost:3000/api/v1/currencies/DMA
+Origin: http://localhost:3000
 
 ### Create Currencies
 POST http://localhost:3000/api/v1/currencies
+Origin: http://localhost:3000
 content-type: application/json
 
 {
@@ -16,6 +19,7 @@ content-type: application/json
 
 ### Update Currencies
 PUT http://localhost:3000/api/v1/currencies/DMA
+Origin: http://localhost:3000
 content-type: application/json
 
 {
@@ -25,3 +29,4 @@ content-type: application/json
 
 ### Delete Currencies
 DELETE http://localhost:3000/api/v1/currencies/DMA
+Origin: http://localhost:3000

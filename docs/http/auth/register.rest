@@ -1,0 +1,11 @@
+### register
+POST http://localhost:3000/api/v1/auth/register
+content-type: application/json
+Origin: http://localhost:3000
+
+{
+    "email": "emmanuelAmaya@gmail.com",
+    "password": "Coleccion12",
+    "name": "Emmanuel Amaya",
+    "primaryCurrencyCode": "MXN"
+}

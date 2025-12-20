@@ -8,6 +8,7 @@ Origin: http://localhost:3000
 
 ### Create Subscription
 POST http://localhost:3000/api/v1/subscriptions
+Origin: http://localhost:3000
 content-type: application/json
 
 {
@@ -25,6 +26,7 @@ content-type: application/json
 
 ### Update Subscription
 PUT http://localhost:3000/api/v1/subscriptions/0199b1c1-01d5-725f-97bf-b309c3c61a5b
+Origin: http://localhost:3000
 content-type: application/json
 
 {
@@ -33,3 +35,4 @@ content-type: application/json
 
 ### Delete Subscription
 DELETE http://localhost:3000/api/v1/subscriptions/01998c45-4708-755c-a2b3-cfb3e4ee9902
+Origin: http://localhost:3000

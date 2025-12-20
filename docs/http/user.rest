@@ -3,30 +3,33 @@ GET http://localhost:3000/api/v1/users
 Origin: http://localhost:3000
 
 ### Get User by ID
-GET http://localhost:3000/api/v1/users/019949f5-da02-7680-adcf-d3785d68be95
+GET http://localhost:3000/api/v1/users/019b3dfd-cfaa-7de5-9eeb-8bc1186b1d68
 Origin: http://localhost:3000
 
 ### Create User
 POST http://localhost:3000/api/v1/users
+Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "name": "John Doe",
-    "email": "john.doe@example.com",
+    "name": "Carlos Doe",
+    "email": "carlos.doe@example.com",
     "password": "Coleccion12",
     "primaryCurrencyCode": "USD"
 }
 
 ### Update User
-PUT http://localhost:3000/api/v1/users/01995abf-50cf-7bb9-b04b-496f82f606e5
+PUT http://localhost:3000/api/v1/users/019b3dfd-cfaa-7de5-9eeb-8bc1186b1d68
+Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "name": "Emanuel Arriaza",
-    "email": "emanuel.arriaza@example.com",
+    "name": "Carlos Guevara",
+    "email": "carlos.doe@example.com",
     "password": "Coleccion12",
     "primaryCurrencyCode": "EUR"
 }
 
 ### Delete User
-DELETE http://localhost:3000/api/v1/users/019983be-6b37-7f3c-92ef-019ca4f7f381
+DELETE http://localhost:3000/api/v1/users/019b3dfd-cfaa-7de5-9eeb-8bc1186b1d68
+Origin: http://localhost:3000

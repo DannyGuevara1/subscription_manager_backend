@@ -4,7 +4,7 @@ content-type: application/json
 Origin: http://localhost:3000
 
 {
-    "email": "john.doe@example.com",
+    "email": "emmanuelAmaya@gmail.com",
     "password": "Coleccion12"
 }
 
