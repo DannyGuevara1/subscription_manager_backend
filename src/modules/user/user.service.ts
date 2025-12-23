@@ -2,22 +2,19 @@
 import type { User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
-
-import {
-	type CreateUserDto,
-	createUserDto,
-	type SafeUserDto,
-	safeUserDto,
-	type UpdateUserDto,
-	updateUserDto,
-} from '@/modules/user/user.dto.js';
 import type {
 	CreateUserData,
 	SafeUser,
 	UpdateUserData,
-} from '@/modules/user/user.type.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+} from '@/modules/user/index.js';
+import {
+	type CreateUserDto,
+	type SafeUserDto,
+	safeUserSchema,
+	type UpdateUserDto,
+} from '@/modules/user/index.js';
 import type UserRepository from '@/modules/user/user.repository.js';
+import { ErrorFactory } from '@/shared/errors/error.factory.js';
 
 export default class UserService {
 	private userRepository: UserRepository;
@@ -27,15 +24,14 @@ export default class UserService {
 	}
 
 	async createUser(data: CreateUserDto): Promise<SafeUserDto> {
-		// Validate input data
-		const validatedData = createUserDto.parse(data);
+		const { email, password, name, primaryCurrencyCode } = data;
 
 		const userData: CreateUserData = {
 			id: uuidv7(),
-			email: validatedData.email,
-			password: await bcrypt.hash(validatedData.password, 10),
-			name: validatedData.name,
-			primaryCurrencyCode: validatedData.primaryCurrencyCode,
+			email: email,
+			password: await bcrypt.hash(password, 10),
+			name: name,
+			primaryCurrencyCode: primaryCurrencyCode,
 		};
 
 		const newUser: User = await this.userRepository.create(userData);
@@ -51,36 +47,22 @@ export default class UserService {
 	async getUserById(id: string): Promise<SafeUserDto> {
 		const user: User | null = await this.userRepository.findById(id);
 		if (!user) {
-			throw ErrorFactory.notFoundError({
-				resource: 'User',
-				identifier: id,
-				extensions: {
-					detail: `No se encontró ningún usuario con ID ${id}.`,
-				},
-			});
+			throw this.userNotFoundError(id);
 		}
 		return this.toSafeUserDto(user);
 	}
 
 	async updateUser(id: string, data: UpdateUserDto): Promise<SafeUserDto> {
-		const validatedData = updateUserDto.parse(data);
-
 		const existingUser = await this.userRepository.findById(id);
 		if (!existingUser) {
-			throw ErrorFactory.notFoundError({
-				resource: 'User',
-				identifier: id,
-				extensions: {
-					detail: `No se encontró ningún usuario con ID ${id}.`,
-				},
-			});
+			throw this.userNotFoundError(id);
 		}
 
+		const { password } = data;
+
 		const updateData: UpdateUserData = {
-			...validatedData,
-			password: validatedData.password
-				? await bcrypt.hash(validatedData.password, 10)
-				: undefined,
+			...data,
+			password: password ? await bcrypt.hash(password, 10) : undefined,
 		};
 
 		const updatedUser = await this.userRepository.update(id, updateData);
@@ -92,13 +74,7 @@ export default class UserService {
 		const user = await this.userRepository.delete(id);
 
 		if (!user) {
-			throw ErrorFactory.notFoundError({
-				resource: 'User',
-				identifier: id,
-				extensions: {
-					detail: `No se encontró ningún usuario con ID ${id}.`,
-				},
-			});
+			throw this.userNotFoundError(id);
 		}
 
 		return this.toSafeUserDto(user);
@@ -106,13 +82,24 @@ export default class UserService {
 
 	// Método privado para transformación segura
 	private toSafeUserDto(user: User): SafeUserDto {
-		return safeUserDto.parse({
+		return safeUserSchema.parse({
 			id: user.id,
 			email: user.email,
 			name: user.name,
 			primaryCurrencyCode: user.primaryCurrencyCode,
 			createdAt: user.createdAt,
 			updatedAt: user.updatedAt,
+		});
+	}
+
+	// Abtraer mensaje de error de usuario no encontrado
+	private userNotFoundError(id: string) {
+		return ErrorFactory.notFoundError({
+			resource: 'User',
+			identifier: id,
+			extensions: {
+				detail: `No se encontró ningún usuario con ID ${id}.`,
+			},
 		});
 	}
 }

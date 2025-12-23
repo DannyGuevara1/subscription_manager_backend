@@ -1,6 +1,8 @@
-// src/api/components/user/user.routes.ts
+// src/modules/user/user.routes.ts
 import express from 'express';
+import * as userSchema from '@/modules/user/index.js';
 import type UserController from '@/modules/user/user.controller.js';
+import { validateRequest } from '@/shared/middleware/validate.request.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
 
 export const path = '/users';
@@ -10,23 +12,27 @@ export default function userRoutes(
 ): express.Router {
 	const router = express.Router();
 	// User Router
-	router.get('/', catchAsync(userController.getAllUsers.bind(userController)));
+	router
+		.route('/')
+		.get(catchAsync(userController.getAllUsers.bind(userController)))
+		.post(
+			validateRequest(userSchema.createUserRequestSchema),
+			catchAsync(userController.createUser.bind(userController)),
+		);
 
-	router.get(
-		'/:id',
-		catchAsync(userController.getUserById.bind(userController)),
-	);
-
-	router.post('/', catchAsync(userController.createUser.bind(userController)));
-
-	router.put(
-		'/:id',
-		catchAsync(userController.updateUser.bind(userController)),
-	);
-
-	router.delete(
-		'/:id',
-		catchAsync(userController.deleteUser.bind(userController)),
-	);
+	router
+		.route('/:id')
+		.get(
+			validateRequest(userSchema.userParamsRequestSchema),
+			catchAsync(userController.getUserById.bind(userController)),
+		)
+		.put(
+			validateRequest(userSchema.updateUserRequestSchema),
+			catchAsync(userController.updateUser.bind(userController)),
+		)
+		.delete(
+			validateRequest(userSchema.userParamsRequestSchema),
+			catchAsync(userController.deleteUser.bind(userController)),
+		);
 	return router;
 }

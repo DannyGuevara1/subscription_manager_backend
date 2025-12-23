@@ -1,7 +1,13 @@
-// src/api/components/user/user.dto.ts
+// src/modules/user/user.dto.ts
 import { z } from 'zod';
 
-export const createUserDto = z.object({
+// Schema for the validation Params
+export const userParamsSchema = z.object({
+	id: z.uuidv7({ error: 'El ID de usuario debe ser un UUID válido' }),
+});
+
+// Schema Definitions for User DTOs
+export const createUserSchema = z.object({
 	email: z.email('Invalid email address').toLowerCase(),
 	password: z
 		.string()
@@ -13,10 +19,22 @@ export const createUserDto = z.object({
 		.length(3, 'Currency code must be 3 characters long'),
 });
 
-export const updateUserDto = createUserDto.partial();
+export const updateUserSchema = createUserSchema.partial();
 
+export const createUserRequestSchema = z.object({
+	body: createUserSchema,
+});
+
+export const updateUserRequestSchema = z.object({
+	body: updateUserSchema,
+	params: userParamsSchema,
+});
+
+export const userParamsRequestSchema = z.object({
+	params: userParamsSchema,
+});
 // RESPONSE DTOs
-export const safeUserDto = z.object({
+export const safeUserSchema = z.object({
 	id: z.string(),
 	email: z.string(),
 	name: z.string().nullable(),
@@ -25,7 +43,8 @@ export const safeUserDto = z.object({
 	updatedAt: z.date(),
 });
 
-// Types
-export type SafeUserDto = z.infer<typeof safeUserDto>;
-export type CreateUserDto = z.infer<typeof createUserDto>;
-export type UpdateUserDto = z.infer<typeof updateUserDto>;
+export type SafeUserDto = z.infer<typeof safeUserSchema>;
+
+// Types Inferred from Schemas
+export type CreateUserDto = z.infer<typeof createUserSchema>;
+export type UpdateUserDto = z.infer<typeof updateUserSchema>;

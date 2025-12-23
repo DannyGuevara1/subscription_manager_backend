@@ -1,10 +1,6 @@
 // src/modules/user/user.controller.ts
 import type { NextFunction, Request, Response } from 'express';
-import type { UserService } from '@/modules/user/index.js';
-
-interface userParams {
-	id: string;
-}
+import type { UserParams, UserService } from '@/modules/user/index.js';
 
 export default class UserController {
 	private userService: UserService;
@@ -15,20 +11,25 @@ export default class UserController {
 
 	async getAllUsers(_req: Request, res: Response, _next: NextFunction) {
 		res.status(200).json({
-			status: 'success',
-			data: await this.userService.getAllUsers(),
+			data: {
+				users: await this.userService.getAllUsers(),
+			},
 		});
 	}
 
 	async getUserById(
-		req: Request<userParams>,
+		req: Request<UserParams>,
 		res: Response,
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
 		const user = await this.userService.getUserById(id);
 
-		res.status(200).json(user);
+		res.status(200).json({
+			data: {
+				...user,
+			},
+		});
 	}
 
 	async createUser(req: Request, res: Response, _next: NextFunction) {
@@ -36,13 +37,12 @@ export default class UserController {
 		const newUser = await this.userService.createUser(userData);
 
 		res.status(201).json({
-			status: 'success',
-			data: newUser,
+			data: { ...newUser },
 		});
 	}
 
 	async updateUser(
-		req: Request<userParams>,
+		req: Request<UserParams>,
 		res: Response,
 		_next: NextFunction,
 	) {
@@ -51,13 +51,12 @@ export default class UserController {
 		const updatedUser = await this.userService.updateUser(id, userData);
 
 		res.status(200).json({
-			status: 'success',
-			data: updatedUser,
+			data: { ...updatedUser },
 		});
 	}
 
 	async deleteUser(
-		req: Request<userParams>,
+		req: Request<UserParams>,
 		res: Response,
 		_next: NextFunction,
 	) {
@@ -65,8 +64,7 @@ export default class UserController {
 		const deletedUser = await this.userService.deleteUser(id);
 
 		res.status(200).json({
-			status: 'success',
-			data: deletedUser,
+			data: { ...deletedUser },
 		});
 	}
 }

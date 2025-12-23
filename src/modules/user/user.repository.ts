@@ -1,10 +1,10 @@
 // src/repositories/user/user.repository.ts
 import type { User } from '@prisma/client';
+import prismaClient from '@/config/prisma.js';
 import type {
 	CreateUserData,
 	UpdateUserData,
 } from '@/modules/user/user.type.js';
-import prismaClient from '@/config/prisma.js';
 
 export default class UserRepository {
 	private readonly prisma;
