@@ -4,9 +4,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import v1 from '@/routes/index.js';
 import { errorHandler } from '@/shared/middleware/error.handler.js';
 import { errorNormalizer } from '@/shared/middleware/error.normalizer.js';
-import v1 from '@/routes/index.js';
 
 /*
 investigar sobre rate-limiter-flexible para limitar peticiones
