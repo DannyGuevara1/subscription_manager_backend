@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { authMiddleware } from '@/modules/auth/auth.middleware.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
 import type SubscriptionController from './subscription.controller.js';
 export const path = '/subscriptions';
@@ -14,13 +13,11 @@ export default function subscriptionRoutes(
 	router
 		.route('/')
 		.get(
-			authMiddleware,
 			catchAsync(
 				subscriptionController.getAllSubscriptions.bind(subscriptionController),
 			),
 		)
 		.post(
-			authMiddleware,
 			catchAsync(
 				subscriptionController.createSubscription.bind(subscriptionController),
 			),
@@ -29,7 +26,6 @@ export default function subscriptionRoutes(
 	router
 		.route('/:id')
 		.get(
-			authMiddleware,
 			catchAsync(
 				subscriptionController.getSubscriptionById.bind(subscriptionController),
 			),

@@ -1,18 +1,16 @@
 import { uuidv7 } from 'uuidv7';
 import {
-	type CreateSubscriptionInput,
-	createSubscriptionSchema,
+	type CreateSubscriptionDto,
 	type SafeSubscriptionDto,
 	safeSubscriptionDto,
-	type UpdateSubscriptionInput,
-	updateSubscriptionSchema,
+	type UpdateSubscriptionDto,
 } from '@/modules/subscription/subscription.dto.js';
+import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 import type {
 	CreateSubscriptionData,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
 import { ErrorFactory } from '@/shared/errors/error.factory.js';
-import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 
 export default class SubscriptionService {
 	private subscriptionRepository: SubscriptionRepository;
@@ -45,24 +43,34 @@ export default class SubscriptionService {
 	}
 
 	async createSubscription(
-		data: CreateSubscriptionInput,
+		data: CreateSubscriptionDto,
 	): Promise<SafeSubscriptionDto> {
-		const validatedData = createSubscriptionSchema.parse(data);
-
+		const {
+			userId,
+			billingFrequency,
+			billingUnit,
+			categoryId,
+			cost,
+			costType,
+			currencyCode,
+			firstPaymentDate,
+			name,
+			trialEndsOn,
+		} = data;
 		const id = uuidv7();
 
 		const subscriptionData: CreateSubscriptionData = {
 			id,
-			userId: validatedData.userId,
-			categoryId: validatedData.categoryId,
-			currencyCode: validatedData.currencyCode,
-			name: validatedData.name,
-			cost: validatedData.cost,
-			costType: validatedData.costType,
-			billingFrequency: validatedData.billingFrequency,
-			billingUnit: validatedData.billingUnit,
-			firstPaymentDate: validatedData.firstPaymentDate,
-			trialEndsOn: validatedData.trialEndsOn,
+			userId: userId,
+			categoryId: categoryId,
+			currencyCode: currencyCode,
+			name: name,
+			cost: cost,
+			costType: costType,
+			billingFrequency: billingFrequency,
+			billingUnit: billingUnit,
+			firstPaymentDate: firstPaymentDate,
+			trialEndsOn: trialEndsOn,
 		};
 
 		const newSubscription =
@@ -72,10 +80,8 @@ export default class SubscriptionService {
 
 	async updateSubscription(
 		id: string,
-		data: UpdateSubscriptionInput,
+		data: UpdateSubscriptionDto,
 	): Promise<SafeSubscriptionDto> {
-		const validatedData = updateSubscriptionSchema.parse(data);
-
 		const existingSubscription = await this.subscriptionRepository.findById(id);
 		if (!existingSubscription) {
 			throw ErrorFactory.notFoundError({
@@ -88,7 +94,7 @@ export default class SubscriptionService {
 		}
 
 		const subscriptionData: UpdateSubscriptionData = {
-			...validatedData,
+			...data,
 		};
 
 		const subscription = await this.subscriptionRepository.update(

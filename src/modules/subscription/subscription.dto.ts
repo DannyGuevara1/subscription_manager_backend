@@ -73,7 +73,8 @@ export const safeSubscriptionDto = z.object({
 	trialEndsOn: z.date().nullable().optional(),
 });
 
-// Infer the TypeScript types from the Zod schemas
 export type SafeSubscriptionDto = z.infer<typeof safeSubscriptionDto>;
-export type CreateSubscriptionInput = z.infer<typeof createSubscriptionSchema>;
-export type UpdateSubscriptionInput = z.infer<typeof updateSubscriptionSchema>;
+
+// Infer the TypeScript types from the Zod schemas
+export type CreateSubscriptionDto = z.infer<typeof createSubscriptionSchema>;
+export type UpdateSubscriptionDto = z.infer<typeof updateSubscriptionSchema>;
