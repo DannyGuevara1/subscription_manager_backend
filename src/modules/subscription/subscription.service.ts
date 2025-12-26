@@ -45,32 +45,11 @@ export default class SubscriptionService {
 	async createSubscription(
 		data: CreateSubscriptionDto,
 	): Promise<SafeSubscriptionDto> {
-		const {
-			userId,
-			billingFrequency,
-			billingUnit,
-			categoryId,
-			cost,
-			costType,
-			currencyCode,
-			firstPaymentDate,
-			name,
-			trialEndsOn,
-		} = data;
 		const id = uuidv7();
 
 		const subscriptionData: CreateSubscriptionData = {
 			id,
-			userId: userId,
-			categoryId: categoryId,
-			currencyCode: currencyCode,
-			name: name,
-			cost: cost,
-			costType: costType,
-			billingFrequency: billingFrequency,
-			billingUnit: billingUnit,
-			firstPaymentDate: firstPaymentDate,
-			trialEndsOn: trialEndsOn,
+			...data,
 		};
 
 		const newSubscription =
