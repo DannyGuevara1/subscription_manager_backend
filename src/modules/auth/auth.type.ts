@@ -1,11 +1,11 @@
-// src/api/features/auth/types/auth.types.ts
+// src/modules/auth/auth.type.ts
 import type { User } from '@prisma/client';
-import type { SafeLoginDto } from '@/modules/auth/auth.dto.js';
+import type { SafeUserDto } from '@/modules/user/index.js';
 export type AuthUser = Pick<User, 'id' | 'email' | 'name'>;
 
 export interface AuthLoginResponse {
 	accessToken: string;
-	user: SafeLoginDto;
+	user: SafeUserDto;
 }
 
 export interface JWTPayload {
