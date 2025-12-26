@@ -1,6 +1,13 @@
 import { Router } from 'express';
+import {
+	createSubscriptionRequestSchema,
+	subscriptionParamsRequestSchema,
+	updateSubscriptionRequestSchema,
+} from '@/modules/subscription/index.js';
+import { validateRequest } from '@/shared/middleware/validate.request.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
 import type SubscriptionController from './subscription.controller.js';
+
 export const path = '/subscriptions';
 
 export default function subscriptionRoutes(
@@ -18,6 +25,7 @@ export default function subscriptionRoutes(
 			),
 		)
 		.post(
+			validateRequest(createSubscriptionRequestSchema),
 			catchAsync(
 				subscriptionController.createSubscription.bind(subscriptionController),
 			),
@@ -26,16 +34,19 @@ export default function subscriptionRoutes(
 	router
 		.route('/:id')
 		.get(
+			validateRequest(subscriptionParamsRequestSchema),
 			catchAsync(
 				subscriptionController.getSubscriptionById.bind(subscriptionController),
 			),
 		)
 		.put(
+			validateRequest(updateSubscriptionRequestSchema),
 			catchAsync(
 				subscriptionController.updateSubscription.bind(subscriptionController),
 			),
 		)
 		.delete(
+			validateRequest(subscriptionParamsRequestSchema),
 			catchAsync(
 				subscriptionController.deleteSubscription.bind(subscriptionController),
 			),

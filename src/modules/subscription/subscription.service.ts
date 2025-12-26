@@ -2,10 +2,10 @@ import { uuidv7 } from 'uuidv7';
 import {
 	type CreateSubscriptionDto,
 	type SafeSubscriptionDto,
-	safeSubscriptionDto,
+	type SubscriptionRepository,
+	safeSubscriptionSchema,
 	type UpdateSubscriptionDto,
-} from '@/modules/subscription/subscription.dto.js';
-import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
+} from '@/modules/subscription/index.js';
 import type {
 	CreateSubscriptionData,
 	UpdateSubscriptionData,
@@ -22,7 +22,7 @@ export default class SubscriptionService {
 	async getAllSubscriptions(): Promise<SafeSubscriptionDto[]> {
 		const subscriptions = await this.subscriptionRepository.findAll();
 		return subscriptions.map((subscription) =>
-			safeSubscriptionDto.parse(subscription),
+			safeSubscriptionSchema.parse(subscription),
 		);
 	}
 
@@ -39,7 +39,7 @@ export default class SubscriptionService {
 			});
 		}
 
-		return safeSubscriptionDto.parse(subscription);
+		return safeSubscriptionSchema.parse(subscription);
 	}
 
 	async createSubscription(
@@ -75,7 +75,7 @@ export default class SubscriptionService {
 
 		const newSubscription =
 			await this.subscriptionRepository.create(subscriptionData);
-		return safeSubscriptionDto.parse(newSubscription);
+		return safeSubscriptionSchema.parse(newSubscription);
 	}
 
 	async updateSubscription(
@@ -102,7 +102,7 @@ export default class SubscriptionService {
 			subscriptionData,
 		);
 
-		return safeSubscriptionDto.parse(subscription);
+		return safeSubscriptionSchema.parse(subscription);
 	}
 
 	async deleteSubscription(id: string): Promise<SafeSubscriptionDto> {
@@ -118,6 +118,6 @@ export default class SubscriptionService {
 			});
 		}
 
-		return safeSubscriptionDto.parse(deletedSubscription);
+		return safeSubscriptionSchema.parse(deletedSubscription);
 	}
 }

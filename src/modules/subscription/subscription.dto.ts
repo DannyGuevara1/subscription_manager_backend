@@ -1,6 +1,10 @@
 import { BillingUnit, CostType } from '@prisma/client';
 import { z } from 'zod';
 
+export const subscriptionParamsSchema = z.object({
+	id: z.uuidv7({ error: 'El ID de suscripción debe ser un UUID válido' }),
+});
+
 export const createSubscriptionSchema = z.object({
 	userId: z.uuidv7({ error: 'El ID de usuario debe ser un UUID válido' }),
 	categoryId: z
@@ -58,8 +62,21 @@ export const updateSubscriptionSchema = z
 	})
 	.partial();
 
+// Request Schema
+export const createSubscriptionRequestSchema = z.object({
+	body: createSubscriptionSchema,
+});
+
+export const updateSubscriptionRequestSchema = z.object({
+	body: updateSubscriptionSchema,
+	params: subscriptionParamsSchema,
+});
+
+export const subscriptionParamsRequestSchema = z.object({
+	params: subscriptionParamsSchema,
+});
 //RESPONSE DTOs
-export const safeSubscriptionDto = z.object({
+export const safeSubscriptionSchema = z.object({
 	id: z.uuidv7(),
 	userId: z.uuidv7(),
 	categoryId: z.number(),
@@ -73,7 +90,7 @@ export const safeSubscriptionDto = z.object({
 	trialEndsOn: z.date().nullable().optional(),
 });
 
-export type SafeSubscriptionDto = z.infer<typeof safeSubscriptionDto>;
+export type SafeSubscriptionDto = z.infer<typeof safeSubscriptionSchema>;
 
 // Infer the TypeScript types from the Zod schemas
 export type CreateSubscriptionDto = z.infer<typeof createSubscriptionSchema>;

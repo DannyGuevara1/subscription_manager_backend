@@ -1,9 +1,9 @@
 import type { Subscription } from '@prisma/client';
+import prismaClient from '@/config/prisma.js';
 import type {
 	CreateSubscriptionData,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
-import prismaClient from '@/config/prisma.js';
 
 export default class SubscriptionRepository {
 	private readonly prisma;
