@@ -1,9 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type CategoryService from '@/modules/category/category.service.js';
-
-interface categoryParams {
-	id: number;
-}
+import type { categoryParams } from '@/modules/category/index.js';
 
 export default class CategoryController {
 	private categoryService: CategoryService;
@@ -17,7 +14,7 @@ export default class CategoryController {
 		const categories = await this.categoryService.getAllCategories();
 		res.status(200).json({
 			status: 'success',
-			data: categories,
+			data: { categories },
 		});
 	}
 
@@ -32,7 +29,7 @@ export default class CategoryController {
 		const category = await this.categoryService.getCategoryById(Number(id));
 		res.status(200).json({
 			status: 'success',
-			data: category,
+			data: { ...category },
 		});
 	}
 
@@ -43,7 +40,7 @@ export default class CategoryController {
 
 		res.status(201).json({
 			status: 'success',
-			data: newCategory,
+			data: { ...newCategory },
 		});
 	}
 
@@ -61,7 +58,7 @@ export default class CategoryController {
 
 		res.status(200).json({
 			status: 'success',
-			data: updatedCategory,
+			data: { ...updatedCategory },
 		});
 	}
 
@@ -77,7 +74,7 @@ export default class CategoryController {
 
 		res.status(200).json({
 			status: 'success',
-			data: deletedCategory,
+			data: { ...deletedCategory },
 		});
 	}
 }

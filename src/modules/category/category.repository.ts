@@ -1,9 +1,9 @@
 import type { Category } from '@prisma/client';
+import prismaClient from '@/config/prisma.js';
 import type {
 	CreateCategoryData,
 	UpdateCategoryData,
 } from '@/modules/category/category.type.js';
-import prismaClient from '@/config/prisma.js';
 
 // Category Repository for CRUD operations and querying categories
 export default class CategoryRepository {

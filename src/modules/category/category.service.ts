@@ -1,19 +1,17 @@
 import type { Category } from '@prisma/client';
 import {
-	type CreateCategoryInput,
-	createCategoryDto,
+	type CreateCategoryDto,
 	type SafeCategoryDto,
-	safeCategoryDto,
-	type UpdateCategoryInput,
-	updateCategoryDto,
+	safeCategorySchema,
+	type UpdateCategoryDto,
 } from '@/modules/category/category.dto.js';
+import type CategoryRepository from '@/modules/category/category.repository.js';
 import type {
 	CreateCategoryData,
 	UpdateCategoryData,
 } from '@/modules/category/category.type.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
-import type CategoryRepository from '@/modules/category/category.repository.js';
 import type UserService from '@/modules/user/user.service.js';
+import { ErrorFactory } from '@/shared/errors/error.factory.js';
 
 export default class CategoryService {
 	private categoryRepository: CategoryRepository;
@@ -31,7 +29,7 @@ export default class CategoryService {
 
 	async getAllCategories(): Promise<SafeCategoryDto[]> {
 		const categories = await this.categoryRepository.findAll();
-		return categories.map((category) => safeCategoryDto.parse(category));
+		return categories.map((category) => safeCategorySchema.parse(category));
 	}
 
 	async getCategoryById(id: number): Promise<SafeCategoryDto> {
@@ -45,33 +43,27 @@ export default class CategoryService {
 				},
 			});
 		}
-		return safeCategoryDto.parse(category);
+		return safeCategorySchema.parse(category);
 	}
 
 	//Methods POST
-	async createCategory(data: CreateCategoryInput): Promise<SafeCategoryDto> {
+	async createCategory(data: CreateCategoryDto): Promise<SafeCategoryDto> {
 		// Validate user existence
 		await this.userService.getUserById(data.userId);
 
-		// Validate category data
-		const parsedData = createCategoryDto.parse(data);
 		// Check for existing category with the same name for the user
-		await this.checkNameConflict(parsedData.name, parsedData.userId);
+		await this.checkNameConflict(data.name, data.userId);
 
 		const categoryData: CreateCategoryData = {
-			...parsedData,
+			...data,
 		};
 
 		return this.categoryRepository.create(categoryData);
 	}
 
 	//Methods PUT
-	async updateCategory(
-		id: number,
-		data: UpdateCategoryInput,
-	): Promise<Category> {
-		// Validate category data
-		const parsedData = updateCategoryDto.parse(data);
+	async updateCategory(id: number, data: UpdateCategoryDto): Promise<Category> {
+		const { name } = data;
 
 		const existingCategory = await this.categoryRepository.findById(id);
 		if (!existingCategory) {
@@ -84,16 +76,12 @@ export default class CategoryService {
 			});
 		}
 		// Check if the category exists
-		if (parsedData.name) {
-			await this.checkNameConflict(
-				parsedData.name,
-				existingCategory.userId,
-				id,
-			);
+		if (name) {
+			await this.checkNameConflict(name, existingCategory.userId, id);
 		}
 
 		const updateData: UpdateCategoryData = {
-			...(parsedData.name && { name: parsedData.name }),
+			...(name && { name }),
 		};
 
 		return this.categoryRepository.update(id, updateData);
