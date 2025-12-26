@@ -1,11 +1,9 @@
-// src/api/features/auth/services/login.service.ts
+// src/modules/auth/login.service.ts
 import bcrypt from 'bcrypt';
-import {
-	type SafeLoginDto,
-	safeLoginDto,
-} from '@/modules/auth/auth.dto.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import type { LoginDto } from '@/modules/auth/index.js';
+import { type SafeUserAuthDto, safeUserAuthDto } from '@/modules/auth/index.js';
 import type UserRepository from '@/modules/user/user.repository.js';
+import { ErrorFactory } from '@/shared/errors/error.factory.js';
 export default class LoginService {
 	private userRepository: UserRepository;
 
@@ -13,7 +11,7 @@ export default class LoginService {
 		this.userRepository = userRepository;
 	}
 
-	async login(email: string, password: string): Promise<SafeLoginDto> {
+	async login({ email, password }: LoginDto): Promise<SafeUserAuthDto> {
 		// Validate input data
 		const user = await this.userRepository.findByEmail(email);
 
@@ -25,10 +23,7 @@ export default class LoginService {
 		}
 
 		// Check password
-		const isPasswordValid = await bcrypt.compare(
-			password,
-			user.password,
-		);
+		const isPasswordValid = await bcrypt.compare(password, user.password);
 		if (!isPasswordValid) {
 			throw ErrorFactory.unauthorizedError({
 				detail:
@@ -37,6 +32,6 @@ export default class LoginService {
 		}
 
 		// Return safe user data
-		return safeLoginDto.parse(user);
+		return safeUserAuthDto.parse(user);
 	}
 }

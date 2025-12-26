@@ -1,12 +1,13 @@
-// src/api/features/auth/services/auth.service.ts
+// src/modules/auth/auth.service.ts
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
-import type LoginService from '@/modules/auth/login.service.js';
 import type {
 	AuthLoginResponse,
 	AuthUser,
 	JWTPayload,
 } from '@/modules/auth/auth.type.js';
+import type { LoginDto } from '@/modules/auth/index.js';
+import type LoginService from '@/modules/auth/login.service.js';
 
 export default class AuthService {
 	private loginService: LoginService;
@@ -14,12 +15,9 @@ export default class AuthService {
 		this.loginService = loginService;
 	}
 
-	async authenticate(
-		email: string,
-		password: string,
-	): Promise<AuthLoginResponse> {
+	async authenticate(data: LoginDto): Promise<AuthLoginResponse> {
 		// Implementation of authentication logic
-		const credentials = await this.loginService.login(email, password);
+		const credentials = await this.loginService.login(data);
 		const accessToken = this.generateToken(credentials);
 
 		return {

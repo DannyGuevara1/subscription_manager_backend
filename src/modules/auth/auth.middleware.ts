@@ -39,7 +39,7 @@ export const authMiddleware = (
 		const decode = jwt.verify(accessToken, SECRET_KEY) as JWTPayload;
 		req.user = decode;
 		next();
-	} catch (error) {
+	} catch (_error) {
 		return next(
 			ErrorFactory.unauthorizedError({
 				detail: 'Invalid access token',

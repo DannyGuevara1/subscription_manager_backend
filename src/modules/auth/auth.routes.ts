@@ -1,8 +1,8 @@
 import express from 'express';
 import type AuthController from '@/modules/auth/auth.controller.js';
-import { catchAsync } from '@/shared/utils/catch.async.js';
+import * as authDto from '@/modules/auth/auth.dto.js';
 import { validateRequest } from '@/shared/middleware/validate.request.js';
-import { loginSchema } from '@/modules/auth/auth.dto.js';
+import { catchAsync } from '@/shared/utils/catch.async.js';
 
 export const path = '/auth';
 
@@ -11,13 +11,19 @@ export default function authRoutes(authController: AuthController) {
 
 	authRouter.post(
 		'/login',
-		validateRequest(loginSchema),
+		validateRequest(authDto.loginRequestSchema),
 		catchAsync(authController.login.bind(authController)),
 	);
 
 	authRouter.post(
 		'/logout',
 		catchAsync(authController.logout.bind(authController)),
+	);
+
+	authRouter.post(
+		'/register',
+		validateRequest(authDto.registerRequestSchema),
+		catchAsync(authController.register.bind(authController)),
 	);
 
 	return authRouter;

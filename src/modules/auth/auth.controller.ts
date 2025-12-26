@@ -1,6 +1,6 @@
 // src/api/features/auth/controllers/auth.controller.ts
-import type { NextFunction, Request, Response, CookieOptions } from 'express';
-import type AuthService from '@/modules/auth/auth.service.js';
+import type { CookieOptions, NextFunction, Request, Response } from 'express';
+import type { AuthService, RegisterService } from '@/modules/auth/index.js';
 
 // Definimos las opciones base fuera de la clase para asegurar consistencia
 // Esto evita bugs donde el logout no borra la cookie por diferencias en la config.
@@ -12,16 +12,15 @@ const AUTH_COOKIE_OPTIONS: CookieOptions = {
 
 export default class AuthController {
 	private authService: AuthService;
-	constructor(authService: AuthService) {
+	private registerService: RegisterService;
+	constructor(authService: AuthService, registerService: RegisterService) {
 		this.authService = authService;
+		this.registerService = registerService;
 	}
 
 	async login(req: Request, res: Response, _next: NextFunction) {
-		const { email, password } = req.body;
-		const { user, accessToken } = await this.authService.authenticate(
-			email,
-			password,
-		);
+		const data = req.body;
+		const { user, accessToken } = await this.authService.authenticate(data);
 		res
 			.cookie('accessToken', accessToken, {
 				...AUTH_COOKIE_OPTIONS,
@@ -29,9 +28,8 @@ export default class AuthController {
 			})
 			.status(200)
 			.json({
-				status: 'success',
 				data: {
-					user,
+					...user,
 				},
 			});
 	}
@@ -40,14 +38,21 @@ export default class AuthController {
 		res
 			.clearCookie('accessToken', {
 				...AUTH_COOKIE_OPTIONS,
-				maxAge: 0
+				maxAge: 0,
 			})
 			.status(200)
 			.json({
-				status: 'success',
-				data: {
-					message: 'Logout successful',
-				},
+				message: 'Logout successful',
 			});
+	}
+
+	async register(req: Request, res: Response, _next: NextFunction) {
+		const data = req.body;
+		const user = await this.registerService.register(data);
+		res.status(201).json({
+			data: {
+				...user,
+			},
+		});
 	}
 }
