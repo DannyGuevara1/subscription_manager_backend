@@ -1,6 +1,6 @@
 import type { Currency } from '@prisma/client';
-import type { CreateCurrencyData } from '@/modules/currency/currency.type.js';
 import prismaClient from '@/config/prisma.js';
+import type { CreateCurrencyData } from '@/modules/currency/currency.type.js';
 // Currency Repository for CRUD operations y Querying currencies
 export default class CurrencyRepository {
 	private readonly prisma;

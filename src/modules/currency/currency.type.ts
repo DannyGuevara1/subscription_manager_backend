@@ -7,7 +7,7 @@ export interface CreateCurrencyData {
 }
 
 export interface UpdateCurrencyData {
-	code?: string;
+	code: string;
 	name?: string;
 	symbol?: string;
 }
