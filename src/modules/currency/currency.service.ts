@@ -1,10 +1,12 @@
-import type { Currency } from '@prisma/client';
-import {
-	createCurrencySchema,
-	updateCurrencySchema,
-} from '@/modules/currency/currency.dto.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
+import {
+	type CreateCurrencyData,
+	type CreateCurrencyDto,
+	type SafeCurrencyDto,
+	safeCurrencySchema,
+	type UpdateCurrencyDto,
+} from '@/modules/currency/index.js';
+import { ErrorFactory } from '@/shared/errors/error.factory.js';
 
 export default class CurrencyService {
 	private currencyRepository: CurrencyRepository;
@@ -12,11 +14,12 @@ export default class CurrencyService {
 		this.currencyRepository = currencyRepository;
 	}
 	// Methods GET
-	async getAllCurrencies(): Promise<Currency[]> {
-		return this.currencyRepository.findAll();
+	async getAllCurrencies(): Promise<SafeCurrencyDto[]> {
+		const currencies = await this.currencyRepository.findAll();
+		return currencies.map((currency) => safeCurrencySchema.parse(currency));
 	}
 
-	async getCurrencyByCode(code: string): Promise<Currency> {
+	async getCurrencyByCode(code: string): Promise<SafeCurrencyDto> {
 		const currency = await this.currencyRepository.findByCode(code);
 
 		if (!currency) {
@@ -29,32 +32,36 @@ export default class CurrencyService {
 			});
 		}
 
-		return currency;
+		return safeCurrencySchema.parse(currency);
 	}
 	// Method POST
-	async createCurrency(data: Currency): Promise<Currency> {
-		const validatedData = createCurrencySchema.parse(data);
+	async createCurrency(data: CreateCurrencyDto): Promise<SafeCurrencyDto> {
 		const existingCurrency = await this.currencyRepository.findByCode(
-			validatedData.code,
+			data.code,
 		);
 		if (existingCurrency) {
 			throw ErrorFactory.conflictError({
 				resource: 'Currency',
-				identifier: validatedData.code,
+				identifier: data.code,
 				extensions: {
-					detail: `Ya existe una moneda con código ${validatedData.code}.`,
+					detail: `Ya existe una moneda con código ${data.code}.`,
 				},
 			});
 		}
-		return this.currencyRepository.create(validatedData);
+
+		const currencyData: CreateCurrencyData = {
+			...data,
+		};
+
+		const newCurrency = await this.currencyRepository.create(currencyData);
+		return safeCurrencySchema.parse(newCurrency);
 	}
 
 	// Method PUT
 	async updateCurrency(
 		code: string,
-		data: Partial<Currency>,
-	): Promise<Currency | null> {
-		const validatedData = updateCurrencySchema.parse(data);
+		data: UpdateCurrencyDto,
+	): Promise<SafeCurrencyDto> {
 		const existingCurrency = await this.currencyRepository.findByCode(code);
 		if (!existingCurrency) {
 			throw ErrorFactory.notFoundError({
@@ -65,11 +72,12 @@ export default class CurrencyService {
 				},
 			});
 		}
-		return this.currencyRepository.update(code, validatedData);
+		const updatedCurrency = await this.currencyRepository.update(code, data);
+		return safeCurrencySchema.parse(updatedCurrency);
 	}
 
 	// Method DELETE
-	async deleteCurrency(code: string): Promise<Currency> {
+	async deleteCurrency(code: string): Promise<SafeCurrencyDto> {
 		const currency = await this.currencyRepository.delete(code);
 
 		if (!currency) {
@@ -82,6 +90,6 @@ export default class CurrencyService {
 			});
 		}
 
-		return currency;
+		return safeCurrencySchema.parse(currency);
 	}
 }
