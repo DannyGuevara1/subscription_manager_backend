@@ -31,11 +31,15 @@ export const errorNormalizer = (
 
 	// Manejo de errores de validación de Zod
 	if (err instanceof z.ZodError) {
+		const formattedErrors = err.issues.map((issue) => ({
+			field: issue.path.join('.'),
+			message: issue.message,
+		}));
 		const normalizedError = ErrorFactory.validationError({
 			detail: 'La validación de los datos de entrada ha fallado.',
 			instance: req.originalUrl,
 			extensions: {
-				validationErrors: z.flattenError(err),
+				validationErrors: formattedErrors,
 			},
 		});
 		return next(normalizedError);
