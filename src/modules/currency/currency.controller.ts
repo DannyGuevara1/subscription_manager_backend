@@ -14,7 +14,6 @@ export default class CurrencyController {
 
 	async getAllCurrencies(_req: Request, res: Response, _next: NextFunction) {
 		res.status(200).json({
-			status: 'success',
 			data: await this.currencyService.getAllCurrencies(),
 		});
 	}
@@ -27,7 +26,7 @@ export default class CurrencyController {
 		const { code } = req.params;
 		const currency = await this.currencyService.getCurrencyByCode(code);
 
-		res.status(200).json(currency);
+		res.status(200).json({ data: currency });
 	}
 
 	async createCurrency(req: Request, res: Response, _next: NextFunction) {
@@ -35,7 +34,6 @@ export default class CurrencyController {
 		const newCurrency = await this.currencyService.createCurrency(currencyData);
 
 		res.status(201).json({
-			status: 'success',
 			data: newCurrency,
 		});
 	}
@@ -52,7 +50,6 @@ export default class CurrencyController {
 			currencyData,
 		);
 		res.status(200).json({
-			status: 'success',
 			data: updatedCurrency,
 		});
 	}
@@ -66,7 +63,6 @@ export default class CurrencyController {
 		const deletedCurrency = await this.currencyService.deleteCurrency(code);
 
 		res.status(200).json({
-			status: 'success',
 			data: deletedCurrency,
 		});
 	}

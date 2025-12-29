@@ -4,6 +4,7 @@ import {
 	type CreateCurrencyDto,
 	type SafeCurrencyDto,
 	safeCurrencySchema,
+	type UpdateCurrencyData,
 	type UpdateCurrencyDto,
 } from '@/modules/currency/index.js';
 import { ErrorFactory } from '@/shared/errors/error.factory.js';
@@ -72,7 +73,13 @@ export default class CurrencyService {
 				},
 			});
 		}
-		const updatedCurrency = await this.currencyRepository.update(code, data);
+		const updateData: UpdateCurrencyData = {
+			...data,
+		};
+		const updatedCurrency = await this.currencyRepository.update(
+			code,
+			updateData,
+		);
 		return safeCurrencySchema.parse(updatedCurrency);
 	}
 

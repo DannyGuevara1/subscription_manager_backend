@@ -6,10 +6,6 @@ export interface CreateCurrencyData {
 	symbol: string;
 }
 
-export interface UpdateCurrencyData {
-	code: string;
-	name?: string;
-	symbol?: string;
-}
+export type UpdateCurrencyData = Omit<Partial<CreateCurrencyData>, 'code'>;
 
 export type SafeCurrency = Omit<Currency, 'createdAt' | 'updatedAt'>;

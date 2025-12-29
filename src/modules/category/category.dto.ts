@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+//SCHEMAS
 export const createCategorySchema = z.object({
 	userId: z.uuidv7(),
 	name: z.string().min(1).max(100),
@@ -13,6 +14,7 @@ export const categoryParamsSchema = z.object({
 	id: z.string().regex(/^\d+$/, 'Category ID must be a number'),
 });
 
+//REQUEST SCHEMAS FOR VALIDATION IN ROUTES
 export const createCategoryRequestSchema = z.object({
 	body: createCategorySchema,
 });
@@ -31,8 +33,6 @@ export const safeCategorySchema = z.object({
 	id: z.number(),
 	userId: z.string(),
 	name: z.string(),
-	createdAt: z.date(),
-	updatedAt: z.date(),
 });
 
 export type SafeCategoryDto = z.infer<typeof safeCategorySchema>;

@@ -1,6 +1,9 @@
 import type { Currency } from '@prisma/client';
 import prismaClient from '@/config/prisma.js';
-import type { CreateCurrencyData } from '@/modules/currency/currency.type.js';
+import type {
+	CreateCurrencyData,
+	UpdateCurrencyData,
+} from '@/modules/currency/currency.type.js';
 // Currency Repository for CRUD operations y Querying currencies
 export default class CurrencyRepository {
 	private readonly prisma;
@@ -22,7 +25,7 @@ export default class CurrencyRepository {
 
 	async update(
 		code: string,
-		data: Partial<Currency>,
+		data: UpdateCurrencyData,
 	): Promise<Currency | null> {
 		return this.prisma.currency.update({ where: { code }, data });
 	}
