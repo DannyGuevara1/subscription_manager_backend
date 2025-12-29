@@ -24,7 +24,7 @@ export const updateCategoryRequestSchema = z.object({
 	params: categoryParamsSchema,
 });
 
-export const categoryByIdRequestSchema = z.object({
+export const categoryParamsRequestSchema = z.object({
 	params: categoryParamsSchema,
 });
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-	categoryByIdRequestSchema,
+	categoryParamsRequestSchema,
 	createCategoryRequestSchema,
 	updateCategoryRequestSchema,
 } from '@/modules/category/index.js';
@@ -25,6 +25,7 @@ export default function categoryRoutes(categoryController: CategoryController) {
 	router
 		.route('/:id')
 		.get(
+			validateRequest(categoryParamsRequestSchema),
 			catchAsync(categoryController.getByCategoryId.bind(categoryController)),
 		)
 		.put(
@@ -32,7 +33,7 @@ export default function categoryRoutes(categoryController: CategoryController) {
 			catchAsync(categoryController.updateCategory.bind(categoryController)),
 		)
 		.delete(
-			validateRequest(categoryByIdRequestSchema),
+			validateRequest(categoryParamsRequestSchema),
 			catchAsync(categoryController.deleteCategory.bind(categoryController)),
 		);
 	return router;
