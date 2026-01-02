@@ -12,9 +12,7 @@ export default class SubscriptionController {
 	}
 
 	async getAllSubscriptions(_req: Request, res: Response, _next: NextFunction) {
-		console.log(_req.user);
 		res.status(200).json({
-			status: 'success',
 			data: await this.subscriptionService.getAllSubscriptions(),
 		});
 	}
@@ -28,7 +26,6 @@ export default class SubscriptionController {
 		const subscription = await this.subscriptionService.getSubscriptionById(id);
 
 		res.status(200).json({
-			status: 'success',
 			data: subscription,
 		});
 	}
@@ -39,7 +36,6 @@ export default class SubscriptionController {
 			await this.subscriptionService.createSubscription(data);
 
 		res.status(201).json({
-			status: 'success',
 			data: newSubscription,
 		});
 	}
@@ -56,7 +52,6 @@ export default class SubscriptionController {
 			await this.subscriptionService.updateSubscription(id, data);
 
 		res.status(200).json({
-			status: 'success',
 			data: updatedSubscription,
 		});
 	}
@@ -71,7 +66,6 @@ export default class SubscriptionController {
 			await this.subscriptionService.deleteSubscription(id);
 
 		res.status(200).json({
-			status: 'success',
 			data: deletedSubscription,
 		});
 	}
