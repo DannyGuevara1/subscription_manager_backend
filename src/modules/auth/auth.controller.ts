@@ -28,9 +28,7 @@ export default class AuthController {
 			})
 			.status(200)
 			.json({
-				data: {
-					...user,
-				},
+				data: user,
 			});
 	}
 

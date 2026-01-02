@@ -10,9 +10,10 @@ export default class UserController {
 	}
 
 	async getAllUsers(_req: Request, res: Response, _next: NextFunction) {
+		const users = await this.userService.getAllUsers();
 		res.status(200).json({
 			data: {
-				users: await this.userService.getAllUsers(),
+				users,
 			},
 		});
 	}
@@ -26,9 +27,7 @@ export default class UserController {
 		const user = await this.userService.getUserById(id);
 
 		res.status(200).json({
-			data: {
-				...user,
-			},
+			data: user,
 		});
 	}
 
@@ -37,7 +36,7 @@ export default class UserController {
 		const newUser = await this.userService.createUser(userData);
 
 		res.status(201).json({
-			data: { ...newUser },
+			data: newUser,
 		});
 	}
 
@@ -51,7 +50,7 @@ export default class UserController {
 		const updatedUser = await this.userService.updateUser(id, userData);
 
 		res.status(200).json({
-			data: { ...updatedUser },
+			data: updatedUser,
 		});
 	}
 
@@ -64,7 +63,7 @@ export default class UserController {
 		const deletedUser = await this.userService.deleteUser(id);
 
 		res.status(200).json({
-			data: { ...deletedUser },
+			data: deletedUser,
 		});
 	}
 }

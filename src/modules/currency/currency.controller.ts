@@ -13,8 +13,9 @@ export default class CurrencyController {
 	}
 
 	async getAllCurrencies(_req: Request, res: Response, _next: NextFunction) {
+		const currencies = await this.currencyService.getAllCurrencies();
 		res.status(200).json({
-			data: await this.currencyService.getAllCurrencies(),
+			data: { currencies },
 		});
 	}
 

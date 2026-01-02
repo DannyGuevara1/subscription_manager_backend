@@ -69,7 +69,7 @@ export default class CategoryController {
 		);
 
 		res.status(200).json({
-			data: { ...deletedCategory },
+			data: deletedCategory,
 		});
 	}
 }

@@ -12,8 +12,9 @@ export default class SubscriptionController {
 	}
 
 	async getAllSubscriptions(_req: Request, res: Response, _next: NextFunction) {
+		const subscriptions = await this.subscriptionService.getAllSubscriptions();
 		res.status(200).json({
-			data: await this.subscriptionService.getAllSubscriptions(),
+			data: { subscriptions },
 		});
 	}
 
