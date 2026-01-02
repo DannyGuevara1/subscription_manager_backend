@@ -13,7 +13,6 @@ export default class CategoryController {
 	async getAllCategories(_req: Request, res: Response, _next: NextFunction) {
 		const categories = await this.categoryService.getAllCategories();
 		res.status(200).json({
-			status: 'success',
 			data: { categories },
 		});
 	}
@@ -28,7 +27,6 @@ export default class CategoryController {
 		const { id } = req.params;
 		const category = await this.categoryService.getCategoryById(Number(id));
 		res.status(200).json({
-			status: 'success',
 			data: category,
 		});
 	}
@@ -39,7 +37,6 @@ export default class CategoryController {
 		const newCategory = await this.categoryService.createCategory(categoryData);
 
 		res.status(201).json({
-			status: 'success',
 			data: newCategory,
 		});
 	}
@@ -57,7 +54,6 @@ export default class CategoryController {
 		);
 
 		res.status(200).json({
-			status: 'success',
 			data: updatedCategory,
 		});
 	}
@@ -73,7 +69,6 @@ export default class CategoryController {
 		);
 
 		res.status(200).json({
-			status: 'success',
 			data: { ...deletedCategory },
 		});
 	}
