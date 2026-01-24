@@ -45,8 +45,7 @@ export const registerSchema = z.object({
 					? 'El nombre es obligatorio!'
 					: 'El campo nombre es invalido',
 		})
-		.min(3, 'El nombre debe tener al menos 3 caracteres')
-		.optional(),
+		.min(3, 'El nombre debe tener al menos 3 caracteres'),
 	primaryCurrencyCode: z
 		.string({
 			error: (issue) =>

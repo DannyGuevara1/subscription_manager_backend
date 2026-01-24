@@ -34,6 +34,7 @@ export default class AuthService {
 			sub: user.id, // Subject (user ID)
 			email: user.email,
 			name: user.name,
+			primaryCurrencyCode: user.primaryCurrencyCode,
 		};
 
 		const signOptions: SignOptions = {
