@@ -22,7 +22,7 @@ export default class AuthController {
 		const data = req.body;
 		const { user, accessToken } = await this.authService.authenticate(data);
 		res
-			.cookie('accessToken', accessToken, {
+			.cookie('ACCESS_TOKEN', accessToken, {
 				...AUTH_COOKIE_OPTIONS,
 				maxAge: 1000 * 60 * 60, // 1 hour
 			})
@@ -34,7 +34,7 @@ export default class AuthController {
 
 	async logout(_req: Request, res: Response, _next: NextFunction) {
 		res
-			.clearCookie('accessToken', {
+			.clearCookie('ACCESS_TOKEN', {
 				...AUTH_COOKIE_OPTIONS,
 				maxAge: 0,
 			})

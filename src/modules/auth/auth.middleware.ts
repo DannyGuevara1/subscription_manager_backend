@@ -8,8 +8,8 @@ export const authMiddleware = (
 	next: NextFunction,
 ) => {
 	try {
-		const accessToken = req.cookies.accessToken;
-		if (!accessToken) {
+		const ACCESS_TOKEN = req.cookies.ACCESS_TOKEN;
+		if (!ACCESS_TOKEN) {
 			return next(
 				ErrorFactory.unauthorizedError({
 					detail: 'Access token is missing',
@@ -36,7 +36,7 @@ export const authMiddleware = (
 			);
 		}
 
-		const decode = jwt.verify(accessToken, SECRET_KEY) as JWTPayload;
+		const decode = jwt.verify(ACCESS_TOKEN, SECRET_KEY) as JWTPayload;
 		req.user = decode;
 		next();
 	} catch (_error) {
