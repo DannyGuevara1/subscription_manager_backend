@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import responseTime from 'response-time';
 import v1 from '@/routes/index.js';
 import { errorHandler } from '@/shared/middleware/error.handler.js';
 import { errorNormalizer } from '@/shared/middleware/error.normalizer.js';
@@ -33,6 +34,7 @@ app.use(
 app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
+app.use(responseTime());
 
 // Routes
 app.use('/api/v1', v1);
