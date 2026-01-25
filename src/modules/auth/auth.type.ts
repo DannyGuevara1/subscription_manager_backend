@@ -9,7 +9,7 @@ export type AuthUser = Pick<
 export interface AuthLoginResponse {
 	accessToken: string;
 	refreshToken: string;
-	user: SafeUserAuthDto;
+	user?: SafeUserAuthDto;
 }
 
 interface BaseJWTPayload {
