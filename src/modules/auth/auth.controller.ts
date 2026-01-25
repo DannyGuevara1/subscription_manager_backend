@@ -20,7 +20,8 @@ export default class AuthController {
 
 	async login(req: Request, res: Response, _next: NextFunction) {
 		const data = req.body;
-		const { user, accessToken } = await this.authService.authenticate(data);
+		const { user, accessToken, refreshToken } =
+			await this.authService.authenticate(data);
 		res
 			.cookie('ACCESS_TOKEN', accessToken, {
 				...AUTH_COOKIE_OPTIONS,

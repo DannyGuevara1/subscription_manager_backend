@@ -8,14 +8,22 @@ export type AuthUser = Pick<
 
 export interface AuthLoginResponse {
 	accessToken: string;
+	refreshToken: string;
 	user: SafeUserAuthDto;
 }
 
-export interface JWTPayload {
-	sub: string;
-	email: string;
-	name: string | null;
-	primaryCurrencyCode: string;
+interface BaseJWTPayload {
+	sub: string; // ID del usuario
 	iat?: number;
 	exp?: number;
+}
+
+export interface JWTPayload extends BaseJWTPayload {
+	email: string;
+	name: string | null;
+	primaryCurrencyCode?: string;
+}
+
+export interface RefreshTokenPayload extends BaseJWTPayload {
+	jti: string; // JWT ID para identificar el token de refresco
 }
