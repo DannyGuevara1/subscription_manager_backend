@@ -42,6 +42,7 @@
 		"helmet": "8.1.0",
 		"jsonwebtoken": "9.0.2",
 		"pino": "9.9.5",
+		"redis": "5.10.0",
 		"response-time": "2.3.4",
 		"stack-trace": "1.0.0-pre2",
 		"uuidv7": "1.0.2",

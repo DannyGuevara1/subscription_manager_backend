@@ -1,0 +1,60 @@
+services:
+  # 1. Tu Aplicación Backend (Node.js)
+  app:
+    build: .
+    container_name: subscription_backend
+    ports:
+      - "3000:3000" # Mapea puerto 3000 de tu PC al 3000 del contenedor
+    volumes:
+      - ./src:/app/src # <--- AQUÍ OCURRE LA MAGIA (Hot Reload)
+      - ./.env.development:/app/.env.development # Inyectamos tus variables de entorno
+      - /app/node_modules # Evitamos que se sobrescriban los módulos internos
+    environment:
+      # Sobrescribimos la URL para que apunte al servicio 'db' en lugar de 'localhost'
+      - DATABASE_URL=postgresql://postgres:password123@db:5432/subscription_manager?schema=public
+      # Configuración para Redis (nombre del servicio: 'redis')
+      - REDIS_HOST=redis 
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+
+  # 2. Base de Datos (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: subscription_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: subscription_manager
+    ports:
+      - "5433:5432" # Para que puedas conectar TablePlus/DBeaver desde tu PC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistencia de datos
+    networks:
+      - app-network
+
+  # 3. Redis (Para tus Refresh Tokens)
+  redis:
+    image: redis:alpine
+    container_name: subscription_redis
+    restart: always
+    ports:
+      - "6379:6379" # Opcional: para inspeccionar Redis desde tu PC
+    volumes:
+      - redis_data:/data # Persistencia para Redis
+    networks:
+      - app-network
+
+# Definición de volúmenes para que los datos no se borren al apagar
+volumes:
+  postgres_data:
+  redis_data:
+
+# Red interna para que se comuniquen entre ellos
+networks:
+  app-network:
+    driver: bridge
