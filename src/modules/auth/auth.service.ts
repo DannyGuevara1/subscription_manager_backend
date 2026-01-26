@@ -71,4 +71,8 @@ export default class AuthService {
 
 		return jwt.sign(payload, SECRET as string, signOptions);
 	}
+
+	async invalidateRefreshToken(userId: string): Promise<void> {
+		await this.redis.del(`refreshToken:${userId}`);
+	}
 }
