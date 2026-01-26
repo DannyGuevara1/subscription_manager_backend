@@ -9,6 +9,7 @@ import {
 	Lifetime,
 } from 'awilix';
 import prismaClient from '@/config/prisma.js';
+import redisClient from '@/config/redis.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const baseGlob = isProduction ? 'dist' : 'src';
@@ -22,6 +23,7 @@ export async function setupContainer(): Promise<AwilixContainer> {
 
 	container.register({
 		prisma: asValue(prismaClient),
+		redis: asValue(redisClient),
 	});
 
 	// Carga automática con loadModules
