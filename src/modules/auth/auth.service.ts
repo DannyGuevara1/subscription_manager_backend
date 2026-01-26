@@ -1,6 +1,7 @@
 // src/modules/auth/auth.service.ts
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
+import type redis from 'redis';
 import type {
 	AuthLoginResponse,
 	AuthUser,
@@ -12,8 +13,10 @@ import type LoginService from '@/modules/auth/login.service.js';
 
 export default class AuthService {
 	private loginService: LoginService;
-	constructor(loginService: LoginService) {
+	private redis: redis.RedisClientType;
+	constructor(loginService: LoginService, redis: redis.RedisClientType) {
 		this.loginService = loginService;
+		this.redis = redis;
 	}
 
 	async authenticate(data: LoginDto): Promise<AuthLoginResponse> {
@@ -21,6 +24,10 @@ export default class AuthService {
 		const credentials = await this.loginService.login(data);
 		const accessToken = this.generateAccessToken(credentials);
 		const refreshToken = this.generateRefreshToken(credentials);
+
+		await this.redis.set(`refreshToken:${credentials.id}`, refreshToken, {
+			EX: 7 * 24 * 60 * 60, // Expira en 7 días
+		});
 
 		return {
 			accessToken: accessToken,
