@@ -63,6 +63,29 @@ export default class AuthController {
 			});
 	}
 
+	async refreshToken(req: Request, res: Response, _next: NextFunction) {
+		const refreshToken = req.cookies.REFRESH_TOKEN;
+		const {
+			user,
+			accessToken,
+			refreshToken: newRefreshToken,
+		} = await this.authService.refreshSession(refreshToken);
+
+		res
+			.cookie('ACCESS_TOKEN', accessToken, {
+				...AUTH_COOKIE_OPTIONS,
+				maxAge: 1000 * 60 * 5, // 5m
+			})
+			.cookie('REFRESH_TOKEN', newRefreshToken, {
+				...AUTH_COOKIE_OPTIONS,
+				maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+			})
+			.status(200)
+			.json({
+				data: user,
+			});
+	}
+
 	async register(req: Request, res: Response, _next: NextFunction) {
 		const data = req.body;
 		const user = await this.registerService.register(data);

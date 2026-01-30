@@ -10,13 +10,21 @@ import type {
 } from '@/modules/auth/auth.type.js';
 import type { LoginDto } from '@/modules/auth/index.js';
 import type LoginService from '@/modules/auth/login.service.js';
+import type UserService from '@/modules/user/user.service.js';
+import { ErrorFactory } from '@/shared/errors/error.factory.js';
 
 export default class AuthService {
 	private loginService: LoginService;
 	private redis: redis.RedisClientType;
-	constructor(loginService: LoginService, redis: redis.RedisClientType) {
+	private userService: UserService;
+	constructor(
+		loginService: LoginService,
+		redis: redis.RedisClientType,
+		userService: UserService,
+	) {
 		this.loginService = loginService;
 		this.redis = redis;
+		this.userService = userService;
 	}
 
 	async authenticate(data: LoginDto): Promise<AuthLoginResponse> {
@@ -74,5 +82,47 @@ export default class AuthService {
 
 	async invalidateRefreshToken(userId: string): Promise<void> {
 		await this.redis.del(`refreshToken:${userId}`);
+	}
+
+	async refreshSession(refreshToken: string): Promise<AuthLoginResponse> {
+		const SECRET = process.env.JWT_SECRET as string;
+		const decoded = jwt.verify(refreshToken, SECRET) as RefreshTokenPayload;
+
+		const storedToken = await this.redis.get(`refreshToken:${decoded.sub}`);
+
+		if (!storedToken) {
+			throw ErrorFactory.unauthorizedError({
+				detail: 'Refresh token is invalid or has been revoked',
+			});
+		}
+
+		if (storedToken !== refreshToken) {
+			await this.redis.del(`refreshToken:${decoded.sub}`);
+			throw ErrorFactory.unauthorizedError({
+				detail:
+					'Refresh token does not match stored token, Security alert: Token reuse detected',
+			});
+		}
+
+		const user = await this.userService.getUserById(decoded.sub);
+
+		if (!user) {
+			throw ErrorFactory.unauthorizedError({
+				detail: 'User associated with the refresh token not found',
+			});
+		}
+
+		const accessToken = this.generateAccessToken(user);
+		const newRefreshToken = this.generateRefreshToken(user);
+
+		await this.redis.set(`refreshToken:${user.id}`, newRefreshToken, {
+			EX: 7 * 24 * 60 * 60, // Expira en 7 días
+		});
+
+		return {
+			accessToken: accessToken,
+			refreshToken: newRefreshToken,
+			user: user,
+		};
 	}
 }

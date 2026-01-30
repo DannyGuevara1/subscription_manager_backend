@@ -26,5 +26,10 @@ export default function authRoutes(authController: AuthController) {
 		catchAsync(authController.register.bind(authController)),
 	);
 
+	authRouter.post(
+		'/refresh-token',
+		catchAsync(authController.refreshToken.bind(authController)),
+	);
+
 	return authRouter;
 }
