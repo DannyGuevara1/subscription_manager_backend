@@ -68,3 +68,11 @@ export interface UnauthorizedOptions {
 	extensions?: Record<string, any>; // Información adicional relevante
 	stack?: string; // Traza de pila personalizada
 }
+
+export interface forbiddenError {
+	detail?: string; // Detalles adicionales sobre el error de autorización
+	instance?: string; // URI del recurso que causó el error
+	isOperational?: boolean; // Indica si el error es operativo (por defecto es true)
+	extensions?: Record<string, any>; // Información adicional relevante
+	stack?: string; // Traza de pila personalizada
+}
