@@ -11,7 +11,11 @@ import type {
 	UpdateCategoryData,
 } from '@/modules/category/category.type.js';
 import type UserService from '@/modules/user/user.service.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	conflictError,
+	forbiddenError,
+	notFoundError,
+} from '@/shared/errors/error.factory.js';
 
 export default class CategoryService {
 	private categoryRepository: CategoryRepository;
@@ -27,20 +31,27 @@ export default class CategoryService {
 
 	//Methods GET
 
-	async getAllCategories(): Promise<SafeCategoryDto[]> {
-		const categories = await this.categoryRepository.findAll();
+	async getAllCategories(userId: string): Promise<SafeCategoryDto[]> {
+		const categories = await this.categoryRepository.findAll(userId);
 		return categories.map((category) => safeCategorySchema.parse(category));
 	}
 
-	async getCategoryById(id: number): Promise<SafeCategoryDto> {
+	async getCategoryById(id: number, userId: string): Promise<SafeCategoryDto> {
 		const category = await this.categoryRepository.findById(id);
 		if (!category) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Category',
 				identifier: `${id}`,
 				extensions: {
 					detail: `No se encontro una categoria con el ID ${id}`,
 				},
+			});
+		}
+
+		if (category.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para acceder a esta categoría.`,
+				instance: `/categories/${id}`,
 			});
 		}
 		return safeCategorySchema.parse(category);
@@ -67,7 +78,7 @@ export default class CategoryService {
 
 		const existingCategory = await this.categoryRepository.findById(id);
 		if (!existingCategory) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Category',
 				identifier: id,
 				extensions: {
@@ -93,7 +104,7 @@ export default class CategoryService {
 		const existingCategory = await this.categoryRepository.findById(id);
 
 		if (!existingCategory) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Category',
 				identifier: id,
 				extensions: {
@@ -116,7 +127,7 @@ export default class CategoryService {
 		);
 
 		if (existingCategory && existingCategory.id !== excludeId) {
-			throw ErrorFactory.conflictError({
+			throw conflictError({
 				detail: `La categoría '${name}' ya existe para este usuario.`,
 				resource: 'Category',
 				identifier: existingCategory.id,

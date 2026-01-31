@@ -14,7 +14,10 @@ import {
 	type UpdateUserDto,
 } from '@/modules/user/index.js';
 import type UserRepository from '@/modules/user/user.repository.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	forbiddenError,
+	notFoundError,
+} from '@/shared/errors/error.factory.js';
 
 export default class UserService {
 	private userRepository: UserRepository;
@@ -49,6 +52,7 @@ export default class UserService {
 		if (!user) {
 			throw this.userNotFoundError(id);
 		}
+
 		return this.toSafeUserDto(user);
 	}
 
@@ -94,12 +98,19 @@ export default class UserService {
 
 	// Abtraer mensaje de error de usuario no encontrado
 	private userNotFoundError(id: string) {
-		return ErrorFactory.notFoundError({
+		return notFoundError({
 			resource: 'User',
 			identifier: id,
 			extensions: {
 				detail: `No se encontró ningún usuario con ID ${id}.`,
 			},
+		});
+	}
+
+	private accessDeniedError() {
+		return forbiddenError({
+			detail: `No tiene permiso para acceder a este recurso.`,
+			instance: '/users',
 		});
 	}
 }

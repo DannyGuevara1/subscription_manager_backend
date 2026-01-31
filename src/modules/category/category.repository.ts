@@ -16,8 +16,8 @@ export default class CategoryRepository {
 		return this.prisma.category.create({ data });
 	}
 
-	async findAll(): Promise<Category[]> {
-		return this.prisma.category.findMany();
+	async findAll(userId: string): Promise<Category[]> {
+		return this.prisma.category.findMany({ where: { userId } });
 	}
 
 	async findById(id: number): Promise<Category | null> {

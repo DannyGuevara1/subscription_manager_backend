@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import type { LoginDto } from '@/modules/auth/index.js';
 import { type SafeUserAuthDto, safeUserAuthDto } from '@/modules/auth/index.js';
 import type UserRepository from '@/modules/user/user.repository.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import { unauthorizedError } from '@/shared/errors/error.factory.js';
 export default class LoginService {
 	private userRepository: UserRepository;
 
@@ -16,7 +16,7 @@ export default class LoginService {
 		const user = await this.userRepository.findByEmail(email);
 
 		if (!user) {
-			throw ErrorFactory.unauthorizedError({
+			throw unauthorizedError({
 				detail:
 					'Credenciales inválidas. Por favor, verifica tu correo y contraseña.',
 			});
@@ -25,7 +25,7 @@ export default class LoginService {
 		// Check password
 		const isPasswordValid = await bcrypt.compare(password, user.password);
 		if (!isPasswordValid) {
-			throw ErrorFactory.unauthorizedError({
+			throw unauthorizedError({
 				detail:
 					'Credenciales inválidas. Por favor, verifica tu correo y contraseña.',
 			});

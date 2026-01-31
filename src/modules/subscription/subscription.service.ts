@@ -10,7 +10,10 @@ import type {
 	CreateSubscriptionData,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	forbiddenError,
+	notFoundError,
+} from '@/shared/errors/error.factory.js';
 
 export default class SubscriptionService {
 	private subscriptionRepository: SubscriptionRepository;
@@ -26,16 +29,26 @@ export default class SubscriptionService {
 		);
 	}
 
-	async getSubscriptionById(id: string): Promise<SafeSubscriptionDto | null> {
+	async getSubscriptionById(
+		id: string,
+		userId: string,
+	): Promise<SafeSubscriptionDto | null> {
 		const subscription = await this.subscriptionRepository.findById(id);
 
 		if (!subscription) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
 					detail: `No se encontró ninguna suscripción con ID ${id}.`,
 				},
+			});
+		}
+
+		if (subscription.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para acceder a esta suscripción.`,
+				instance: `/subscriptions/${id}`,
 			});
 		}
 
@@ -63,7 +76,7 @@ export default class SubscriptionService {
 	): Promise<SafeSubscriptionDto> {
 		const existingSubscription = await this.subscriptionRepository.findById(id);
 		if (!existingSubscription) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
@@ -88,7 +101,7 @@ export default class SubscriptionService {
 		const deletedSubscription = await this.subscriptionRepository.delete(id);
 
 		if (!deletedSubscription) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {

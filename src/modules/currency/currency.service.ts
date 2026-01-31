@@ -7,7 +7,7 @@ import {
 	type UpdateCurrencyData,
 	type UpdateCurrencyDto,
 } from '@/modules/currency/index.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import { conflictError, notFoundError } from '@/shared/errors/error.factory.js';
 
 export default class CurrencyService {
 	private currencyRepository: CurrencyRepository;
@@ -24,7 +24,7 @@ export default class CurrencyService {
 		const currency = await this.currencyRepository.findByCode(code);
 
 		if (!currency) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Currency',
 				identifier: code,
 				extensions: {
@@ -41,7 +41,7 @@ export default class CurrencyService {
 			data.code,
 		);
 		if (existingCurrency) {
-			throw ErrorFactory.conflictError({
+			throw conflictError({
 				resource: 'Currency',
 				identifier: data.code,
 				extensions: {
@@ -65,7 +65,7 @@ export default class CurrencyService {
 	): Promise<SafeCurrencyDto> {
 		const existingCurrency = await this.currencyRepository.findByCode(code);
 		if (!existingCurrency) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Currency',
 				identifier: code,
 				extensions: {
@@ -88,7 +88,7 @@ export default class CurrencyService {
 		const currency = await this.currencyRepository.delete(code);
 
 		if (!currency) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Currency',
 				identifier: code,
 				extensions: {

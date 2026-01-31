@@ -7,7 +7,12 @@ import type {
 	PrismaClientValidationError,
 } from '@prisma/client/runtime/library.js';
 import type { AppError } from '@/shared/errors/app.error.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	conflictError,
+	internalError,
+	notFoundError,
+	validationError,
+} from '@/shared/errors/error.factory.js';
 
 /**
  * The function `handlePrismaValidationError` handles Prisma client validation errors by creating an
@@ -25,7 +30,7 @@ export const handlePrismaValidationError = (
 	err: PrismaClientValidationError,
 	instance?: string,
 ): AppError => {
-	return ErrorFactory.validationError({
+	return validationError({
 		detail: err.message,
 		instance,
 		isOperational: false,
@@ -37,7 +42,7 @@ export const handlePrismaClientInitializationError = (
 	err: PrismaClientInitializationError,
 	instance?: string,
 ): AppError => {
-	return ErrorFactory.internalError({
+	return internalError({
 		detail: err.message,
 		instance,
 		isOperational: false,
@@ -55,7 +60,7 @@ export const handlePrismaClientUnknownRequestError = (
 	err: PrismaClientUnknownRequestError,
 	instance?: string,
 ): AppError => {
-	return ErrorFactory.internalError({
+	return internalError({
 		detail: err.message,
 		instance,
 		isOperational: false,
@@ -76,7 +81,7 @@ export const handlePrismaClientRustPanicError = (
 	err: PrismaClientRustPanicError,
 	instance?: string,
 ): AppError => {
-	return ErrorFactory.internalError({
+	return internalError({
 		detail: err.message,
 		instance,
 		isOperational: false,
@@ -108,7 +113,7 @@ export const handlePrismaKnownRequestError = (
 
 			// Creamos un mensaje de detalle mucho más claro y amigable
 			const detail = `El valor proporcionado para el campo '${conflictField}' ya está en uso. Por favor, utilice un valor diferente.`;
-			return ErrorFactory.conflictError({
+			return conflictError({
 				detail,
 				instance,
 				isOperational: true,
@@ -128,7 +133,7 @@ export const handlePrismaKnownRequestError = (
 				'(constraint no expuesta por Prisma en PostgreSQL)';
 			const detail = `Violación de clave foránea. ${fieldName}. Verifique que el ID relacionado exista o elimine primero las dependencias.`;
 
-			return ErrorFactory.conflictError({
+			return conflictError({
 				detail,
 				instance,
 				isOperational: true,
@@ -143,7 +148,7 @@ export const handlePrismaKnownRequestError = (
 		}
 
 		case 'P2025': // Record not found
-			return ErrorFactory.notFoundError({
+			return notFoundError({
 				instance,
 				isOperational: true,
 				metadata: {
@@ -154,7 +159,7 @@ export const handlePrismaKnownRequestError = (
 				stack: err.stack,
 			});
 		default:
-			return ErrorFactory.internalError({
+			return internalError({
 				detail: err.message,
 				instance,
 				isOperational: false,

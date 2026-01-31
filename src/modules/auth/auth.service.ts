@@ -11,7 +11,7 @@ import type {
 import type { LoginDto } from '@/modules/auth/index.js';
 import type LoginService from '@/modules/auth/login.service.js';
 import type UserService from '@/modules/user/user.service.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import { unauthorizedError } from '@/shared/errors/error.factory.js';
 
 export default class AuthService {
 	private loginService: LoginService;
@@ -91,14 +91,14 @@ export default class AuthService {
 		const storedToken = await this.redis.get(`refreshToken:${decoded.sub}`);
 
 		if (!storedToken) {
-			throw ErrorFactory.unauthorizedError({
+			throw unauthorizedError({
 				detail: 'Refresh token is invalid or has been revoked',
 			});
 		}
 
 		if (storedToken !== refreshToken) {
 			await this.redis.del(`refreshToken:${decoded.sub}`);
-			throw ErrorFactory.unauthorizedError({
+			throw unauthorizedError({
 				detail:
 					'Refresh token does not match stored token, Security alert: Token reuse detected',
 			});
@@ -107,7 +107,7 @@ export default class AuthService {
 		const user = await this.userService.getUserById(decoded.sub);
 
 		if (!user) {
-			throw ErrorFactory.unauthorizedError({
+			throw unauthorizedError({
 				detail: 'User associated with the refresh token not found',
 			});
 		}

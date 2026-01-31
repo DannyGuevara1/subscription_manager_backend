@@ -18,6 +18,10 @@ export default class UserController {
 		});
 	}
 
+	/*
+	 * Obtener un usuario por su ID.
+	 * Requiere que el usuario autenticado coincida con el ID solicitado.
+	 */
 	async getUserById(
 		req: Request<UserParams>,
 		res: Response,

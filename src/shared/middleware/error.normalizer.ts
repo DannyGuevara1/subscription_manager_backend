@@ -4,7 +4,10 @@ import { Prisma } from '@prisma/client';
 import type { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { AppError } from '@/shared/errors/app.error.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	internalError,
+	validationError,
+} from '@/shared/errors/error.factory.js';
 import {
 	handlePrismaClientInitializationError,
 	handlePrismaClientRustPanicError,
@@ -35,7 +38,7 @@ export const errorNormalizer = (
 			field: issue.path.join('.'),
 			message: issue.message,
 		}));
-		const normalizedError = ErrorFactory.validationError({
+		const normalizedError = validationError({
 			detail: 'La validación de los datos de entrada ha fallado.',
 			instance: req.originalUrl,
 			extensions: {
@@ -88,7 +91,7 @@ export const errorNormalizer = (
 
 	// Si es un error genérico de JavaScript, conviértelo en un AppError de tipo INTERNAL_SERVER_ERROR
 	if (err instanceof Error) {
-		const internalError = ErrorFactory.internalError({
+		const genericError = internalError({
 			detail: err.message || 'Se ha producido un error interno en el servidor.',
 			instance: req.originalUrl,
 			isOperational: false,
@@ -99,6 +102,6 @@ export const errorNormalizer = (
 			},
 			stack: err.stack,
 		});
-		return next(internalError);
+		return next(genericError);
 	}
 };

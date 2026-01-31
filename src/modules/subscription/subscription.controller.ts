@@ -24,7 +24,11 @@ export default class SubscriptionController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
-		const subscription = await this.subscriptionService.getSubscriptionById(id);
+		const sub = req.user?.sub as string;
+		const subscription = await this.subscriptionService.getSubscriptionById(
+			id,
+			sub,
+		);
 
 		res.status(200).json({
 			data: subscription,

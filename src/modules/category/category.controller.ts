@@ -10,8 +10,9 @@ export default class CategoryController {
 	}
 
 	//Controller method to get all categories
-	async getAllCategories(_req: Request, res: Response, _next: NextFunction) {
-		const categories = await this.categoryService.getAllCategories();
+	async getAllCategories(req: Request, res: Response, _next: NextFunction) {
+		const userId = req.user?.sub as string;
+		const categories = await this.categoryService.getAllCategories(userId);
 		res.status(200).json({
 			data: { categories },
 		});
@@ -25,7 +26,11 @@ export default class CategoryController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
-		const category = await this.categoryService.getCategoryById(Number(id));
+		const sub = req.user?.sub as string;
+		const category = await this.categoryService.getCategoryById(
+			Number(id),
+			sub,
+		);
 		res.status(200).json({
 			data: category,
 		});
