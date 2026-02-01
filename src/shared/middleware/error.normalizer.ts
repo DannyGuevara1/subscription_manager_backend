@@ -29,8 +29,18 @@ export const errorNormalizer = (
 	_res: Response,
 	next: NextFunction,
 ) => {
-	// Si ya es un AppError, simplemente pásalo al siguiente middleware.
-	if (err instanceof AppError) return next(err);
+	// Si ya es un AppError, asigna la instancia si no la tiene y pásalo al siguiente middleware.
+	if (err instanceof AppError) {
+		if (!err.instance) {
+			Object.defineProperty(err, 'instance', {
+				value: req.originalUrl,
+				writable: false,
+				enumerable: true,
+				configurable: true,
+			});
+		}
+		return next(err);
+	}
 
 	// Manejo de errores de validación de Zod
 	if (err instanceof z.ZodError) {
