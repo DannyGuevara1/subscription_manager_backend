@@ -1,12 +1,15 @@
 ### GET All Users
+### Only Admins can access this endpoint
 GET http://localhost:3000/api/v1/users
 Origin: http://localhost:3000
 
 ### Get User by ID
-GET http://localhost:3000/api/v1/users/019b3dfd-cfaa-7de5-9eeb-8bc1186b1d68
+### Only Admins can access this endpoint
+GET http://localhost:3000/api/v1/users/019bf33c-8beb-7d73-bc6b-5819a67c6788
 Origin: http://localhost:3000
 
 ### Create User
+### Only Admins can access this endpoint
 POST http://localhost:3000/api/v1/users
 Origin: http://localhost:3000
 content-type: application/json
@@ -19,17 +22,19 @@ content-type: application/json
 }
 
 ### Update User
-PUT http://localhost:3000/api/v1/users/019b3dfd-cfaa-7de5-9eeb-8bc1186b1d68
+### Only Admins and the User themselves can access this endpoint
+PUT http://localhost:3000/api/v1/users/019bf33c-8beb-7d73-bc6b-5819a67c6788
 Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "name": "Carlos Guevara",
-    "email": "carlos.doe@example.com",
+    "name": "Lyssander Guevara",
+    "email": "guevarad170@gmail.com",
     "password": "Coleccion12",
-    "primaryCurrencyCode": "EUR"
+    "primaryCurrencyCode": "USD"
 }
 
 ### Delete User
+### Only Admins and the User themselves can access this endpoint
 DELETE http://localhost:3000/api/v1/users/019b3dfd-cfaa-7de5-9eeb-8bc1186b1d68
 Origin: http://localhost:3000

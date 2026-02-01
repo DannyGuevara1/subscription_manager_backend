@@ -1,30 +1,34 @@
 ### GET All Subscriptions
+### Only Admins and the User themselves can access this endpoint
 GET http://localhost:3000/api/v1/subscriptions
 Origin: http://localhost:3000
 
 ### Get Subscription by ID
-GET http://localhost:3000/api/v1/subscriptions/0199b1c1-01d5-725f-97bf-b309c3c61a5b
+### Only Admins and the User themselves can access this endpoint
+GET http://localhost:3000/api/v1/subscriptions/019c11ae-276d-7528-bde9-7bcbe8047caf
 Origin: http://localhost:3000
 
 ### Create Subscription
+### Only Admins and the User themselves can access this endpoint
 POST http://localhost:3000/api/v1/subscriptions
 Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "userId": "01994fcc-a3da-74c0-a945-9871328f21b9",
-    "categoryId": 28,
+    "userId": "019c1090-97be-7057-9f3e-9680cf703fb7",
+    "categoryId": 1,
     "currencyCode": "USD",
     "name": "Netflix",
     "cost": 15.99,
     "costType": "FIXDED",
     "billingFrequency": 1,
     "billingUnit": "MONTHS",
-    "firstPaymentDate": "8/27/2025"
+    "firstPaymentDate": "1/30/2026"
 
 }
 
 ### Update Subscription
+### Only Admins and the User themselves can access this endpoint
 PUT http://localhost:3000/api/v1/subscriptions/0199b1c1-01d5-725f-97bf-b309c3c61a5b
 Origin: http://localhost:3000
 content-type: application/json
@@ -34,5 +38,6 @@ content-type: application/json
 }
 
 ### Delete Subscription
+### Only Admins and the User themselves can access this endpoint
 DELETE http://localhost:3000/api/v1/subscriptions/01998c45-4708-755c-a2b3-cfb3e4ee9902
 Origin: http://localhost:3000

@@ -1,23 +1,27 @@
 ### GET All Currencies
+### Only Admins can access this endpoint
 GET http://localhost:3000/api/v1/currencies
 Origin: http://localhost:3000
 
 ### Get Currencies by ID
+### Only Admins can access this endpoint
 GET http://localhost:3000/api/v1/currencies/DMA
 Origin: http://localhost:3000
 
 ### Create Currencies
+### Only Admins can access this endpoint
 POST http://localhost:3000/api/v1/currencies
 Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "code": "DMA",
-    "name": "Yen Japanese",
-    "symbol": "¥"
+    "code": "MXN",
+    "name": "Peso Mexicano",
+    "symbol": "$"
 }
 
 ### Update Currencies
+### Only Admins can access this endpoint
 PUT http://localhost:3000/api/v1/currencies/DMA
 Origin: http://localhost:3000
 content-type: application/json
@@ -28,5 +32,6 @@ content-type: application/json
 }
 
 ### Delete Currencies
+### Only Admins can access this endpoint
 DELETE http://localhost:3000/api/v1/currencies/DMA
 Origin: http://localhost:3000
