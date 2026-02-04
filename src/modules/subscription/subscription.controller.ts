@@ -51,10 +51,11 @@ export default class SubscriptionController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
+		const sub = req.user?.sub as string;
 		const data = req.body;
 
 		const updatedSubscription =
-			await this.subscriptionService.updateSubscription(id, data);
+			await this.subscriptionService.updateSubscription(id, data, sub);
 
 		res.status(200).json({
 			data: updatedSubscription,
@@ -67,8 +68,9 @@ export default class SubscriptionController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
+		const sub = req.user?.sub as string;
 		const deletedSubscription =
-			await this.subscriptionService.deleteSubscription(id);
+			await this.subscriptionService.deleteSubscription(id, sub);
 
 		res.status(200).json({
 			data: deletedSubscription,

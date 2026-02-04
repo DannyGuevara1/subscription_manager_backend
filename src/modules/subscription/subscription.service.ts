@@ -73,6 +73,7 @@ export default class SubscriptionService {
 	async updateSubscription(
 		id: string,
 		data: UpdateSubscriptionDto,
+		userId: string,
 	): Promise<SafeSubscriptionDto> {
 		const existingSubscription = await this.subscriptionRepository.findById(id);
 		if (!existingSubscription) {
@@ -82,6 +83,12 @@ export default class SubscriptionService {
 				extensions: {
 					detail: `No se encontró ninguna suscripción con ID ${id}.`,
 				},
+			});
+		}
+
+		if (existingSubscription.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para modificar esta suscripción.`,
 			});
 		}
 
@@ -97,7 +104,10 @@ export default class SubscriptionService {
 		return safeSubscriptionSchema.parse(subscription);
 	}
 
-	async deleteSubscription(id: string): Promise<SafeSubscriptionDto> {
+	async deleteSubscription(
+		id: string,
+		userId: string,
+	): Promise<SafeSubscriptionDto> {
 		const deletedSubscription = await this.subscriptionRepository.delete(id);
 
 		if (!deletedSubscription) {
@@ -107,6 +117,12 @@ export default class SubscriptionService {
 				extensions: {
 					detail: `No se encontró ninguna suscripción con ID ${id}.`,
 				},
+			});
+		}
+
+		if (deletedSubscription.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para eliminar esta suscripción.`,
 			});
 		}
 
