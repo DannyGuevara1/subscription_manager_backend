@@ -7,6 +7,7 @@ services:
       - "3000:3000" # Mapea puerto 3000 de tu PC al 3000 del contenedor
     volumes:
       - ./src:/app/src # <--- AQUÍ OCURRE LA MAGIA (Hot Reload)
+      - ./prisma:/app/prisma
       - ./.env.development:/app/.env.development # Inyectamos tus variables de entorno
       - /app/node_modules # Evitamos que se sobrescriban los módulos internos
     environment:
