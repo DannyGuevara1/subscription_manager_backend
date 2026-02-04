@@ -20,7 +20,7 @@ export const createSubscriptionSchema = z.object({
 		.nonnegative({ error: 'El costo debe ser un número positivo' }),
 	costType: z.enum(Object.values(CostType), {
 		error: () =>
-			'El tipo de costo debe ser uno de los siguientes: FIXDED, VARIABLE',
+			'El tipo de costo debe ser uno de los siguientes: FIXED, VARIABLE',
 	}),
 	billingFrequency: z.number().int().positive({
 		error: 'La frecuencia de facturación debe ser un número positivo',
@@ -48,14 +48,14 @@ export const updateSubscriptionSchema = z
 			.nonnegative({ error: 'El costo debe ser un número positivo' }),
 		costType: z.enum(Object.values(CostType), {
 			error: () =>
-				'El tipo de costo debe ser uno de los siguientes: fijo, variable',
+				'El tipo de costo debe ser uno de los siguientes: FIXED, VARIABLE',
 		}),
 		billingFrequency: z.number().int().positive({
 			error: 'La frecuencia de facturación debe ser un número positivo',
 		}),
 		billingUnit: z.enum(Object.values(BillingUnit), {
 			error: () =>
-				'La unidad de facturación debe ser uno de los siguientes: días, semanas, meses, años',
+				'La unidad de facturación debe ser uno de los siguientes: DAYS, WEEKS, MONTHS, YEARS',
 		}),
 		firstPaymentDate: z.coerce.date(),
 		trialEndsOn: z.coerce.date().optional(),
