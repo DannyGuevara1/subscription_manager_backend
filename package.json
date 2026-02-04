@@ -19,6 +19,9 @@
 		"db:generate": "dotenv -e .env.development -- prisma generate",
 		"db:deploy": "dotenv -e .env.production -- prisma migrate deploy"
 	},
+	"prisma": {
+		"seed": "npx tsx prisma/seed.ts"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/DannyGuevara1/subscription_manager_backend.git"
