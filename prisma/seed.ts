@@ -66,9 +66,9 @@ async function main() {
 	console.log('Seeding database...');
 	//Be sure to delete the existing dataset.
 	await prisma.subscription.deleteMany();
+	await prisma.user.deleteMany();
 	await prisma.currency.deleteMany();
 	await prisma.category.deleteMany();
-	await prisma.user.deleteMany();
 	console.log('Existing data cleared.');
 
 	//Create initial currencies
