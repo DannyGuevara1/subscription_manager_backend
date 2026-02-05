@@ -30,8 +30,8 @@ export default class AuthService {
 	async authenticate(data: LoginDto): Promise<AuthLoginResponse> {
 		// Implementation of authentication logic
 		const credentials = await this.loginService.login(data);
-		const accessToken = this.generateAccessToken(credentials);
-		const refreshToken = this.generateRefreshToken(credentials);
+		const accessToken = this.generateAccessToken(credentials as AuthUser);
+		const refreshToken = this.generateRefreshToken(credentials as AuthUser);
 
 		await this.redis.set(`refreshToken:${credentials.id}`, refreshToken, {
 			EX: 7 * 24 * 60 * 60, // Expira en 7 días
@@ -53,6 +53,7 @@ export default class AuthService {
 			sub: user.id, // Subject (user ID)
 			email: user.email,
 			name: user.name,
+			role: user.role,
 			primaryCurrencyCode: user.primaryCurrencyCode,
 		};
 
@@ -112,8 +113,8 @@ export default class AuthService {
 			});
 		}
 
-		const accessToken = this.generateAccessToken(user);
-		const newRefreshToken = this.generateRefreshToken(user);
+		const accessToken = this.generateAccessToken(user as AuthUser);
+		const newRefreshToken = this.generateRefreshToken(user as AuthUser);
 
 		await this.redis.set(`refreshToken:${user.id}`, newRefreshToken, {
 			EX: 7 * 24 * 60 * 60, // Expira en 7 días

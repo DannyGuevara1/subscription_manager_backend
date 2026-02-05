@@ -1,6 +1,7 @@
 // src/modules/auth/auth.dto.ts
-import { z } from 'zod';
 
+import { Role } from '@prisma/client';
+import { z } from 'zod';
 // Zod schema for login body
 export const loginSchema = z.object({
 	email: z.email({
@@ -68,6 +69,7 @@ export const safeUserAuthDto = z.object({
 	name: z.string().nullable(),
 	email: z.email(),
 	primaryCurrencyCode: z.string().length(3),
+	role: z.enum(Object.values(Role) as string[]),
 });
 
 // Types inferred from body schemas
