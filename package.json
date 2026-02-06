@@ -14,7 +14,10 @@
 		"dev": "cross-env NODE_ENV=development dotenv -e .env.development -- nodemon --exec tsx src/server.ts | pino-pretty",
 		"lint:fix": "npx @biomejs/biome lint --write ./src",
 		"format:fix": "npx @biomejs/biome format --write ./src",
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "dotenv -e .env.development -- vitest run",
+		"test:watch": "dotenv -e .env.test -- npx vitest",
+		"test:coverage": "dotenv -e .env.test -- npx vitest run --coverage",
+		"db:test:push": "dotenv -e .env.test -- prisma db push --accept-data-loss",
 		"db:migrate": "dotenv -e .env.development -- prisma migrate dev",
 		"db:generate": "dotenv -e .env.development -- prisma generate",
 		"db:deploy": "dotenv -e .env.production -- prisma migrate deploy"
@@ -60,13 +63,17 @@
 		"@types/jsonwebtoken": "9.0.10",
 		"@types/node": "24.3.0",
 		"@types/response-time": "2.3.9",
+		"@types/supertest": "^6.0.3",
 		"cross-env": "10.1.0",
 		"dotenv-cli": "10.0.0",
 		"nodemon": "3.1.10",
 		"pino-pretty": "13.1.1",
 		"prisma": "6.15.0",
+		"supertest": "^7.2.2",
 		"tsc-alias": "1.8.16",
 		"tsx": "4.20.5",
-		"typescript": "5.9.2"
+		"typescript": "5.9.2",
+		"vite-tsconfig-paths": "^6.0.5",
+		"vitest": "^4.0.18"
 	}
 }
