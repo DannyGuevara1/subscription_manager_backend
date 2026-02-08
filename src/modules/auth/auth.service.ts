@@ -40,6 +40,7 @@ export default class AuthService {
 		return {
 			accessToken: accessToken,
 			refreshToken: refreshToken,
+			user: credentials,
 		};
 	}
 
