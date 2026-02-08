@@ -20,7 +20,11 @@
 		"db:test:push": "dotenv -e .env.test -- prisma db push --accept-data-loss",
 		"db:migrate": "dotenv -e .env.development -- prisma migrate dev",
 		"db:generate": "dotenv -e .env.development -- prisma generate",
-		"db:deploy": "dotenv -e .env.production -- prisma migrate deploy"
+		"db:deploy": "dotenv -e .env.production -- prisma migrate deploy",
+		"db:validate": "dotenv -e .env.development -- prisma validate",
+		"db:reset": "dotenv -e .env.development -- prisma migrate reset",
+		"db:seed": "dotenv -e .env.development -- prisma db seed",
+		"db:studio": "dotenv -e .env.development -- prisma studio"
 	},
 	"prisma": {
 		"seed": "npx tsx prisma/seed.ts"
