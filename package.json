@@ -10,7 +10,7 @@
 	"scripts": {
 		"clean": "npx rimraf dist",
 		"build": "npm run clean && tsc && tsc-alias",
-		"start": "cross-env NODE_ENV=production dotenv -e .env.production -- node dist/server.js",
+		"start": "cross-env NODE_ENV=production dotenv -e .env.production -- node dist/src/server.js",
 		"dev": "cross-env NODE_ENV=development dotenv -e .env.development -- nodemon --exec tsx src/server.ts | pino-pretty",
 		"lint:fix": "npx @biomejs/biome lint --write ./src",
 		"format:fix": "npx @biomejs/biome format --write ./src",

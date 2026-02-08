@@ -12,7 +12,7 @@ import prismaClient from '@/config/prisma.js';
 import redisClient from '@/config/redis.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const baseGlob = isProduction ? 'dist' : 'src';
+const baseGlob = isProduction ? 'dist/src' : 'src';
 const extensionGlob = isProduction ? '.js' : '.ts';
 
 export async function setupContainer(): Promise<AwilixContainer> {
