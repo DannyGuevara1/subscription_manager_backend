@@ -2,11 +2,7 @@
 import type { User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
-import type {
-	CreateUserData,
-	SafeUser,
-	UpdateUserData,
-} from '@/modules/user/index.js';
+import type { CreateUserData, UpdateUserData } from '@/modules/user/index.js';
 import {
 	type CreateUserDto,
 	type SafeUserDto,
@@ -14,7 +10,10 @@ import {
 	type UpdateUserDto,
 } from '@/modules/user/index.js';
 import type UserRepository from '@/modules/user/user.repository.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	forbiddenError,
+	notFoundError,
+} from '@/shared/errors/error.factory.js';
 
 export default class UserService {
 	private userRepository: UserRepository;
@@ -49,13 +48,22 @@ export default class UserService {
 		if (!user) {
 			throw this.userNotFoundError(id);
 		}
+
 		return this.toSafeUserDto(user);
 	}
 
-	async updateUser(id: string, data: UpdateUserDto): Promise<SafeUserDto> {
+	async updateUser(
+		id: string,
+		data: UpdateUserDto,
+		userId: string,
+	): Promise<SafeUserDto> {
 		const existingUser = await this.userRepository.findById(id);
 		if (!existingUser) {
 			throw this.userNotFoundError(id);
+		}
+
+		if (existingUser.id !== userId) {
+			throw this.accessDeniedError();
 		}
 
 		const { password } = data;
@@ -70,11 +78,15 @@ export default class UserService {
 		return this.toSafeUserDto(updatedUser);
 	}
 
-	async deleteUser(id: string): Promise<SafeUser> {
+	async deleteUser(id: string, userId: string): Promise<SafeUserDto> {
 		const user = await this.userRepository.delete(id);
 
 		if (!user) {
 			throw this.userNotFoundError(id);
+		}
+
+		if (user.id !== userId) {
+			throw this.accessDeniedError();
 		}
 
 		return this.toSafeUserDto(user);
@@ -87,6 +99,7 @@ export default class UserService {
 			email: user.email,
 			name: user.name,
 			primaryCurrencyCode: user.primaryCurrencyCode,
+			role: user.role,
 			createdAt: user.createdAt,
 			updatedAt: user.updatedAt,
 		});
@@ -94,12 +107,18 @@ export default class UserService {
 
 	// Abtraer mensaje de error de usuario no encontrado
 	private userNotFoundError(id: string) {
-		return ErrorFactory.notFoundError({
+		return notFoundError({
 			resource: 'User',
 			identifier: id,
 			extensions: {
 				detail: `No se encontró ningún usuario con ID ${id}.`,
 			},
+		});
+	}
+
+	private accessDeniedError() {
+		return forbiddenError({
+			detail: `No tiene permiso para acceder a este recurso.`,
 		});
 	}
 }

@@ -23,6 +23,7 @@ model User {
   email               String         @unique
   password            String
   primaryCurrencyCode String
+  role                Role           @default(USER)
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
   categories          Category[]
@@ -32,11 +33,11 @@ model User {
 
 model Category {
   id            Int            @id @default(autoincrement())
-  userId        String
+  userId        String         @db.Uuid
   name          String
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  user          User           @relation(fields: [userId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscriptions Subscription[]
 
   @@unique([name, userId])
@@ -44,7 +45,7 @@ model Category {
 
 model Subscription {
   id               String      @id @db.Uuid
-  userId           String
+  userId           String      @db.Uuid
   categoryId       Int
   currencyCode     String
   name             String
@@ -58,11 +59,11 @@ model Subscription {
   updatedAt        DateTime    @updatedAt
   category         Category    @relation(fields: [categoryId], references: [id])
   currency         Currency    @relation(fields: [currencyCode], references: [code])
-  user             User        @relation(fields: [userId], references: [id])
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum CostType {
-  FIXDED
+  FIXED
   VARIABLE
 }
 
@@ -71,4 +72,10 @@ enum BillingUnit {
   WEEKS
   MONTHS
   YEARS
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPPORT
 }

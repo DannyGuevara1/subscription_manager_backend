@@ -10,7 +10,10 @@ import type {
 	CreateSubscriptionData,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	forbiddenError,
+	notFoundError,
+} from '@/shared/errors/error.factory.js';
 
 export default class SubscriptionService {
 	private subscriptionRepository: SubscriptionRepository;
@@ -26,16 +29,26 @@ export default class SubscriptionService {
 		);
 	}
 
-	async getSubscriptionById(id: string): Promise<SafeSubscriptionDto | null> {
+	async getSubscriptionById(
+		id: string,
+		userId: string,
+	): Promise<SafeSubscriptionDto | null> {
 		const subscription = await this.subscriptionRepository.findById(id);
 
 		if (!subscription) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
 					detail: `No se encontró ninguna suscripción con ID ${id}.`,
 				},
+			});
+		}
+
+		if (subscription.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para acceder a esta suscripción.`,
+				instance: `/subscriptions/${id}`,
 			});
 		}
 
@@ -60,15 +73,22 @@ export default class SubscriptionService {
 	async updateSubscription(
 		id: string,
 		data: UpdateSubscriptionDto,
+		userId: string,
 	): Promise<SafeSubscriptionDto> {
 		const existingSubscription = await this.subscriptionRepository.findById(id);
 		if (!existingSubscription) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
 					detail: `No se encontró ninguna suscripción con ID ${id}.`,
 				},
+			});
+		}
+
+		if (existingSubscription.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para modificar esta suscripción.`,
 			});
 		}
 
@@ -84,16 +104,25 @@ export default class SubscriptionService {
 		return safeSubscriptionSchema.parse(subscription);
 	}
 
-	async deleteSubscription(id: string): Promise<SafeSubscriptionDto> {
+	async deleteSubscription(
+		id: string,
+		userId: string,
+	): Promise<SafeSubscriptionDto> {
 		const deletedSubscription = await this.subscriptionRepository.delete(id);
 
 		if (!deletedSubscription) {
-			throw ErrorFactory.notFoundError({
+			throw notFoundError({
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
 					detail: `No se encontró ninguna suscripción con ID ${id}.`,
 				},
+			});
+		}
+
+		if (deletedSubscription.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para eliminar esta suscripción.`,
 			});
 		}
 

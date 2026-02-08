@@ -3,7 +3,7 @@ import type { User } from '@prisma/client';
 import type { SafeUserAuthDto } from '@/modules/auth/index.js';
 export type AuthUser = Pick<
 	User,
-	'id' | 'email' | 'name' | 'primaryCurrencyCode'
+	'id' | 'email' | 'name' | 'primaryCurrencyCode' | 'role'
 >;
 
 export interface AuthLoginResponse {
@@ -21,6 +21,7 @@ interface BaseJWTPayload {
 export interface JWTPayload extends BaseJWTPayload {
 	email: string;
 	name: string | null;
+	role: string;
 	primaryCurrencyCode?: string;
 }
 

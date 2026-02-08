@@ -1,7 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
-import { ErrorFactory } from '@/shared/errors/error.factory.js';
+import {
+	internalError,
+	unauthorizedError,
+} from '@/shared/errors/error.factory.js';
 export const authMiddleware = (
 	req: Request,
 	_res: Response,
@@ -11,7 +14,7 @@ export const authMiddleware = (
 		const ACCESS_TOKEN = req.cookies.ACCESS_TOKEN;
 		if (!ACCESS_TOKEN) {
 			return next(
-				ErrorFactory.unauthorizedError({
+				unauthorizedError({
 					detail: 'Access token is missing',
 				}),
 			);
@@ -21,7 +24,7 @@ export const authMiddleware = (
 
 		if (!SECRET_KEY) {
 			return next(
-				ErrorFactory.internalError({
+				internalError({
 					detail: 'JWT secret key is not configured',
 					isOperational: false,
 					context: {
@@ -41,7 +44,7 @@ export const authMiddleware = (
 		next();
 	} catch (_error) {
 		return next(
-			ErrorFactory.unauthorizedError({
+			unauthorizedError({
 				detail: 'Invalid access token',
 			}),
 		);

@@ -1,0 +1,5 @@
+##Resfresh Token
+### Only User with valid Refresh Token can access this endpoint
+POST http://localhost:3000/api/v1/auth/refresh-token
+content-type: application/json
+Origin: http://localhost:3000

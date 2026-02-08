@@ -47,7 +47,9 @@ export default class UserController {
 	) {
 		const { id } = req.params;
 		const userData = req.body;
-		const updatedUser = await this.userService.updateUser(id, userData);
+		const sub = req.user?.sub as string;
+
+		const updatedUser = await this.userService.updateUser(id, userData, sub);
 
 		res.status(200).json({
 			data: updatedUser,
@@ -60,7 +62,8 @@ export default class UserController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
-		const deletedUser = await this.userService.deleteUser(id);
+		const sub = req.user?.sub as string;
+		const deletedUser = await this.userService.deleteUser(id, sub);
 
 		res.status(200).json({
 			data: deletedUser,

@@ -1,5 +1,6 @@
 // src/api/features/auth/controllers/auth.controller.ts
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import type { AuthService, RegisterService } from '@/modules/auth/index.js';
 
 // Definimos las opciones base fuera de la clase para asegurar consistencia
@@ -25,7 +26,11 @@ export default class AuthController {
 		res
 			.cookie('ACCESS_TOKEN', accessToken, {
 				...AUTH_COOKIE_OPTIONS,
-				maxAge: 1000 * 60 * 60, // 1 hour
+				maxAge: 1000 * 60 * 5, // 5m
+			})
+			.cookie('REFRESH_TOKEN', refreshToken, {
+				...AUTH_COOKIE_OPTIONS,
+				maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 			})
 			.status(200)
 			.json({
@@ -33,15 +38,51 @@ export default class AuthController {
 			});
 	}
 
-	async logout(_req: Request, res: Response, _next: NextFunction) {
+	async logout(req: Request, res: Response, _next: NextFunction) {
+		let userId = req.user?.sub as string;
+
+		if (!userId && req.cookies.REFRESH_TOKEN) {
+			const decode = jwt.decode(req.cookies.REFRESH_TOKEN) as { sub: string };
+			if (decode?.sub) userId = decode.sub;
+		}
+
+		if (userId) await this.authService.invalidateRefreshToken(userId);
+
 		res
 			.clearCookie('ACCESS_TOKEN', {
+				...AUTH_COOKIE_OPTIONS,
+				maxAge: 0,
+			})
+			.clearCookie('REFRESH_TOKEN', {
 				...AUTH_COOKIE_OPTIONS,
 				maxAge: 0,
 			})
 			.status(200)
 			.json({
 				message: 'Logout successful',
+			});
+	}
+
+	async refreshToken(req: Request, res: Response, _next: NextFunction) {
+		const refreshToken = req.cookies.REFRESH_TOKEN;
+		const {
+			user,
+			accessToken,
+			refreshToken: newRefreshToken,
+		} = await this.authService.refreshSession(refreshToken);
+
+		res
+			.cookie('ACCESS_TOKEN', accessToken, {
+				...AUTH_COOKIE_OPTIONS,
+				maxAge: 1000 * 60 * 5, // 5m
+			})
+			.cookie('REFRESH_TOKEN', newRefreshToken, {
+				...AUTH_COOKIE_OPTIONS,
+				maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+			})
+			.status(200)
+			.json({
+				data: user,
 			});
 	}
 
