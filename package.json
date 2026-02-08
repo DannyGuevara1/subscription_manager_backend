@@ -14,9 +14,9 @@
 		"dev": "cross-env NODE_ENV=development dotenv -e .env.development -- nodemon --exec tsx src/server.ts | pino-pretty",
 		"lint:fix": "npx @biomejs/biome lint --write ./src",
 		"format:fix": "npx @biomejs/biome format --write ./src",
-		"test": "dotenv -e .env.development -- vitest run",
-		"test:watch": "dotenv -e .env.test -- npx vitest",
-		"test:coverage": "dotenv -e .env.test -- npx vitest run --coverage",
+		"test": "tsx --test tests/**/*.test.ts",
+		"test:watch": "",
+		"test:coverage": "",
 		"db:test:push": "dotenv -e .env.test -- prisma db push --accept-data-loss",
 		"db:migrate": "dotenv -e .env.development -- prisma migrate dev",
 		"db:generate": "dotenv -e .env.development -- prisma generate",
@@ -76,8 +76,6 @@
 		"supertest": "^7.2.2",
 		"tsc-alias": "1.8.16",
 		"tsx": "4.20.5",
-		"typescript": "5.9.2",
-		"vite-tsconfig-paths": "^6.0.5",
-		"vitest": "^4.0.18"
+		"typescript": "5.9.2"
 	}
 }
