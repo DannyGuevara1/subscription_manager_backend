@@ -6,4 +6,7 @@ docker-compose.yml
 .git
 .gitignore
 README.md
-build
+dist
+.env.dev
+.env.test
+.env.prod
