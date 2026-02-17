@@ -1,12 +1,15 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import request from 'supertest';
-import app from '@/app.js';
+import { setupIntegrationEnvironment } from '../setup/test-environment.js';
 
 describe('Health Check - Smoke Test', () => {
+	const env = setupIntegrationEnvironment();
 	it('Debe responder 404 a una ruta desconocida (El server está vivo)', async () => {
 		// Act
-		const response = await request(app).get('/api/v1/ruta-inexistente');
+		const response = await request(env.getApp())
+			.get('/api/v1/ruta-inexistente')
+			.set('Origin', 'http://localhost:3000'); // Simula una petición desde el frontend
 
 		// Assert
 		// Como tienes un manejador de errores personalizado, verificamos que responda JSON
@@ -17,7 +20,7 @@ describe('Health Check - Smoke Test', () => {
 
 	it('Debe rechazar acceso a rutas protegidas sin token', async () => {
 		// Intentamos acceder a users sin token
-		const response = await request(app).get('/api/v1/users');
+		const response = await request(env.getApp()).get('/api/v1/users');
 
 		// Debería ser 401 Unauthorized o 403 Forbidden
 		// Esto prueba que tus middlewares se están cargando en el test
