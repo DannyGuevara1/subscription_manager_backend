@@ -1,62 +1,42 @@
 services:
-  # 1. Tu Aplicación Backend (Node.js)
-  app:
-    build: .
-    container_name: subscription_backend
-    ports:
-      - "3000:3000" # Mapea puerto 3000 de tu PC al 3000 del contenedor
-    volumes:
-      - ./src:/app/src # <--- AQUÍ OCURRE LA MAGIA (Hot Reload)
-      - ./prisma:/app/prisma
-      - ./.env.development:/app/.env.development # Inyectamos tus variables de entorno
-      - ./tsconfig.json:/app/tsconfig.json
-      - /app/node_modules # Evitamos que se sobrescriban los módulos internos
-    environment:
-      # Sobrescribimos la URL para que apunte al servicio 'db' en lugar de 'localhost'
-      - DATABASE_URL=postgresql://postgres:password123@db:5432/subscription_manager?schema=public
-      # Configuración para Redis (nombre del servicio: 'redis')
-      - REDIS_HOST=redis 
-      - REDIS_PORT=6379
-    depends_on:
-      - db
-      - redis
-    networks:
-      - app-network
-
-  # 2. Base de Datos (PostgreSQL)
   db:
     image: postgres:15-alpine
-    container_name: subscription_db
+    container_name: db_api_subscription_manager
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: subscription_manager
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
     ports:
-      - "5433:5432" # Para que puedas conectar TablePlus/DBeaver desde tu PC
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data # Persistencia de datos
-    networks:
-      - app-network
-
-  # 3. Redis (Para tus Refresh Tokens)
-  redis:
+      - postgres_data:/var/lib/postgresql/data
+  cache_redis:
     image: redis:alpine
-    container_name: subscription_redis
+    container_name: cache_redis_subscription_manager
     restart: always
     ports:
-      - "6379:6379" # Opcional: para inspeccionar Redis desde tu PC
+      - "6379:6379"
     volumes:
-      - redis_data:/data # Persistencia para Redis
-    networks:
-      - app-network
+      - redis_data:/data
 
-# Definición de volúmenes para que los datos no se borren al apagar
+  api:
+    build: .
+    container_name: api_subscription_manager
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
+      - REDIS_URL=redis://cache_redis:6379
+    env_file:
+      - .env.dev
+    command: npm run dev
+    depends_on:
+      - db
+      - cache_redis
+    volumes:
+      - .:/app
+      - /app/node_modules
 volumes:
   postgres_data:
   redis_data:
-
-# Red interna para que se comuniquen entre ellos
-networks:
-  app-network:
-    driver: bridge

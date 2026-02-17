@@ -1,24 +1,25 @@
-# Usamos una imagen ligera de Node (versión compatible con tu proyecto)
-FROM node:22-alpine
+# Dockerfile for building the application
+FROM node:24-alpine
 
-# Directorio de trabajo dentro del contenedor
+# Set the working directory
 WORKDIR /app
 
-# Copiamos primero las dependencias para aprovechar la caché de Docker
+# Copy package files and install dependencies
 COPY package*.json ./
 
-# Instalamos dependencias
 RUN npm install
 
-# Copiamos el resto del código
+# Copy the rest of the application code
 COPY . .
 
-# Generamos el cliente de Prisma (necesario porque el entorno cambia a Linux Alpine)
+# Generate Prisma client
 RUN npx prisma generate
 
-# Exponemos el puerto que usa tu app (según tu .env.demo es el 3000)
+# Compile TypeScript files
+RUN npm run build
+
+# Expose the application port
 EXPOSE 3000
 
-# Comando por defecto para DESARROLLO (usa el script 'dev' de tu package.json)
-# Esto ejecutará nodemon para escuchar cambios
-CMD ["npm", "run", "dev"]
+# Start the application
+CMD ["npm","run","start"]
