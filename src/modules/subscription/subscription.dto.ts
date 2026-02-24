@@ -14,20 +14,23 @@ export const createSubscriptionSchema = z.object({
 	currencyCode: z
 		.string()
 		.length(3, { error: 'El código de moneda debe tener 3 caracteres' }),
-	name: z.string().min(1, { error: 'El nombre es obligatorio' }),
+	name: z
+		.string()
+		.min(1, { error: 'El nombre es obligatorio' })
+		.max(100, { error: 'El nombre no puede superar los 100 caracteres' }),
 	cost: z
 		.number()
 		.nonnegative({ error: 'El costo debe ser un número positivo' }),
 	costType: z.enum(Object.values(CostType), {
 		error: () =>
-			'El tipo de costo debe ser uno de los siguientes: FIXED, VARIABLE',
+			`El tipo de costo debe ser uno de los siguientes: ${Object.values(CostType).join(', ')}`,
 	}),
 	billingFrequency: z.number().int().positive({
 		error: 'La frecuencia de facturación debe ser un número positivo',
 	}),
 	billingUnit: z.enum(Object.values(BillingUnit), {
 		error: () =>
-			'La unidad de facturación debe ser uno de los siguientes: DAYS, WEEKS, MONTHS, YEARS',
+			`La unidad de facturación debe ser uno de los siguientes: ${Object.values(BillingUnit).join(', ')}`,
 	}),
 	firstPaymentDate: z.coerce.date(),
 	trialEndsOn: z.coerce.date().optional(),
@@ -42,20 +45,23 @@ export const updateSubscriptionSchema = z
 		currencyCode: z
 			.string()
 			.length(3, { error: 'El código de moneda debe tener 3 caracteres' }),
-		name: z.string().min(1, { error: 'El nombre es obligatorio' }),
+		name: z
+			.string()
+			.min(1, { error: 'El nombre es obligatorio' })
+			.max(100, { error: 'El nombre no puede superar los 100 caracteres' }),
 		cost: z
 			.number()
 			.nonnegative({ error: 'El costo debe ser un número positivo' }),
 		costType: z.enum(Object.values(CostType), {
 			error: () =>
-				'El tipo de costo debe ser uno de los siguientes: FIXED, VARIABLE',
+				`El tipo de costo debe ser uno de los siguientes: ${Object.values(CostType).join(', ')}`,
 		}),
 		billingFrequency: z.number().int().positive({
 			error: 'La frecuencia de facturación debe ser un número positivo',
 		}),
 		billingUnit: z.enum(Object.values(BillingUnit), {
 			error: () =>
-				'La unidad de facturación debe ser uno de los siguientes: DAYS, WEEKS, MONTHS, YEARS',
+				`La unidad de facturación debe ser uno de los siguientes: ${Object.values(BillingUnit).join(', ')}`,
 		}),
 		firstPaymentDate: z.coerce.date(),
 		trialEndsOn: z.coerce.date().optional(),

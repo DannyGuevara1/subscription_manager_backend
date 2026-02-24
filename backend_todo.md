@@ -4,7 +4,7 @@ Based on the comparison between [analisis_requisitos.pdf](file://wsl.localhost/U
 
 ## Priority 1: Subscription CRUD Refinements (RF-C)
 While the `subscription` module exists, we must ensure it completely matches the required schema fields:
-- [ ] Verify that creation and update logic properly handles `Cost Type` (Fixed/Variable), `Billing Cycle` (Frequency + Unit), `First Payment Date`, and `Trial End Date`.
+- [x] Verify that creation and update logic properly handles `Cost Type` (Fixed/Variable), `Billing Cycle` (Frequency + Unit), `First Payment Date`, and `Trial End Date`.
 
 ## Priority 2: Testing Infrastructure (TestContainers)
 The only test currently found is `login.test.ts` and [health.test.ts](file://wsl.localhost/Ubuntu/home/gueva/dev/subscription_manager/subscription_manager_backend/tests/integration/health.test.ts).

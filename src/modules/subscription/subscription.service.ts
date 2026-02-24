@@ -1,4 +1,6 @@
 import { uuidv7 } from 'uuidv7';
+import type CategoryService from '@/modules/category/category.service.js';
+import type CurrencyService from '@/modules/currency/currency.service.js';
 import {
 	type CreateSubscriptionDto,
 	type SafeSubscriptionDto,
@@ -10,6 +12,7 @@ import type {
 	CreateSubscriptionData,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
+import type UserService from '@/modules/user/user.service.js';
 import {
 	forbiddenError,
 	notFoundError,
@@ -17,9 +20,20 @@ import {
 
 export default class SubscriptionService {
 	private subscriptionRepository: SubscriptionRepository;
+	private userService: UserService;
+	private categoryService: CategoryService;
+	private currencyService: CurrencyService;
 
-	constructor(subscriptionRepository: SubscriptionRepository) {
+	constructor(
+		subscriptionRepository: SubscriptionRepository,
+		userService: UserService,
+		categoryService: CategoryService,
+		currencyService: CurrencyService,
+	) {
 		this.subscriptionRepository = subscriptionRepository;
+		this.userService = userService;
+		this.categoryService = categoryService;
+		this.currencyService = currencyService;
 	}
 
 	async getAllSubscriptions(): Promise<SafeSubscriptionDto[]> {
@@ -58,11 +72,33 @@ export default class SubscriptionService {
 	async createSubscription(
 		data: CreateSubscriptionDto,
 	): Promise<SafeSubscriptionDto> {
+		// Validate FK existence
+		await this.userService.getUserById(data.userId);
+		await this.currencyService.getCurrencyByCode(data.currencyCode);
+
+		// Validate category exists and belongs to the user
+		const category = await this.categoryService.getCategoryById(
+			data.categoryId,
+			data.userId,
+		);
+		if (category.userId !== data.userId) {
+			throw forbiddenError({
+				detail: `La categoría no pertenece al usuario.`,
+				instance: `/subscriptions`,
+			});
+		}
+
+		// Auto-set firstPaymentDate when trialEndsOn is provided
+		const firstPaymentDate = data.trialEndsOn
+			? data.trialEndsOn
+			: data.firstPaymentDate;
+
 		const id = uuidv7();
 
 		const subscriptionData: CreateSubscriptionData = {
 			id,
 			...data,
+			firstPaymentDate,
 		};
 
 		const newSubscription =
@@ -92,8 +128,28 @@ export default class SubscriptionService {
 			});
 		}
 
+		// Validate FK existence when provided
+		if (data.currencyCode) {
+			await this.currencyService.getCurrencyByCode(data.currencyCode);
+		}
+
+		if (data.categoryId) {
+			const category = await this.categoryService.getCategoryById(
+				data.categoryId,
+				userId,
+			);
+			if (category.userId !== userId) {
+				throw forbiddenError({
+					detail: `La categoría no pertenece al usuario.`,
+					instance: `/subscriptions/${id}`,
+				});
+			}
+		}
+
+		// Auto-set firstPaymentDate when trialEndsOn is provided
 		const subscriptionData: UpdateSubscriptionData = {
 			...data,
+			...(data.trialEndsOn && { firstPaymentDate: data.trialEndsOn }),
 		};
 
 		const subscription = await this.subscriptionRepository.update(
@@ -108,9 +164,9 @@ export default class SubscriptionService {
 		id: string,
 		userId: string,
 	): Promise<SafeSubscriptionDto> {
-		const deletedSubscription = await this.subscriptionRepository.delete(id);
+		const existingSubscription = await this.subscriptionRepository.findById(id);
 
-		if (!deletedSubscription) {
+		if (!existingSubscription) {
 			throw notFoundError({
 				resource: 'Subscription',
 				identifier: id,
@@ -120,12 +176,13 @@ export default class SubscriptionService {
 			});
 		}
 
-		if (deletedSubscription.userId !== userId) {
+		if (existingSubscription.userId !== userId) {
 			throw forbiddenError({
 				detail: `No tiene permiso para eliminar esta suscripción.`,
 			});
 		}
 
+		const deletedSubscription = await this.subscriptionRepository.delete(id);
 		return safeSubscriptionSchema.parse(deletedSubscription);
 	}
 }
