@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import request from 'supertest';
+import { email } from 'zod';
 import { loginAsUser } from '../../setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
@@ -217,5 +218,44 @@ describe('Modulo de Suscripciones', () => {
 
 		assert.strictEqual(subscriptionResponseById.status, 200);
 		assert.strictEqual(subscriptionResponseById.body.data.id, subscriptionId);
+	});
+
+	it('Debería retornar error al intentar obtener una suscripción que no pertenece al usuario', async () => {
+		const newUser = {
+			email: 'newuser@example.com',
+			password: 'password123',
+			name: 'New User',
+			primaryCurrencyCode: 'USD',
+		};
+
+		const data = await loginAsUser(env.getApp(), newUser);
+
+		const newUserCookie = data.cookie;
+		const newUserInfo = data.user;
+
+		const subscriptionCreated = await request(env.getApp())
+			.post('/api/v1/subscriptions')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', cookie)
+			.send({
+				userId: user.id,
+				categoryId,
+				currencyCode: 'USD',
+				name: 'Apple Music',
+				cost: 9.99,
+				costType: 'FIXED',
+				billingFrequency: 1,
+				billingUnit: 'MONTHS',
+				firstPaymentDate: new Date().toISOString(),
+			});
+
+		const subscriptionId = subscriptionCreated.body.data.id;
+
+		const subscriptionResponseById = await request(env.getApp())
+			.get(`/api/v1/subscriptions/${subscriptionId}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', newUserCookie);
+
+		assert.strictEqual(subscriptionResponseById.status, 403);
 	});
 });
