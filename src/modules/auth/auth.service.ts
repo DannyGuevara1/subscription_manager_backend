@@ -45,7 +45,7 @@ export default class AuthService {
 	}
 
 	generateAccessToken(user: AuthUser): string {
-		const SECRET = process.env.JWT_SECRET;
+		const SECRET = process.env.JWT_SECRET as string;
 		const EXPIRESIN = (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ??
 			'5m') as StringValue;
 
@@ -65,7 +65,7 @@ export default class AuthService {
 	}
 
 	generateRefreshToken(user: AuthUser): string {
-		const SECRET = process.env.JWT_SECRET;
+		const SECRET = process.env.JWT_SECRET as string;
 		const EXPIRESIN = (process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ??
 			'7d') as StringValue;
 
