@@ -190,4 +190,32 @@ describe('Modulo de Suscripciones', () => {
 		assert.strictEqual(response.status, 200);
 		assert(Array.isArray(response.body.data.subscriptions));
 	});
+
+	it('Deberíá retornar una suscripción específica por ID', async () => {
+		const subscriptionCreated = await request(env.getApp())
+			.post('/api/v1/subscriptions')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', cookie)
+			.send({
+				userId: user.id,
+				categoryId,
+				currencyCode: 'USD',
+				name: 'Amazon Prime',
+				cost: 12.99,
+				costType: 'FIXED',
+				billingFrequency: 1,
+				billingUnit: 'MONTHS',
+				firstPaymentDate: new Date().toISOString(),
+			});
+
+		const subscriptionId = subscriptionCreated.body.data.id;
+
+		const subscriptionResponseById = await request(env.getApp())
+			.get(`/api/v1/subscriptions/${subscriptionId}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', cookie);
+
+		assert.strictEqual(subscriptionResponseById.status, 200);
+		assert.strictEqual(subscriptionResponseById.body.data.id, subscriptionId);
+	});
 });
