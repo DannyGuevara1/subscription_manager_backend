@@ -13,7 +13,7 @@ export const ProblemTypes = {
 	VALIDATION_ERROR: {
 		type: '/problems/validation-error',
 		title: 'Validation Error',
-		status: 400,
+		status: 422,
 	},
 	AUTHENTICATION_ERROR: {
 		type: '/problems/authentication-error',
