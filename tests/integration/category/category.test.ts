@@ -41,4 +41,17 @@ describe('Modulo de categorias', () => {
 			assert.strictEqual(responseCreateCategory.status, 201);
 		},
 	);
+
+	it('Debería retornar un error al intentar crear una categoria con un nombre que ya existe para el mismo usuario', async () => {
+		const responseCreateCategory = await request(env.getApp())
+			.post('/api/v1/categories')
+			.set('Cookie', cookie)
+			.set('Origin', 'http://localhost:3000')
+			.send({
+				userId: user.id,
+				name: 'new category',
+			});
+
+		assert.strictEqual(responseCreateCategory.status, 409);
+	});
 });
