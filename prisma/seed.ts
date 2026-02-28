@@ -110,6 +110,8 @@ async function main() {
 	for (const categoryData of categories) {
 		await createCategory(categoryData);
 	}
+	// After all category inserts, reset the sequence:
+	await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"Category"', 'id'), (SELECT MAX(id) FROM "Category"));`;
 
 	//Create initial subscriptions
 
