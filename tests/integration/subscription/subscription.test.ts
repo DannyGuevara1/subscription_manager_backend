@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import request from 'supertest';
+import type { SafeUserAuthDto } from '@/modules/auth/index.js';
 import { loginAsUser } from '../../setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
@@ -13,12 +14,12 @@ describe('Modulo de Suscripciones', () => {
 		primaryCurrencyCode: 'USD',
 	};
 	let cookie: string;
-	let user: any;
+	let user: SafeUserAuthDto;
 	let categoryId: number;
 
 	// Second user for cross-user tests
 	let otherUserCookie: string;
-	let otherUser: any;
+	let otherUser: SafeUserAuthDto;
 	let otherCategoryId: number;
 
 	before(async () => {
