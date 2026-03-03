@@ -99,7 +99,7 @@ export default class CategoryService {
 	}
 
 	//Methods DELETE
-	async deleteCategory(id: number): Promise<Category> {
+	async deleteCategory(id: number, userId: string): Promise<Category> {
 		// Check if the category exists
 		const existingCategory = await this.categoryRepository.findById(id);
 
@@ -110,6 +110,13 @@ export default class CategoryService {
 				extensions: {
 					detail: `No se encontró la categoría que desea eliminar.`,
 				},
+			});
+		}
+
+		if (existingCategory.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para eliminar esta categoría.`,
+				instance: `/categories/${id}`,
 			});
 		}
 

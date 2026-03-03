@@ -69,8 +69,10 @@ export default class CategoryController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
+		const sub = req.user?.sub as string;
 		const deletedCategory = await this.categoryService.deleteCategory(
 			Number(id),
+			sub,
 		);
 
 		res.status(200).json({
