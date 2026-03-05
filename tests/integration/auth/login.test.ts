@@ -13,31 +13,31 @@ describe('Módulo de Autenticación y registro', () => {
 	};
 
 	it('Debe registrar un nuevo usuario', { timeout: 10000 }, async () => {
-		const response = await request(env.getApp())
+		const res = await request(env.getApp())
 			.post('/api/v1/auth/register')
 			.set('Origin', 'http://localhost:3000')
-			.send(mockUser);
+			.send(mockUser)
+			.expect(201)
+			.expect('Content-Type', /json/);
 
-		//console.log('Register response:', response.status, response.body);
-		assert.strictEqual(response.status, 201);
-		assert(response.body.data);
+		assert.ok(res.body.data, 'La respuesta debe incluir data');
 	});
 
 	it(
 		'Debe iniciar sesión con un usuario registrado',
 		{ timeout: 10000 },
 		async () => {
-			const response = await request(env.getApp())
+			const res = await request(env.getApp())
 				.post('/api/v1/auth/login')
 				.set('Origin', 'http://localhost:3000')
 				.send({
 					email: mockUser.email,
 					password: mockUser.password,
-				});
+				})
+				.expect(200)
+				.expect('Content-Type', /json/);
 
-			//console.log('Login response:', response.status, response.body);
-			assert.strictEqual(response.status, 200);
-			assert(response.body.data);
+			assert.ok(res.body.data, 'La respuesta debe incluir data');
 		},
 	);
 });

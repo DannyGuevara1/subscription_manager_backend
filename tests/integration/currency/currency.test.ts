@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import request from 'supertest';
-import type { SafeUserAuthDto } from '@/modules/auth/index.js';
 import { loginAsUser } from '../../setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
@@ -9,11 +8,6 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 	const env = setupIntegrationEnvironment();
 
 	let cookie: string;
-	let user: SafeUserAuthDto;
-	let categoryId: number;
-
-	let otherUserCookie: string;
-	let otherUser: SafeUserAuthDto;
 
 	before(async () => {
 		const newUser = {
@@ -24,43 +18,33 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 		};
 
 		const credentials = await loginAsUser(env.getApp(), newUser);
-
-		const otherUserMock = {
-			email: 'otherUser@test.com',
-			password: 'password123',
-			name: 'Other User',
-			primaryCurrencyCode: 'USD',
-		};
-
-		const otherUserCredentials = await loginAsUser(env.getApp(), otherUserMock);
-
-		otherUserCookie = otherUserCredentials.cookie;
-		otherUser = otherUserCredentials.user;
-
 		cookie = credentials.cookie;
-		user = credentials.user;
 	});
 
 	// GET /currencies
 	it('Debería obtener la lista de monedas', async () => {
-		const res = await request(env.getApp())
+		await request(env.getApp())
 			.get('/api/v1/currencies')
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
-			.expect(200);
+			.expect(200)
+			.expect('Content-Type', /json/);
 	});
 
 	// GET /currencies/:code
 	it('Debería obtener los detalles de una moneda por su código', async () => {
-		const _res = await request(env.getApp())
+		const res = await request(env.getApp())
 			.get('/api/v1/currencies/USD')
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
-			.expect(200);
+			.expect(200)
+			.expect('Content-Type', /json/);
+
+		assert.ok(res.body.data, 'La respuesta debe contener datos de la moneda');
 	});
 
 	it('Debería retornar 404 si la moneda no existe', async () => {
-		const _res = await request(env.getApp())
+		await request(env.getApp())
 			.get('/api/v1/currencies/XXX')
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
@@ -92,7 +76,7 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 			name: 'Dólar Estadounidense',
 			symbol: '$',
 		};
-		const res = await request(env.getApp())
+		await request(env.getApp())
 			.post('/api/v1/currencies')
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
@@ -122,7 +106,7 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 			name: 'Moneda Inexistente',
 			symbol: 'XXX',
 		};
-		const res = await request(env.getApp())
+		await request(env.getApp())
 			.put('/api/v1/currencies/XXX')
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)

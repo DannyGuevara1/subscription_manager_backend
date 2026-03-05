@@ -10,7 +10,6 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 
 	let cookie: string;
 	let user: SafeUserAuthDto;
-	let categoryId: number;
 
 	let otherUserCookie: string;
 	let otherUser: SafeUserAuthDto;
@@ -42,12 +41,13 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 	});
 
 	// GET /users
-	it('Debeía obtener todos los usuarios', async () => {
+	it('Debería obtener todos los usuarios', async () => {
 		const res = await request(env.getApp())
 			.get('/api/v1/users')
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
-			.expect(200);
+			.expect(200)
+			.expect('Content-Type', /json/);
 
 		assert(
 			Array.isArray(res.body.data.users),
@@ -86,7 +86,7 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 	});
 
 	it('Debe retornar 404 si el usuario no existe', async () => {
-		const res = await request(env.getApp())
+		await request(env.getApp())
 			.get('/api/v1/users/019c6916-20df-7abd-88f6-253598ca41c2')
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
@@ -108,15 +108,17 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			.expect(200)
 			.expect('Content-Type', /json/);
 
-		assert.strictEqual(
-			res.body.data.name,
-			updatedData.name,
-			'El nombre del usuario debe ser actualizado',
-		);
+		assert.ok(res.body?.data, 'La respuesta debe incluir data');
+		assert.strictEqual(res.body.data.id, user.id);
+		assert.strictEqual(res.body.data.name, updatedData.name);
 		assert.strictEqual(
 			res.body.data.primaryCurrencyCode,
 			updatedData.primaryCurrencyCode,
-			'El código de moneda principal del usuario debe ser actualizado',
+		);
+		assert.strictEqual(
+			res.body.data.password,
+			undefined,
+			'La contraseña no debe devolverse nunca',
 		);
 	});
 
@@ -126,7 +128,7 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			primaryCurrencyCode: 'EUR',
 		};
 
-		const _res = await request(env.getApp())
+		await request(env.getApp())
 			.put(`/api/v1/users/${user.id}`)
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', otherUserCookie)
@@ -139,7 +141,8 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			.delete(`/api/v1/users/${user.id}`)
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
-			.expect(200);
+			.expect(200)
+			.expect('Content-Type', /json/);
 
 		assert.strictEqual(
 			res.body.data.id,
