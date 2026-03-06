@@ -58,22 +58,30 @@ export default class CategoryService {
 	}
 
 	//Methods POST
-	async createCategory(data: CreateCategoryDto): Promise<SafeCategoryDto> {
+	async createCategory(
+		data: CreateCategoryDto,
+		userId: string,
+	): Promise<SafeCategoryDto> {
 		// Validate user existence
-		await this.userService.getUserById(data.userId);
+		await this.userService.getUserById(userId);
 
 		// Check for existing category with the same name for the user
-		await this.checkNameConflict(data.name, data.userId);
+		await this.checkNameConflict(data.name, userId);
 
 		const categoryData: CreateCategoryData = {
-			...data,
+			userId,
+			name: data.name,
 		};
 
 		return this.categoryRepository.create(categoryData);
 	}
 
 	//Methods PUT
-	async updateCategory(id: number, data: UpdateCategoryDto): Promise<Category> {
+	async updateCategory(
+		id: number,
+		data: UpdateCategoryDto,
+		userId: string,
+	): Promise<Category> {
 		const { name } = data;
 
 		const existingCategory = await this.categoryRepository.findById(id);
@@ -86,9 +94,15 @@ export default class CategoryService {
 				},
 			});
 		}
+		if (existingCategory.userId !== userId) {
+			throw forbiddenError({
+				detail: `No tiene permiso para actualizar esta categoría.`,
+				instance: `/categories/${id}`,
+			});
+		}
 		// Check if the category exists
 		if (name) {
-			await this.checkNameConflict(name, existingCategory.userId, id);
+			await this.checkNameConflict(name, userId, id);
 		}
 
 		const updateData: UpdateCategoryData = {

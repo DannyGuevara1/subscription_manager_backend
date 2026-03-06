@@ -39,7 +39,11 @@ export default class CategoryController {
 	//Controller method to create a new category
 	async createCategory(req: Request, res: Response, _next: NextFunction) {
 		const categoryData = req.body;
-		const newCategory = await this.categoryService.createCategory(categoryData);
+		const sub = req.user?.sub as string;
+		const newCategory = await this.categoryService.createCategory(
+			categoryData,
+			sub,
+		);
 
 		res.status(201).json({
 			data: newCategory,
@@ -53,9 +57,11 @@ export default class CategoryController {
 	) {
 		const { id } = req.params;
 		const categoryData = req.body;
+		const sub = req.user?.sub as string;
 		const updatedCategory = await this.categoryService.updateCategory(
 			Number(id),
 			categoryData,
+			sub,
 		);
 
 		res.status(200).json({

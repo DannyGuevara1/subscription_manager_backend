@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 //SCHEMAS
 export const createCategorySchema = z.object({
-	userId: z.uuidv7(),
 	name: z.string().min(1).max(100),
 });
 
