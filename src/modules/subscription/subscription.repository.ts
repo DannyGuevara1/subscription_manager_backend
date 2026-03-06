@@ -11,8 +11,11 @@ export default class SubscriptionRepository {
 		this.prisma = prisma;
 	}
 
-	async findAll(): Promise<Subscription[]> {
+	async findAll(userId: string): Promise<Subscription[]> {
 		return this.prisma.subscription.findMany({
+			where: {
+				userId,
+			},
 			orderBy: { createdAt: 'desc' },
 		});
 	}

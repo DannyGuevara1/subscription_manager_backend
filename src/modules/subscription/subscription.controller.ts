@@ -11,8 +11,10 @@ export default class SubscriptionController {
 		this.subscriptionService = subscriptionService;
 	}
 
-	async getAllSubscriptions(_req: Request, res: Response, _next: NextFunction) {
-		const subscriptions = await this.subscriptionService.getAllSubscriptions();
+	async getAllSubscriptions(req: Request, res: Response, _next: NextFunction) {
+		const sub = req.user?.sub as string;
+		const subscriptions =
+			await this.subscriptionService.getAllSubscriptions(sub);
 		res.status(200).json({
 			data: { subscriptions },
 		});
@@ -37,8 +39,11 @@ export default class SubscriptionController {
 
 	async createSubscription(req: Request, res: Response, _next: NextFunction) {
 		const data = req.body;
-		const newSubscription =
-			await this.subscriptionService.createSubscription(data);
+		const sub = req.user?.sub as string;
+		const newSubscription = await this.subscriptionService.createSubscription(
+			data,
+			sub,
+		);
 
 		res.status(201).json({
 			data: newSubscription,

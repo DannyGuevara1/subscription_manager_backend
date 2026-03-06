@@ -6,7 +6,6 @@ export const subscriptionParamsSchema = z.object({
 });
 
 export const createSubscriptionSchema = z.object({
-	userId: z.uuidv7({ error: 'El ID de usuario debe ser un UUID válido' }),
 	categoryId: z
 		.number()
 		.int()

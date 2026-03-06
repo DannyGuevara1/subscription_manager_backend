@@ -36,8 +36,8 @@ export default class SubscriptionService {
 		this.currencyService = currencyService;
 	}
 
-	async getAllSubscriptions(): Promise<SafeSubscriptionDto[]> {
-		const subscriptions = await this.subscriptionRepository.findAll();
+	async getAllSubscriptions(userId: string): Promise<SafeSubscriptionDto[]> {
+		const subscriptions = await this.subscriptionRepository.findAll(userId);
 		return subscriptions.map((subscription) =>
 			safeSubscriptionSchema.parse(subscription),
 		);
@@ -71,17 +71,18 @@ export default class SubscriptionService {
 
 	async createSubscription(
 		data: CreateSubscriptionDto,
+		userId: string,
 	): Promise<SafeSubscriptionDto> {
 		// Validate FK existence
-		await this.userService.getUserById(data.userId);
+		await this.userService.getUserById(userId);
 		await this.currencyService.getCurrencyByCode(data.currencyCode);
 
 		// Validate category exists and belongs to the user
 		const category = await this.categoryService.getCategoryById(
 			data.categoryId,
-			data.userId,
+			userId,
 		);
-		if (category.userId !== data.userId) {
+		if (category.userId !== userId) {
 			throw forbiddenError({
 				detail: `La categoría no pertenece al usuario.`,
 				instance: `/subscriptions`,
@@ -97,6 +98,7 @@ export default class SubscriptionService {
 
 		const subscriptionData: CreateSubscriptionData = {
 			id,
+			userId,
 			...data,
 			firstPaymentDate,
 		};
