@@ -7,6 +7,7 @@ import express, {
 	type Request,
 	type Response,
 } from 'express';
+import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import responseTime from 'response-time';
 import v1 from '@/routes/index.js';
@@ -14,40 +15,62 @@ import { notFoundError } from '@/shared/errors/error.factory.js';
 import { errorHandler } from '@/shared/middleware/error.handler.js';
 import { errorNormalizer } from '@/shared/middleware/error.normalizer.js';
 
-/*
-investigar sobre rate-limiter-flexible para limitar peticiones
-y ante todo buscar la buenas practicas y estandares profesionales
-de desarrollo con express y typescript
-*/
-
 const app = express();
 
 const allowedOrigins = process.env.CORS_ORIGINS
 	? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
 	: [];
 
+const globalLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 100,
+	standardHeaders: 'draft-7',
+	legacyHeaders: false,
+	message: {
+		type: '/problems/rate-limit-exceeded',
+		title: 'Rate Limit Exceeded',
+		status: 429,
+		detail: 'Ha excedido el límite de peticiones. Intente de nuevo más tarde.',
+	},
+});
+
+const authLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 10,
+	standardHeaders: 'draft-7',
+	legacyHeaders: false,
+	message: {
+		type: '/problems/rate-limit-exceeded',
+		title: 'Rate Limit Exceeded',
+		status: 429,
+		detail:
+			'Demasiados intentos de autenticación. Intente de nuevo más tarde.',
+	},
+});
+
 // Middlewares
 app.use(
 	cors({
 		origin(origin, callback) {
-			// Permitir requests sin origin (herramientas como Postman, cURL, server-to-server)
 			if (!origin) {
 				return callback(null, true);
 			}
-			if (origin && allowedOrigins.includes(origin)) {
+			if (allowedOrigins.includes(origin)) {
 				return callback(null, true);
 			}
-
 			return callback(new Error('Not allowed by CORS'));
 		},
+		credentials: true,
 	}),
 );
+app.use(globalLimiter);
 app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
 app.use(responseTime());
 
 // Routes
+app.use('/api/v1/auth', authLimiter);
 app.use('/api/v1', v1);
 app.use((req: Request, _res: Response, next: NextFunction) => {
 	next(
