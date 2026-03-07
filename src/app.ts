@@ -10,9 +10,9 @@ import express, {
 import helmet from 'helmet';
 import responseTime from 'response-time';
 import v1 from '@/routes/index.js';
+import { notFoundError } from '@/shared/errors/error.factory.js';
 import { errorHandler } from '@/shared/middleware/error.handler.js';
 import { errorNormalizer } from '@/shared/middleware/error.normalizer.js';
-import { notFoundError } from './shared/errors/error.factory.js';
 
 /*
 investigar sobre rate-limiter-flexible para limitar peticiones
@@ -22,16 +22,22 @@ de desarrollo con express y typescript
 
 const app = express();
 
-const whitelist = ['http://localhost:3000'];
+const allowedOrigins = process.env.CORS_ORIGINS
+	? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
+	: [];
 
 // Middlewares
 app.use(
 	cors({
 		origin(origin, callback) {
-			if (origin && whitelist.includes(origin)) {
+			// Permitir requests sin origin (herramientas como Postman, cURL, server-to-server)
+			if (!origin) {
 				return callback(null, true);
 			}
-			// TODO: cambiar el mensaje de error
+			if (origin && allowedOrigins.includes(origin)) {
+				return callback(null, true);
+			}
+
 			return callback(new Error('Not allowed by CORS'));
 		},
 	}),

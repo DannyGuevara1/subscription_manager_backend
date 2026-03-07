@@ -45,6 +45,7 @@ export function setupIntegrationEnvironment() {
 
 				// Otras variables que tu app pueda necesitar
 				process.env.NODE_ENV = 'development';
+				process.env.CORS_ORIGINS = 'http://localhost:3000';
 
 				console.log('📊 DATABASE_URL:', process.env.DATABASE_URL);
 				console.log('🔴 REDIS_URL:', process.env.REDIS_URL);
