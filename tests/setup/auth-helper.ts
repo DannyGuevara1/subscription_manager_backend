@@ -41,3 +41,30 @@ export async function loginAsUser(
 
 	return { cookie, user };
 }
+
+export async function loginAsAdmin(app: any): Promise<AuthResponse> {
+	const loginResponse = await request(app)
+		.post('/api/v1/auth/login')
+		.set('Origin', 'http://localhost:3000')
+		.send({
+			email: 'guevarad170@gmail.com',
+			password: 'admin123',
+		});
+
+	if (loginResponse.status !== 200) {
+		throw new Error(
+			`Admin login failed with status ${loginResponse.status}: ${JSON.stringify(loginResponse.body)}`,
+		);
+	}
+
+	const cookies = loginResponse.headers['set-cookie'];
+
+	if (!cookies || !Array.isArray(cookies) || cookies.length === 0) {
+		throw new Error('Failed to retrieve authentication cookie');
+	}
+
+	const cookie = cookies[0].split(';')[0] as string;
+	const user = loginResponse.body.data;
+
+	return { cookie, user };
+}
