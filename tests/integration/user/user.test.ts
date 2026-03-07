@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import request from 'supertest';
 import type { SafeUserAuthDto } from '@/modules/auth/index.js';
-import { loginAsUser } from '../../setup/auth-helper.js';
+import { loginAsAdmin, loginAsUser } from '../../setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
 describe('Módulo de Usuario - Pruebas de Integración', () => {
@@ -13,6 +13,8 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 
 	let otherUserCookie: string;
 	let otherUser: SafeUserAuthDto;
+
+	let adminCookie: string;
 
 	before(async () => {
 		const newUser = {
@@ -33,6 +35,9 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 
 		const otherUserCredentials = await loginAsUser(env.getApp(), otherUserMock);
 
+		const adminCredentials = await loginAsAdmin(env.getApp());
+		adminCookie = adminCredentials.cookie;
+
 		otherUserCookie = otherUserCredentials.cookie;
 		otherUser = otherUserCredentials.user;
 
@@ -45,7 +50,7 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 		const res = await request(env.getApp())
 			.get('/api/v1/users')
 			.set('Origin', 'http://localhost:3000')
-			.set('Cookie', cookie)
+			.set('Cookie', adminCookie)
 			.expect(200)
 			.expect('Content-Type', /json/);
 

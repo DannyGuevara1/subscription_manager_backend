@@ -1,13 +1,14 @@
 import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import request from 'supertest';
-import { loginAsUser } from '../../setup/auth-helper.js';
+import { loginAsAdmin, loginAsUser } from '../../setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
 describe('Módulo de Moneda - Pruebas de Integración', () => {
 	const env = setupIntegrationEnvironment();
 
 	let cookie: string;
+	let adminCookie: string;
 
 	before(async () => {
 		const newUser = {
@@ -19,6 +20,9 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 
 		const credentials = await loginAsUser(env.getApp(), newUser);
 		cookie = credentials.cookie;
+
+		const adminCredentials = await loginAsAdmin(env.getApp());
+		adminCookie = adminCredentials.cookie;
 	});
 
 	// GET /currencies
@@ -61,7 +65,7 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 		const res = await request(env.getApp())
 			.post('/api/v1/currencies')
 			.set('Origin', 'http://localhost:3000')
-			.set('Cookie', cookie)
+			.set('Cookie', adminCookie)
 			.send(newCurrency)
 			.expect(201);
 
@@ -79,7 +83,7 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 		await request(env.getApp())
 			.post('/api/v1/currencies')
 			.set('Origin', 'http://localhost:3000')
-			.set('Cookie', cookie)
+			.set('Cookie', adminCookie)
 			.send(existingCurrency)
 			.expect(409);
 	});
@@ -92,7 +96,7 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 		const res = await request(env.getApp())
 			.put('/api/v1/currencies/USD')
 			.set('Origin', 'http://localhost:3000')
-			.set('Cookie', cookie)
+			.set('Cookie', adminCookie)
 			.send(updatedCurrency)
 			.expect(200);
 
@@ -109,7 +113,7 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 		await request(env.getApp())
 			.put('/api/v1/currencies/XXX')
 			.set('Origin', 'http://localhost:3000')
-			.set('Cookie', cookie)
+			.set('Cookie', adminCookie)
 			.send(updatedCurrency)
 			.expect(404);
 	});

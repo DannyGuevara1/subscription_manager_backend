@@ -80,9 +80,7 @@ describe('Modulo de categorias', () => {
 				.post('/api/v1/categories')
 				.set('Cookie', cookie)
 				.set('Origin', 'http://localhost:3000')
-				.send({
-					userId: user.id,
-				})
+				.send({})
 				.expect(422);
 		},
 	);
@@ -96,7 +94,6 @@ describe('Modulo de categorias', () => {
 				.set('Cookie', cookie)
 				.set('Origin', 'http://localhost:3000')
 				.send({
-					userId: user.id,
 					name: '',
 				})
 				.expect(422);
@@ -112,39 +109,7 @@ describe('Modulo de categorias', () => {
 				.set('Cookie', cookie)
 				.set('Origin', 'http://localhost:3000')
 				.send({
-					userId: user.id,
 					name: 'a'.repeat(101),
-				})
-				.expect(422);
-		},
-	);
-
-	it(
-		'Debería retornar error de validación al crear sin campo userId',
-		{ timeout: 10000 },
-		async () => {
-			await request(env.getApp())
-				.post('/api/v1/categories')
-				.set('Cookie', cookie)
-				.set('Origin', 'http://localhost:3000')
-				.send({
-					name: 'test category',
-				})
-				.expect(422);
-		},
-	);
-
-	it(
-		'Debería retornar error de validación al crear con userId de formato inválido',
-		{ timeout: 10000 },
-		async () => {
-			await request(env.getApp())
-				.post('/api/v1/categories')
-				.set('Cookie', cookie)
-				.set('Origin', 'http://localhost:3000')
-				.send({
-					userId: 'no-es-un-uuid-valido',
-					name: 'test category',
 				})
 				.expect(422);
 		},
@@ -179,7 +144,6 @@ describe('Modulo de categorias', () => {
 				.set('Cookie', cookie)
 				.set('Origin', 'http://localhost:3000')
 				.send({
-					userId: user.id,
 					name: 'new category',
 				})
 				.expect(201)
@@ -203,26 +167,9 @@ describe('Modulo de categorias', () => {
 				.set('Cookie', cookie)
 				.set('Origin', 'http://localhost:3000')
 				.send({
-					userId: user.id,
 					name: 'new category',
 				})
 				.expect(409);
-		},
-	);
-
-	it(
-		'Debería retornar un error al intentar crear una categoría para un usuario que no existe',
-		{ timeout: 10000 },
-		async () => {
-			await request(env.getApp())
-				.post('/api/v1/categories')
-				.set('Cookie', cookie)
-				.set('Origin', 'http://localhost:3000')
-				.send({
-					userId: '019c11ae-276d-7528-bde9-7bcbe8047caf',
-					name: 'nonexistent user category',
-				})
-				.expect(404);
 		},
 	);
 
@@ -264,7 +211,6 @@ describe('Modulo de categorias', () => {
 				.set('Cookie', otherUserCookie)
 				.set('Origin', 'http://localhost:3000')
 				.send({
-					userId: otherUser.id,
 					name: 'other user category',
 				})
 				.expect(201);

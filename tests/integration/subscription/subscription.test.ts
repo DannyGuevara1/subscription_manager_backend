@@ -33,7 +33,6 @@ describe('Modulo de Suscripciones', () => {
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
 			.send({
-				userId: user.id,
 				name: 'Billes',
 			});
 		categoryId = response.body.data.id;
@@ -53,7 +52,6 @@ describe('Modulo de Suscripciones', () => {
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', otherUserCookie)
 			.send({
-				userId: otherUser.id,
 				name: 'Entertainment',
 			});
 		otherCategoryId = otherCatResp.body.data.id;
@@ -65,7 +63,6 @@ describe('Modulo de Suscripciones', () => {
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
 			.send({
-				userId: user.id,
 				categoryId,
 				currencyCode: 'USD',
 				name: 'Spotify',
@@ -103,7 +100,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Trial Service',
@@ -138,7 +134,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId: 9999,
 					currencyCode: 'USD',
 					name: 'Netflix',
@@ -161,7 +156,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId: otherCategoryId,
 					currencyCode: 'USD',
 					name: 'Hulu',
@@ -184,7 +178,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'MXN', // Código de moneda inválido por que no existe en la tabla de currencies
 					name: 'Disney+',
@@ -207,7 +200,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: '', // Nombre inválido (vacío)
@@ -230,7 +222,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'A'.repeat(101),
@@ -268,7 +259,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Amazon Prime',
@@ -302,7 +292,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Apple Music',
@@ -345,7 +334,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'HBO Max',
@@ -384,7 +372,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Test Subscription',
@@ -428,7 +415,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Test Subscription',
@@ -462,7 +448,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Test Subscription',
@@ -496,7 +481,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Test Subscription',
@@ -534,7 +518,6 @@ describe('Modulo de Suscripciones', () => {
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
 				.send({
-					userId: user.id,
 					categoryId,
 					currencyCode: 'USD',
 					name: 'Test Subscription',
