@@ -2,6 +2,7 @@
 import express from 'express';
 import * as userSchema from '@/modules/user/index.js';
 import type UserController from '@/modules/user/user.controller.js';
+import { authorize } from '@/shared/middleware/authorize.js';
 import { validateRequest } from '@/shared/middleware/validate.request.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
 
@@ -14,8 +15,12 @@ export default function userRoutes(
 	// User Router
 	router
 		.route('/')
-		.get(catchAsync(userController.getAllUsers.bind(userController)))
+		.get(
+			authorize('ADMIN'),
+			catchAsync(userController.getAllUsers.bind(userController)),
+		)
 		.post(
+			authorize('ADMIN'),
 			validateRequest(userSchema.createUserRequestSchema),
 			catchAsync(userController.createUser.bind(userController)),
 		);
