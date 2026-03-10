@@ -35,7 +35,7 @@ export async function loginAsUser(
 		throw new Error('Failed to retrieve authentication cookie');
 	}
 
-	const cookie = cookies[0].split(';')[0] as string; // Extract the cookie value ACCESS_TOKEN
+	const cookie = cookies.map((c: string) => c.split(';')[0]).join('; ');
 
 	const user = loginResponse.body.data;
 
@@ -63,7 +63,7 @@ export async function loginAsAdmin(app: any): Promise<AuthResponse> {
 		throw new Error('Failed to retrieve authentication cookie');
 	}
 
-	const cookie = cookies[0].split(';')[0] as string;
+	const cookie = cookies.map((c: string) => c.split(';')[0]).join('; ');
 	const user = loginResponse.body.data;
 
 	return { cookie, user };
