@@ -127,6 +127,30 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 		);
 	});
 
+	it('Debe iniciar sessión con la nueva password después de actualizar el perfil', async () => {
+		const newPassword = 'newPassword123';
+
+		// Actualizar la contraseña del usuario
+		await request(env.getApp())
+			.put(`/api/v1/users/${user.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', cookie)
+			.send({ password: newPassword })
+			.expect(200);
+
+		// Intentar iniciar sesión con la nueva contraseña
+		const loginRes = await request(env.getApp())
+			.post('/api/v1/auth/login')
+			.set('Origin', 'http://localhost:3000')
+			.send({
+				email: user.email,
+				password: newPassword,
+			})
+			.expect(200);
+
+		assert.ok(loginRes.body.data, 'La respuesta de login debe incluir data');
+	});
+
 	it('Debe retornar 403 al intentar actualizar el perfil de otro usuario', async () => {
 		const updatedData = {
 			name: 'Malicious Update',
