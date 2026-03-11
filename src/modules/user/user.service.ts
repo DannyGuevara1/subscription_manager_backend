@@ -79,17 +79,16 @@ export default class UserService {
 	}
 
 	async deleteUser(id: string, userId: string): Promise<SafeUserDto> {
-		const user = await this.userRepository.delete(id);
-
-		if (!user) {
+		const existingUser = await this.userRepository.findById(id);
+		if (!existingUser) {
 			throw this.userNotFoundError(id);
 		}
-
-		if (user.id !== userId) {
+		if (existingUser.id !== userId) {
 			throw this.accessDeniedError();
 		}
+		await this.userRepository.delete(id);
 
-		return this.toSafeUserDto(user);
+		return this.toSafeUserDto(existingUser);
 	}
 
 	// Método privado para transformación segura
