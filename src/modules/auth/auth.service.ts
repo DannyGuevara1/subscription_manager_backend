@@ -1,4 +1,6 @@
 // src/modules/auth/auth.service.ts
+
+import { randomUUID } from 'node:crypto';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import type redis from 'redis';
@@ -71,7 +73,7 @@ export default class AuthService {
 
 		const payload: RefreshTokenPayload = {
 			sub: user.id, // Subject (user ID)
-			jti: user.id, // JWT ID para identificar el token de refresco
+			jti: randomUUID(), // JWT ID único por emisión para detectar reuso
 		};
 
 		const signOptions: SignOptions = {
