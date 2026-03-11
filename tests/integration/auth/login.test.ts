@@ -70,8 +70,13 @@ describe('Módulo de Autenticación y registro', () => {
 				.expect(200);
 
 			// Verificar que el servidor indica borrar ambas cookies
-			const setCookies = logoutRes.headers['set-cookie'] as string[];
-			const cleared = setCookies.map((c: string) => c.split('=')[0]);
+			const rawCookies = logoutRes.headers['set-cookie'];
+			const setCookies = rawCookies
+				? Array.isArray(rawCookies)
+					? rawCookies
+					: [rawCookies]
+				: [];
+			const cleared = setCookies?.map((c: string) => c.split('=')[0]) || [];
 			console.log('Cookies que el servidor indica limpiar:', cleared);
 			assert.ok(
 				cleared.includes('ACCESS_TOKEN'),
@@ -96,6 +101,48 @@ describe('Módulo de Autenticación y registro', () => {
 				existingRefreshToken,
 				0,
 				'El refresh token debe ser eliminado de Redis',
+			);
+		},
+	);
+	it(
+		'Debe emitir un nuevo refresh token válido',
+		{ timeout: 10000 },
+		async () => {
+			// Primero, hacemos login para obtener un refresh token válido
+			const loginRes = await request(env.getApp())
+				.post('/api/v1/auth/login')
+				.set('Origin', 'http://localhost:3000')
+				.send({
+					email: mockUser.email,
+					password: mockUser.password,
+				})
+				.expect(200);
+
+			const rawCookies = loginRes.headers['set-cookie'];
+			const cookies = rawCookies
+				? Array.isArray(rawCookies)
+					? rawCookies
+					: [rawCookies]
+				: [];
+			assert.ok(cookies, 'Debe recibir cookies en la respuesta de login');
+			const refreshTokenCookie = cookies.find((c: string) =>
+				c.startsWith('REFRESH_TOKEN='),
+			);
+			assert.ok(refreshTokenCookie, 'Debe recibir una cookie REFRESH_TOKEN');
+
+			const refreshToken = refreshTokenCookie.split(';')[0].split('=')[1];
+			assert.ok(refreshToken, 'La cookie REFRESH_TOKEN debe contener un valor');
+
+			// Ahora, solicitamos un nuevo access token usando el refresh token
+			const refreshRes = await request(env.getApp())
+				.post('/api/v1/auth/refresh-token')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', `REFRESH_TOKEN=${refreshToken}`)
+				.expect(200);
+
+			assert.ok(
+				refreshRes.body.data,
+				'La respuesta de refresh debe incluir data',
 			);
 		},
 	);
