@@ -11,6 +11,7 @@ import {
 	conflictError,
 	internalError,
 	notFoundError,
+	unprocessableEntityError,
 	validationError,
 } from '@/shared/errors/error.factory.js';
 
@@ -133,7 +134,7 @@ export const handlePrismaKnownRequestError = (
 				'(constraint no expuesta por Prisma en PostgreSQL)';
 			const detail = `Violación de clave foránea. ${fieldName}. Verifique que el ID relacionado exista o elimine primero las dependencias.`;
 
-			return conflictError({
+			return unprocessableEntityError({
 				detail,
 				instance,
 				isOperational: true,

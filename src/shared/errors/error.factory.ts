@@ -190,3 +190,19 @@ export function forbiddenError(
 		stack,
 	});
 }
+
+export function unprocessableEntityError(
+	options: ErrorOptions.UnprocessableEntityOptions,
+): AppError {
+	const { detail, instance, isOperational = true, stack, ...rest } = options;
+
+	return createError('UNPROCESSABLE_ENTITY', {
+		detail,
+		instance,
+		isOperational,
+		extensions: {
+			...(rest.extensions || {}),
+		},
+		stack,
+	});
+}

@@ -10,6 +10,11 @@ export const ProblemTypes = {
 		title: 'Bad Request',
 		status: 400,
 	},
+	UNPROCESSABLE_ENTITY: {
+		type: '/problems/unprocessable-entity',
+		title: 'Unprocessable Entity',
+		status: 422,
+	},
 	VALIDATION_ERROR: {
 		type: '/problems/validation-error',
 		title: 'Validation Error',

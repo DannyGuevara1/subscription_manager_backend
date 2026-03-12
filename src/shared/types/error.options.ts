@@ -76,3 +76,11 @@ export interface forbiddenError {
 	extensions?: Record<string, any>; // Información adicional relevante
 	stack?: string; // Traza de pila personalizada
 }
+
+export interface UnprocessableEntityOptions {
+	detail?: string; // Detalles adicionales sobre el error de validación
+	instance?: string; // URI del recurso que causó el error
+	isOperational?: boolean; // Indica si el error es operativo (por defecto es true)
+	extensions?: Record<string, any>; // Información adicional relevante
+	stack?: string; // Traza de pila personalizada
+}
