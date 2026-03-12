@@ -43,8 +43,7 @@ const authLimiter = rateLimit({
 		type: '/problems/rate-limit-exceeded',
 		title: 'Rate Limit Exceeded',
 		status: 429,
-		detail:
-			'Demasiados intentos de autenticación. Intente de nuevo más tarde.',
+		detail: 'Demasiados intentos de autenticación. Intente de nuevo más tarde.',
 	},
 });
 
@@ -63,14 +62,18 @@ app.use(
 		credentials: true,
 	}),
 );
-app.use(globalLimiter);
+if (process.env.NODE_ENV !== 'test') {
+	app.use(globalLimiter);
+}
 app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
 app.use(responseTime());
 
 // Routes
-app.use('/api/v1/auth', authLimiter);
+if (process.env.NODE_ENV !== 'test') {
+	app.use('/api/v1/auth', authLimiter);
+}
 app.use('/api/v1', v1);
 app.use((req: Request, _res: Response, next: NextFunction) => {
 	next(

@@ -44,7 +44,7 @@ export function setupIntegrationEnvironment() {
 				process.env.SESSION_SECRET = 'test_session_secret_key_for_testing_only';
 
 				// Otras variables que tu app pueda necesitar
-				process.env.NODE_ENV = 'development';
+				process.env.NODE_ENV = 'test';
 				process.env.CORS_ORIGINS = 'http://localhost:3000';
 
 				console.log('📊 DATABASE_URL:', process.env.DATABASE_URL);
