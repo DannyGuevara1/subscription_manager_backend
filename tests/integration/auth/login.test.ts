@@ -59,6 +59,53 @@ describe('Módulo de Autenticación y registro', () => {
 	);
 
 	it(
+		'Debe fallar al registrar un usuario con email ya existente',
+		{ timeout: 10000 },
+		async () => {
+			await request(env.getApp())
+				.post('/api/v1/auth/register')
+				.set('Origin', 'http://localhost:3000')
+				.send(mockUser)
+				.expect(409);
+		},
+	);
+
+	it('Debe fallar al registrar un email inválido', async () => {
+		const invalidUser = { ...mockUser, email: 'invalid-email' };
+		await request(env.getApp())
+			.post('/api/v1/auth/register')
+			.set('Origin', 'http://localhost:3000')
+			.send(invalidUser)
+			.expect(422);
+	});
+
+	it('Debe fallar al registrar con un password debil', async () => {
+		const invalidUser = { ...mockUser, password: '123' };
+		await request(env.getApp())
+			.post('/api/v1/auth/register')
+			.set('Origin', 'http://localhost:3000')
+			.send(invalidUser)
+			.expect(422);
+	});
+
+	it(
+		'Debe fallar al registrar con un currencyCode inválido',
+		{ timeout: 10000 },
+		async () => {
+			const invalidUser = {
+				...mockUser,
+				email: 'invalid@example.com',
+				primaryCurrencyCode: 'PCX',
+			};
+			await request(env.getApp())
+				.post('/api/v1/auth/register')
+				.set('Origin', 'http://localhost:3000')
+				.send(invalidUser)
+				.expect(422);
+		},
+	);
+
+	it(
 		'Logout debe eliminar la cookie de autenticación request subsecuente debe fallar',
 		{ timeout: 10000 },
 		async () => {
@@ -77,7 +124,7 @@ describe('Módulo de Autenticación y registro', () => {
 					: [rawCookies]
 				: [];
 			const cleared = setCookies?.map((c: string) => c.split('=')[0]) || [];
-			console.log('Cookies que el servidor indica limpiar:', cleared);
+
 			assert.ok(
 				cleared.includes('ACCESS_TOKEN'),
 				'Debe limpiar la cookie ACCESS_TOKEN',
