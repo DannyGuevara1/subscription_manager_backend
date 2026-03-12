@@ -176,7 +176,7 @@ export function unauthorizedError(
 }
 
 export function forbiddenError(
-	options: ErrorOptions.forbiddenError = {},
+	options: ErrorOptions.ForbiddenOptions = {},
 ): AppError {
 	const { detail, instance, isOperational = true, stack, ...rest } = options;
 
