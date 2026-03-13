@@ -61,10 +61,8 @@ export default class CurrencyController {
 		_next: NextFunction,
 	) {
 		const { code } = req.params;
-		const deletedCurrency = await this.currencyService.deleteCurrency(code);
+		await this.currencyService.deleteCurrency(code);
 
-		res.status(200).json({
-			data: deletedCurrency,
-		});
+		res.status(204).send();
 	}
 }
