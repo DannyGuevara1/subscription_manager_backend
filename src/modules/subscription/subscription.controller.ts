@@ -74,11 +74,9 @@ export default class SubscriptionController {
 	) {
 		const { id } = req.params;
 		const sub = req.user?.sub as string;
-		const deletedSubscription =
-			await this.subscriptionService.deleteSubscription(id, sub);
 
-		res.status(200).json({
-			data: deletedSubscription,
-		});
+		await this.subscriptionService.deleteSubscription(id, sub);
+
+		res.status(204).send();
 	}
 }
