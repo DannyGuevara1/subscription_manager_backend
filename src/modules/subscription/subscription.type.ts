@@ -1,4 +1,9 @@
-import type { BillingUnit, CostType, Subscription } from '@prisma/client';
+import type {
+	BillingUnit,
+	CostType,
+	Prisma,
+	Subscription,
+} from '@prisma/client';
 // export interface Subscription {
 // 	id: string;
 // 	userId: string;
@@ -19,7 +24,7 @@ export interface CreateSubscriptionData {
 	categoryId: number;
 	currencyCode: string;
 	name: string;
-	cost: number;
+	cost: Prisma.Decimal | number;
 	costType: CostType;
 	billingFrequency: number;
 	billingUnit: BillingUnit;
@@ -31,7 +36,7 @@ export interface UpdateSubscriptionData {
 	categoryId?: number;
 	currencyCode?: string;
 	name?: string;
-	cost?: number;
+	cost?: Prisma.Decimal | number;
 	costType?: CostType;
 	billingFrequency?: number;
 	billingUnit?: BillingUnit;

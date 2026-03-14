@@ -117,4 +117,28 @@ describe('Módulo de Moneda - Pruebas de Integración', () => {
 			.send(updatedCurrency)
 			.expect(404);
 	});
+
+	it('Debería eliminar una moneda existente', async () => {
+		await request(env.getApp())
+			.delete('/api/v1/currencies/JPY')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(204);
+	});
+
+	it('Debería retornar un error al eliminar una moneda que esta siendo utilizada', async () => {
+		await request(env.getApp())
+			.delete('/api/v1/currencies/USD')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(409);
+	});
+
+	it('Debería retornar 404 al intentar eliminar una moneda que no existe', async () => {
+		await request(env.getApp())
+			.delete('/api/v1/currencies/XXX')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(404);
+	});
 });

@@ -49,7 +49,7 @@ model Subscription {
   categoryId       Int
   currencyCode     String
   name             String
-  cost             Float
+  cost             Decimal     @db.Decimal(10, 2)
   costType         CostType
   billingFrequency Int
   billingUnit      BillingUnit

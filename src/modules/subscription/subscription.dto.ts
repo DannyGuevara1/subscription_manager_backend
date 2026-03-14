@@ -1,4 +1,4 @@
-import { BillingUnit, CostType } from '@prisma/client';
+import { BillingUnit, CostType, Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 export const subscriptionParamsSchema = z.object({
@@ -87,7 +87,7 @@ export const safeSubscriptionSchema = z.object({
 	categoryId: z.number(),
 	currencyCode: z.string(),
 	name: z.string(),
-	cost: z.number(),
+	cost: z.custom<Prisma.Decimal>().transform((val) => val.toNumber()),
 	costType: z.enum(Object.values(CostType)),
 	billingFrequency: z.number(),
 	billingUnit: z.enum(Object.values(BillingUnit)),

@@ -236,7 +236,7 @@ describe('Modulo de Suscripciones', () => {
 	);
 
 	it(
-		'Debería retornar un array de todas las suscripciones',
+		'Debería retornar un array de todas las suscripciones del usuario',
 		{ timeout: 10000 },
 		async () => {
 			const res = await request(env.getApp())
@@ -247,6 +247,14 @@ describe('Modulo de Suscripciones', () => {
 				.expect('Content-Type', /json/);
 
 			assert(Array.isArray(res.body.data.subscriptions));
+			// Verificar que cada suscripción tenga el userId correcto
+			res.body.data.subscriptions.forEach((sub: any) => {
+				assert.strictEqual(
+					sub.userId,
+					user.id,
+					'Cada suscripción debe pertenecer al usuario autenticado',
+				);
+			});
 		},
 	);
 
