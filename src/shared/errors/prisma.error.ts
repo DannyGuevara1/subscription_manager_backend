@@ -132,10 +132,25 @@ export const handlePrismaKnownRequestError = (
 			const fieldName =
 				(err.meta?.constraint as string) ||
 				'(constraint no expuesta por Prisma en PostgreSQL)';
-			const detail = `Violación de clave foránea. ${fieldName}. Verifique que el ID relacionado exista o elimine primero las dependencias.`;
+			const isDeleteOperation = /delete/i.test(err.message);
+
+			if (isDeleteOperation) {
+				return conflictError({
+					detail: `No se puede eliminar el registro porque está siendo referenciado por otros recursos. ${fieldName}. Elimine primero las dependencias.`,
+					instance,
+					isOperational: true,
+					extensions: {
+						...err.meta,
+						service: 'PRISMA',
+						errorType: 'PrismaClientKnownRequestError',
+						version: err.clientVersion,
+					},
+					stack: err.stack,
+				});
+			}
 
 			return unprocessableEntityError({
-				detail,
+				detail: `Violación de clave foránea. ${fieldName}. Verifique que el ID relacionado exista.`,
 				instance,
 				isOperational: true,
 				extensions: {
