@@ -114,4 +114,10 @@ export const errorNormalizer = (
 		});
 		return next(genericError);
 	}
+	const fallbackError = internalError({
+		detail: `Non-Error value thrown: ${String(err)}`,
+		instance: req.originalUrl,
+		isOperational: false,
+	});
+	return next(fallbackError);
 };
