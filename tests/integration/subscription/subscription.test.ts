@@ -506,7 +506,7 @@ describe('Modulo de Suscripciones', () => {
 				.delete(`/api/v1/subscriptions/${subscriptionId}`)
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
-				.expect(200);
+				.expect(204);
 
 			// Verificar que la suscripción ya no existe
 			await request(env.getApp())
