@@ -58,7 +58,7 @@ export class AppError extends Error {
 		const lines = stackToParse.split('\n');
 		const relevantLines = lines.filter((line) => {
 			// Mantenemos las líneas que apuntan a nuestro código fuente y excluimos node_modules
-			return line.includes('src\\') && !line.includes('node_modules');
+			return line.includes('src/') && !line.includes('node_modules');
 		});
 
 		// Si el filtro es muy agresivo y no deja nada, devolvemos el stack original sin la primera línea (el mensaje de error).
