@@ -1,22 +1,4 @@
-import type {
-	BillingUnit,
-	CostType,
-	Prisma,
-	Subscription,
-} from '@prisma/client';
-// export interface Subscription {
-// 	id: string;
-// 	userId: string;
-// 	categoryId: number;
-// 	currencyCode: string;
-// 	name: string;
-// 	cost: number;
-// 	costType: CostType;
-// 	billingFrequency: number;
-// 	billingUnit: BillingUnit;
-// 	firstPaymentDate: Date;
-// 	trialEndsOn?: Date;
-// }
+import type { BillingUnit, CostType } from '@/shared/types/domain.enums.js';
 
 export interface CreateSubscriptionData {
 	id: string;
@@ -24,7 +6,7 @@ export interface CreateSubscriptionData {
 	categoryId: number;
 	currencyCode: string;
 	name: string;
-	cost: Prisma.Decimal | number;
+	cost: number;
 	costType: CostType;
 	billingFrequency: number;
 	billingUnit: BillingUnit;
@@ -36,7 +18,7 @@ export interface UpdateSubscriptionData {
 	categoryId?: number;
 	currencyCode?: string;
 	name?: string;
-	cost?: Prisma.Decimal | number;
+	cost?: number;
 	costType?: CostType;
 	billingFrequency?: number;
 	billingUnit?: BillingUnit;
@@ -44,4 +26,16 @@ export interface UpdateSubscriptionData {
 	trialEndsOn?: Date;
 }
 
-export type SafeSubscription = Omit<Subscription, 'createdAt' | 'updatedAt'>;
+export interface SafeSubscription {
+	id: string;
+	userId: string;
+	categoryId: number;
+	currencyCode: string;
+	name: string;
+	cost: number;
+	costType: CostType;
+	billingFrequency: number;
+	billingUnit: BillingUnit;
+	firstPaymentDate: Date;
+	trialEndsOn?: Date | null;
+}

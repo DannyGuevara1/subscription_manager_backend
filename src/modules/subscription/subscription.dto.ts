@@ -1,5 +1,8 @@
-import { BillingUnit, CostType, Prisma } from '@prisma/client';
 import { z } from 'zod';
+import {
+	BILLING_UNIT_VALUES,
+	COST_TYPE_VALUES,
+} from '@/shared/types/domain.enums.js';
 
 export const subscriptionParamsSchema = z.object({
 	id: z.uuidv7({ error: 'El ID de suscripción debe ser un UUID válido' }),
@@ -20,16 +23,16 @@ export const createSubscriptionSchema = z.object({
 	cost: z
 		.number()
 		.nonnegative({ error: 'El costo debe ser un número positivo' }),
-	costType: z.enum(Object.values(CostType), {
+	costType: z.enum(COST_TYPE_VALUES, {
 		error: () =>
-			`El tipo de costo debe ser uno de los siguientes: ${Object.values(CostType).join(', ')}`,
+			`El tipo de costo debe ser uno de los siguientes: ${COST_TYPE_VALUES.join(', ')}`,
 	}),
 	billingFrequency: z.number().int().positive({
 		error: 'La frecuencia de facturación debe ser un número positivo',
 	}),
-	billingUnit: z.enum(Object.values(BillingUnit), {
+	billingUnit: z.enum(BILLING_UNIT_VALUES, {
 		error: () =>
-			`La unidad de facturación debe ser uno de los siguientes: ${Object.values(BillingUnit).join(', ')}`,
+			`La unidad de facturación debe ser uno de los siguientes: ${BILLING_UNIT_VALUES.join(', ')}`,
 	}),
 	firstPaymentDate: z.coerce.date(),
 	trialEndsOn: z.coerce.date().optional(),
@@ -51,16 +54,16 @@ export const updateSubscriptionSchema = z
 		cost: z
 			.number()
 			.nonnegative({ error: 'El costo debe ser un número positivo' }),
-		costType: z.enum(Object.values(CostType), {
+		costType: z.enum(COST_TYPE_VALUES, {
 			error: () =>
-				`El tipo de costo debe ser uno de los siguientes: ${Object.values(CostType).join(', ')}`,
+				`El tipo de costo debe ser uno de los siguientes: ${COST_TYPE_VALUES.join(', ')}`,
 		}),
 		billingFrequency: z.number().int().positive({
 			error: 'La frecuencia de facturación debe ser un número positivo',
 		}),
-		billingUnit: z.enum(Object.values(BillingUnit), {
+		billingUnit: z.enum(BILLING_UNIT_VALUES, {
 			error: () =>
-				`La unidad de facturación debe ser uno de los siguientes: ${Object.values(BillingUnit).join(', ')}`,
+				`La unidad de facturación debe ser uno de los siguientes: ${BILLING_UNIT_VALUES.join(', ')}`,
 		}),
 		firstPaymentDate: z.coerce.date(),
 		trialEndsOn: z.coerce.date().optional(),
@@ -87,10 +90,10 @@ export const safeSubscriptionSchema = z.object({
 	categoryId: z.number(),
 	currencyCode: z.string(),
 	name: z.string(),
-	cost: z.custom<Prisma.Decimal>().transform((val) => val.toNumber()),
-	costType: z.enum(Object.values(CostType)),
-	billingFrequency: z.number(),
-	billingUnit: z.enum(Object.values(BillingUnit)),
+	cost: z.number().nonnegative(),
+	costType: z.enum(COST_TYPE_VALUES),
+	billingFrequency: z.number().int().positive(),
+	billingUnit: z.enum(BILLING_UNIT_VALUES),
 	firstPaymentDate: z.date(),
 	trialEndsOn: z.date().nullable().optional(),
 });
