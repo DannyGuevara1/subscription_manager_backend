@@ -47,7 +47,7 @@ export default class AuthService {
 	}
 
 	generateAccessToken(user: AuthUser): string {
-		const SECRET = process.env.JWT_SECRET as string;
+		const SECRET = process.env.JWT_ACCESS_SECRET as string;
 		const EXPIRESIN = (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ??
 			'5m') as StringValue;
 
@@ -61,13 +61,14 @@ export default class AuthService {
 
 		const signOptions: SignOptions = {
 			expiresIn: EXPIRESIN,
+			algorithm: 'HS256',
 		};
 
 		return jwt.sign(payload, SECRET as string, signOptions);
 	}
 
 	generateRefreshToken(user: AuthUser): string {
-		const SECRET = process.env.JWT_SECRET as string;
+		const SECRET = process.env.JWT_REFRESH_SECRET as string;
 		const EXPIRESIN = (process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ??
 			'7d') as StringValue;
 
@@ -78,6 +79,7 @@ export default class AuthService {
 
 		const signOptions: SignOptions = {
 			expiresIn: EXPIRESIN,
+			algorithm: 'HS256',
 		};
 
 		return jwt.sign(payload, SECRET as string, signOptions);
@@ -88,7 +90,7 @@ export default class AuthService {
 	}
 
 	async refreshSession(refreshToken: string): Promise<AuthLoginResponse> {
-		const SECRET = process.env.JWT_SECRET as string;
+		const SECRET = process.env.JWT_REFRESH_SECRET as string;
 		const decoded = jwt.verify(refreshToken, SECRET) as RefreshTokenPayload;
 
 		const storedToken = await this.redis.get(`refreshToken:${decoded.sub}`);

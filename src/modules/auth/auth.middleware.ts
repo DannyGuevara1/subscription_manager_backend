@@ -20,7 +20,7 @@ export const authMiddleware = (
 			);
 		}
 
-		const SECRET_KEY = process.env.JWT_SECRET as string;
+		const SECRET_KEY = process.env.JWT_ACCESS_SECRET as string;
 
 		if (!SECRET_KEY) {
 			return next(
@@ -39,7 +39,9 @@ export const authMiddleware = (
 			);
 		}
 
-		const decode = jwt.verify(ACCESS_TOKEN, SECRET_KEY) as JWTPayload;
+		const decode = jwt.verify(ACCESS_TOKEN, SECRET_KEY, {
+			algorithms: ['HS256'],
+		}) as JWTPayload;
 		req.user = decode;
 		next();
 	} catch (_error) {
