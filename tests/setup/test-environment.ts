@@ -38,7 +38,10 @@ export function setupIntegrationEnvironment() {
 				process.env.REDIS_URL = `redis://${redisContainer.getHost()}:${redisContainer.getMappedPort(6379)}`;
 
 				// Variables de JWT (¡IMPORTANTE!)
-				process.env.JWT_SECRET = 'test_jwt_secret_key_for_testing_only';
+				process.env.JWT_ACCESS_SECRET =
+					'test_jwt_access_secret_key_for_testing_only';
+				process.env.JWT_REFRESH_SECRET =
+					'test_jwt_refresh_secret_key_for_testing_only';
 				process.env.JWT_ACCESS_TOKEN_EXPIRES_IN = '5m';
 				process.env.JWT_REFRESH_TOKEN_EXPIRES_IN = '7d';
 				process.env.SESSION_SECRET = 'test_session_secret_key_for_testing_only';
