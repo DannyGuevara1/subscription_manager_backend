@@ -1,6 +1,6 @@
-import type { Role } from '@prisma/client';
 import type { NextFunction, Request, Response } from 'express';
 import { forbiddenError } from '@/shared/errors/error.factory.js';
+import type { Role } from '@/shared/types/domain.enums.js';
 
 export const authorize = (...allowedRoles: Role[]) => {
 	return (req: Request, _res: Response, next: NextFunction) => {
