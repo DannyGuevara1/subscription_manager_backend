@@ -61,6 +61,16 @@ const initialUsers: User[] = [
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	},
+	{
+		id: uuidv7(),
+		email: 'support@subscriptionmanager.com',
+		role: Role.SUPPORT,
+		password: await bcrypt.hash('support123', 10),
+		name: 'Support Agent',
+		primaryCurrencyCode: 'USD',
+		createdAt: new Date(),
+		updatedAt: new Date(),
+	},
 ];
 
 async function main() {
