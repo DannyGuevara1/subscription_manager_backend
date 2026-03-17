@@ -60,6 +60,8 @@ model Subscription {
   category         Category    @relation(fields: [categoryId], references: [id])
   currency         Currency    @relation(fields: [currencyCode], references: [code])
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
 }
 
 enum CostType {
