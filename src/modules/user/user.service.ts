@@ -14,6 +14,7 @@ import {
 	forbiddenError,
 	notFoundError,
 } from '@/shared/errors/error.factory.js';
+import type { Role } from '@/shared/types/domain.enums.js';
 
 export default class UserService {
 	private userRepository: UserRepository;
@@ -43,10 +44,24 @@ export default class UserService {
 		return users.map((user) => this.toSafeUserDto(user));
 	}
 
-	async getUserById(id: string): Promise<SafeUserDto> {
+	async getUserById(
+		id: string,
+		requesterUserId?: string,
+		requesterRole?: Role,
+	): Promise<SafeUserDto> {
 		const user: User | null = await this.userRepository.findById(id);
 		if (!user) {
 			throw this.userNotFoundError(id);
+		}
+
+		if (requesterUserId) {
+			const isOwner = user.id === requesterUserId;
+			const isPrivilegedRole =
+				requesterRole === 'ADMIN' || requesterRole === 'SUPPORT';
+
+			if (!isOwner && !isPrivilegedRole) {
+				throw this.userNotFoundError(id);
+			}
 		}
 
 		return this.toSafeUserDto(user);

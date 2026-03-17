@@ -1,6 +1,7 @@
 // src/modules/user/user.controller.ts
 import type { NextFunction, Request, Response } from 'express';
 import type { UserParams, UserService } from '@/modules/user/index.js';
+import type { Role } from '@/shared/types/domain.enums.js';
 
 export default class UserController {
 	private userService: UserService;
@@ -24,7 +25,13 @@ export default class UserController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
-		const user = await this.userService.getUserById(id);
+		const requesterUserId = req.user?.sub;
+		const requesterRole = req.user?.role as Role | undefined;
+		const user = await this.userService.getUserById(
+			id,
+			requesterUserId,
+			requesterRole,
+		);
 
 		res.status(200).json({
 			data: user,
