@@ -70,10 +70,8 @@ export default class UserController {
 	) {
 		const { id } = req.params;
 		const sub = req.user?.sub as string;
-		const deletedUser = await this.userService.deleteUser(id, sub);
+		await this.userService.deleteUser(id, sub);
 
-		res.status(200).json({
-			data: deletedUser,
-		});
+		res.status(204).send();
 	}
 }
