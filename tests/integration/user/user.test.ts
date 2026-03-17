@@ -2,7 +2,11 @@ import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import request from 'supertest';
 import type { SafeUserAuthDto } from '@/modules/auth/index.js';
-import { loginAsAdmin, loginAsUser } from '../../setup/auth-helper.js';
+import {
+	loginAsAdmin,
+	loginAsSupport,
+	loginAsUser,
+} from '../../setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
 describe('Módulo de Usuario - Pruebas de Integración', () => {
@@ -15,6 +19,7 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 	let otherUser: SafeUserAuthDto;
 
 	let adminCookie: string;
+	let supportCookie: string;
 
 	before(async () => {
 		const newUser = {
@@ -37,6 +42,9 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 
 		const adminCredentials = await loginAsAdmin(env.getApp());
 		adminCookie = adminCredentials.cookie;
+
+		const supportCredentials = await loginAsSupport(env.getApp());
+		supportCookie = supportCredentials.cookie;
 
 		otherUserCookie = otherUserCredentials.cookie;
 		otherUser = otherUserCredentials.user;
@@ -96,6 +104,44 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
 			.expect(404);
+	});
+
+	it('Debe retornar 404 cuando un USER intenta consultar otro usuario existente', async () => {
+		await request(env.getApp())
+			.get(`/api/v1/users/${user.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', otherUserCookie)
+			.expect(404);
+	});
+
+	it('Debe permitir que ADMIN consulte el perfil de cualquier usuario', async () => {
+		const res = await request(env.getApp())
+			.get(`/api/v1/users/${otherUser.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(200)
+			.expect('Content-Type', /json/);
+
+		assert.strictEqual(
+			res.body.data.id,
+			otherUser.id,
+			'ADMIN debe poder consultar cualquier usuario por ID',
+		);
+	});
+
+	it('Debe permitir que SUPPORT consulte el perfil de cualquier usuario', async () => {
+		const res = await request(env.getApp())
+			.get(`/api/v1/users/${otherUser.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', supportCookie)
+			.expect(200)
+			.expect('Content-Type', /json/);
+
+		assert.strictEqual(
+			res.body.data.id,
+			otherUser.id,
+			'SUPPORT debe poder consultar cualquier usuario por ID',
+		);
 	});
 
 	// PUT /users/:id
