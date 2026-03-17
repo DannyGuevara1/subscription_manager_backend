@@ -373,15 +373,11 @@ describe('Modulo de categorias', () => {
 	);
 
 	it('Debería poder eliminar una categoría', { timeout: 10000 }, async () => {
-		const res = await request(env.getApp())
+		await request(env.getApp())
 			.delete(`/api/v1/categories/${categoryId}`)
 			.set('Cookie', cookie)
 			.set('Origin', 'http://localhost:3000')
-			.expect(204)
-			.expect('Content-Type', /json/);
-
-		const data = res.body.data;
-		assert.strictEqual(data.id, categoryId);
+			.expect(204);
 	});
 
 	it(

@@ -212,17 +212,10 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 	});
 
 	it('Debe eliminar el usuario', async () => {
-		const res = await request(env.getApp())
+		await request(env.getApp())
 			.delete(`/api/v1/users/${user.id}`)
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', cookie)
-			.expect(200)
-			.expect('Content-Type', /json/);
-
-		assert.strictEqual(
-			res.body.data.id,
-			user.id,
-			'El ID del usuario eliminado debe coincidir',
-		);
+			.expect(204);
 	});
 });
