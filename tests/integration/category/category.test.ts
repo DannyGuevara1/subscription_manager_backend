@@ -273,25 +273,21 @@ describe('Modulo de categorias', () => {
 	// UPDATE
 	// ──────────────────────────────────────────────
 
-	it(
-		'Debería poder actualizar una categoría',
-		{ timeout: 10000 },
-		async () => {
-			const res = await request(env.getApp())
-				.put(`/api/v1/categories/${categoryId}`)
-				.set('Cookie', cookie)
-				.set('Origin', 'http://localhost:3000')
-				.send({
-					name: 'updated category',
-				})
-				.expect(200)
-				.expect('Content-Type', /json/);
+	it('Debería poder actualizar una categoría', { timeout: 10000 }, async () => {
+		const res = await request(env.getApp())
+			.put(`/api/v1/categories/${categoryId}`)
+			.set('Cookie', cookie)
+			.set('Origin', 'http://localhost:3000')
+			.send({
+				name: 'updated category',
+			})
+			.expect(200)
+			.expect('Content-Type', /json/);
 
-			const data = res.body.data;
-			assert.strictEqual(data.id, categoryId);
-			assert.strictEqual(data.name, 'updated category');
-		},
-	);
+		const data = res.body.data;
+		assert.strictEqual(data.id, categoryId);
+		assert.strictEqual(data.name, 'updated category');
+	});
 
 	it(
 		'Debería retornar un error al intentar actualizar una categoría con el mismo nombre de otra categoría del mismo usuario',
@@ -376,21 +372,17 @@ describe('Modulo de categorias', () => {
 		},
 	);
 
-	it(
-		'Debería poder eliminar una categoría',
-		{ timeout: 10000 },
-		async () => {
-			const res = await request(env.getApp())
-				.delete(`/api/v1/categories/${categoryId}`)
-				.set('Cookie', cookie)
-				.set('Origin', 'http://localhost:3000')
-				.expect(200)
-				.expect('Content-Type', /json/);
+	it('Debería poder eliminar una categoría', { timeout: 10000 }, async () => {
+		const res = await request(env.getApp())
+			.delete(`/api/v1/categories/${categoryId}`)
+			.set('Cookie', cookie)
+			.set('Origin', 'http://localhost:3000')
+			.expect(204)
+			.expect('Content-Type', /json/);
 
-			const data = res.body.data;
-			assert.strictEqual(data.id, categoryId);
-		},
-	);
+		const data = res.body.data;
+		assert.strictEqual(data.id, categoryId);
+	});
 
 	it(
 		'Debería retornar 404 al intentar obtener una categoría que fue eliminada',

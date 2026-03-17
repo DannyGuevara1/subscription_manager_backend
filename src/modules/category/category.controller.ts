@@ -76,13 +76,8 @@ export default class CategoryController {
 	) {
 		const { id } = req.params;
 		const sub = req.user?.sub as string;
-		const deletedCategory = await this.categoryService.deleteCategory(
-			Number(id),
-			sub,
-		);
+		await this.categoryService.deleteCategory(Number(id), sub);
 
-		res.status(200).json({
-			data: deletedCategory,
-		});
+		res.status(204).send();
 	}
 }
