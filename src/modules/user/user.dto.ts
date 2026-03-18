@@ -1,6 +1,6 @@
 // src/modules/user/user.dto.ts
-import { Role } from '@prisma/client';
 import { z } from 'zod';
+import { ROLE_VALUES } from '@/shared/types/domain.enums.js';
 
 // Schema for the validation Params
 export const userParamsSchema = z.object({
@@ -40,7 +40,7 @@ export const safeUserSchema = z.object({
 	email: z.string(),
 	name: z.string().nullable(),
 	primaryCurrencyCode: z.string(),
-	role: z.enum(Object.values(Role) as string[]),
+	role: z.enum(ROLE_VALUES),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });

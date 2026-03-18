@@ -2,7 +2,7 @@ import type { Subscription } from '@prisma/client';
 import prismaClient from '@/config/prisma.js';
 import type {
 	CreateSubscriptionData,
-	SafeSubscription,
+	SubscriptionDomain,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
 
@@ -12,7 +12,7 @@ export default class SubscriptionRepository {
 		this.prisma = prisma;
 	}
 
-	private toDomain(subscription: Subscription): SafeSubscription {
+	private toDomain(subscription: Subscription): SubscriptionDomain {
 		return {
 			id: subscription.id,
 			userId: subscription.userId,
@@ -28,7 +28,7 @@ export default class SubscriptionRepository {
 		};
 	}
 
-	async findAll(userId: string): Promise<SafeSubscription[]> {
+	async findAll(userId: string): Promise<SubscriptionDomain[]> {
 		const subscriptions = await this.prisma.subscription.findMany({
 			where: {
 				userId,
@@ -39,7 +39,7 @@ export default class SubscriptionRepository {
 		return subscriptions.map((subscription) => this.toDomain(subscription));
 	}
 
-	async findById(id: string): Promise<SafeSubscription | null> {
+	async findById(id: string): Promise<SubscriptionDomain | null> {
 		const subscription = await this.prisma.subscription.findUnique({
 			where: { id },
 		});
@@ -51,7 +51,7 @@ export default class SubscriptionRepository {
 		return this.toDomain(subscription);
 	}
 
-	async create(data: CreateSubscriptionData): Promise<SafeSubscription> {
+	async create(data: CreateSubscriptionData): Promise<SubscriptionDomain> {
 		const subscription = await this.prisma.subscription.create({
 			data,
 		});
@@ -62,7 +62,7 @@ export default class SubscriptionRepository {
 	async update(
 		id: string,
 		data: Partial<UpdateSubscriptionData>,
-	): Promise<SafeSubscription> {
+	): Promise<SubscriptionDomain> {
 		const subscription = await this.prisma.subscription.update({
 			where: { id },
 			data,
@@ -71,7 +71,7 @@ export default class SubscriptionRepository {
 		return this.toDomain(subscription);
 	}
 
-	async delete(id: string): Promise<SafeSubscription> {
+	async delete(id: string): Promise<SubscriptionDomain> {
 		const subscription = await this.prisma.subscription.delete({
 			where: { id },
 		});

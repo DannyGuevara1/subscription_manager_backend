@@ -1,15 +1,17 @@
 // src/modules/auth/auth.type.ts
-import type { User } from '@prisma/client';
-import type { SafeUserAuthDto } from '@/modules/auth/index.js';
-export type AuthUser = Pick<
-	User,
-	'id' | 'email' | 'name' | 'primaryCurrencyCode' | 'role'
->;
+import type { Role } from '@/shared/types/domain.enums.js';
+export interface AuthUser {
+	id: string;
+	email: string;
+	name: string | null;
+	primaryCurrencyCode: string;
+	role: Role;
+}
 
 export interface AuthLoginResponse {
 	accessToken: string;
 	refreshToken: string;
-	user?: SafeUserAuthDto;
+	user?: AuthUser;
 }
 
 interface BaseJWTPayload {
@@ -21,7 +23,7 @@ interface BaseJWTPayload {
 export interface JWTPayload extends BaseJWTPayload {
 	email: string;
 	name: string | null;
-	role: string;
+	role: Role;
 	primaryCurrencyCode?: string;
 }
 

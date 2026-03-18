@@ -26,7 +26,7 @@ export interface UpdateSubscriptionData {
 	trialEndsOn?: Date;
 }
 
-export interface SafeSubscription {
+export interface SubscriptionDomain {
 	id: string;
 	userId: string;
 	categoryId: number;

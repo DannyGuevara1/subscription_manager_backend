@@ -79,4 +79,38 @@ Es normal que los datos cambien de forma a medida que profundizan en las capas:
 *   Mantén tus **DTOs** en `*.dto.ts` para todo lo que toque la frontera del sistema (API).
 *   Mantén tus **Interfaces** en `*.type.ts` para contratos internos, especialmente para los argumentos de tus Repositorios.
 
+---
+
+## 4. Convenciones adicionales del proyecto
+
+### 4.1 Enums de dominio (fuente única)
+
+Para evitar inconsistencias de tipos entre módulos, los enums/literales de dominio deben salir de una sola fuente compartida:
+
+*   `src/shared/types/domain.enums.ts`
+
+Ejemplo recomendado:
+
+```typescript
+export const ROLE_VALUES = ['USER', 'ADMIN', 'SUPPORT'] as const;
+export type Role = (typeof ROLE_VALUES)[number];
+```
+
+Uso esperado:
+
+*   En `*.type.ts`: usar `Role` como contrato interno.
+*   En `*.dto.ts`: usar `z.enum(ROLE_VALUES)` para que Zod y TypeScript queden alineados.
+
+### 4.2 Regla de naming para `Safe*`
+
+El prefijo `Safe*` se reserva para datos de salida validados/sanitizados en la frontera de API (DTOs).
+
+*   ✅ Correcto: `SafeUserDto`, `SafeSubscriptionDto` en `*.dto.ts`.
+*   ❌ Evitar: `Safe*` en `*.type.ts` para contratos internos de repositorio/dominio.
+
+Para contratos internos, usar nombres neutrales de dominio, por ejemplo:
+
+*   `AuthUser`
+*   `SubscriptionDomain`
+
 Esta separación te da una arquitectura **Profesional**, **Escalable** y **Testeable**.

@@ -1,5 +1,4 @@
 // src/modules/user/user.type.ts
-import type { User } from '@prisma/client';
 import type { ParamsDictionary } from 'express-serve-static-core';
 
 export interface UserParams extends ParamsDictionary {
@@ -20,5 +19,3 @@ export interface UpdateUserData {
 	password?: string;
 	primaryCurrencyCode?: string;
 }
-
-export type SafeUser = Omit<User, 'password'>;

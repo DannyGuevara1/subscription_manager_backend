@@ -15,9 +15,15 @@ Esta convención asegura nombres claros, predecibles y consistentes en todo el c
 
 ## 3. Clases y Tipos
 - PascalCase para clases, interfaces y tipos.
+- Reservar el prefijo `Safe*` para DTOs de salida/sanitización en la frontera HTTP (`*.dto.ts`).
+- En `*.type.ts` usar nombres de dominio neutrales (ej: `AuthUser`, `SubscriptionDomain`).
 
 ## 4. Constantes
 - MAYÚSCULAS_CON_GUIONES para valores inmutables globales.
+
+## 4.1 Enums/Literales compartidos de dominio
+- Definir y reutilizar enums/literales en `src/shared/types/domain.enums.ts`.
+- Para Zod, preferir `z.enum(ROLE_VALUES)` (y equivalentes) en vez de reconstruir enums localmente.
 
 ## 5. Rutas y Endpoints
 - Usar nombres en minúsculas y separados por guiones: `/user-profile`, `/auth/login`.
