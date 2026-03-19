@@ -39,10 +39,10 @@ export default class CategoryController {
 	//Controller method to create a new category
 	async createCategory(req: Request, res: Response, _next: NextFunction) {
 		const categoryData = req.body;
-		const sub = req.user?.sub as string;
+		const authUser = req.user as NonNullable<Request['user']>;
 		const newCategory = await this.categoryService.createCategory(
 			categoryData,
-			sub,
+			authUser,
 		);
 
 		res.status(201).json({

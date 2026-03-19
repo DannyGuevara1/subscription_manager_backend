@@ -1,4 +1,5 @@
 import { uuidv7 } from 'uuidv7';
+import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import type CategoryService from '@/modules/category/category.service.js';
 import type CurrencyService from '@/modules/currency/currency.service.js';
 import {
@@ -12,7 +13,6 @@ import type {
 	CreateSubscriptionData,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
-import type UserService from '@/modules/user/user.service.js';
 import {
 	forbiddenError,
 	notFoundError,
@@ -20,18 +20,15 @@ import {
 
 export default class SubscriptionService {
 	private subscriptionRepository: SubscriptionRepository;
-	private userService: UserService;
 	private categoryService: CategoryService;
 	private currencyService: CurrencyService;
 
 	constructor(
 		subscriptionRepository: SubscriptionRepository,
-		userService: UserService,
 		categoryService: CategoryService,
 		currencyService: CurrencyService,
 	) {
 		this.subscriptionRepository = subscriptionRepository;
-		this.userService = userService;
 		this.categoryService = categoryService;
 		this.currencyService = currencyService;
 	}
@@ -71,10 +68,11 @@ export default class SubscriptionService {
 
 	async createSubscription(
 		data: CreateSubscriptionDto,
-		userId: string,
+		authUser: JWTPayload,
 	): Promise<SafeSubscriptionDto> {
+		const userId = authUser.sub;
+
 		// Validate FK existence
-		await this.userService.getUserById(userId);
 		await this.currencyService.getCurrencyByCode(data.currencyCode);
 
 		// Validate category exists and belongs to the user

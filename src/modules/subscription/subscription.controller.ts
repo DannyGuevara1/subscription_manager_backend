@@ -39,10 +39,10 @@ export default class SubscriptionController {
 
 	async createSubscription(req: Request, res: Response, _next: NextFunction) {
 		const data = req.body;
-		const sub = req.user?.sub as string;
+		const authUser = req.user as NonNullable<Request['user']>;
 		const newSubscription = await this.subscriptionService.createSubscription(
 			data,
-			sub,
+			authUser,
 		);
 
 		res.status(201).json({

@@ -10,7 +10,7 @@ import type {
 	CreateCategoryData,
 	UpdateCategoryData,
 } from '@/modules/category/category.type.js';
-import type UserService from '@/modules/user/user.service.js';
+import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import {
 	conflictError,
 	forbiddenError,
@@ -19,14 +19,9 @@ import {
 
 export default class CategoryService {
 	private categoryRepository: CategoryRepository;
-	private userService: UserService;
 
-	constructor(
-		categoryRepository: CategoryRepository,
-		userService: UserService,
-	) {
+	constructor(categoryRepository: CategoryRepository) {
 		this.categoryRepository = categoryRepository;
-		this.userService = userService;
 	}
 
 	//Methods GET
@@ -60,10 +55,9 @@ export default class CategoryService {
 	//Methods POST
 	async createCategory(
 		data: CreateCategoryDto,
-		userId: string,
+		authUser: JWTPayload,
 	): Promise<SafeCategoryDto> {
-		// Validate user existence
-		await this.userService.getUserById(userId);
+		const userId = authUser.sub;
 
 		// Check for existing category with the same name for the user
 		await this.checkNameConflict(data.name, userId);
