@@ -7,14 +7,14 @@ export const loginSchema = z.object({
 	email: z.email({
 		error: (issue) =>
 			issue.input === undefined
-				? 'El correo es obligatorio!'
-				: 'El correo debe ser un correo electrónico válido',
+				? 'Email is required!'
+				: 'Email must be a valid email address',
 	}),
 	password: z.string({
 		error: (issue) =>
 			issue.input === undefined
-				? 'La contraseña es obligatoria!'
-				: 'El campo contraseña es invalido',
+				? 'Password is required!'
+				: 'Password field is invalid',
 	}),
 });
 
@@ -28,33 +28,33 @@ export const registerSchema = z.object({
 	email: z.email({
 		error: (issue) =>
 			issue.input === undefined
-				? 'El correo es obligatorio!'
-				: 'El correo debe ser un correo electrónico válido',
+				? 'Email is required!'
+				: 'Email must be a valid email address',
 	}),
 	password: z
 		.string({
 			error: (issue) =>
 				issue.input === undefined
-					? 'La contraseña es obligatoria!'
-					: 'El campo contraseña es invalido',
+					? 'Password is required!'
+					: 'Password field is invalid',
 		})
-		.min(8, 'La contraseña debe tener al menos 8 caracteres'),
+		.min(8, 'Password must be at least 8 characters long'),
 	name: z
 		.string({
 			error: (issue) =>
 				issue.input === undefined
-					? 'El nombre es obligatorio!'
-					: 'El campo nombre es invalido',
+					? 'Name is required!'
+					: 'Name field is invalid',
 		})
-		.min(3, 'El nombre debe tener al menos 3 caracteres'),
+		.min(3, 'Name must be at least 3 characters long'),
 	primaryCurrencyCode: z
 		.string({
 			error: (issue) =>
 				issue.input === undefined
-					? 'El código de moneda primaria es obligatorio!'
-					: 'El campo código de moneda primaria es invalido',
+					? 'Primary currency code is required!'
+					: 'Primary currency code field is invalid',
 		})
-		.length(3, 'El código de moneda debe tener 3 caracteres')
+		.length(3, 'Currency code must be 3 characters long')
 		.optional(),
 });
 

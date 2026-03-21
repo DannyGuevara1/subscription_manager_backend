@@ -49,7 +49,7 @@ export const errorNormalizer = (
 			message: issue.message,
 		}));
 		const normalizedError = validationError({
-			detail: 'La validación de los datos de entrada ha fallado.',
+			detail: 'Input data validation failed.',
 			instance: req.originalUrl,
 			extensions: {
 				validationErrors: formattedErrors,
@@ -102,7 +102,7 @@ export const errorNormalizer = (
 	// Si es un error genérico de JavaScript, conviértelo en un AppError de tipo INTERNAL_SERVER_ERROR
 	if (err instanceof Error) {
 		const genericError = internalError({
-			detail: err.message || 'Se ha producido un error interno en el servidor.',
+			detail: err.message || 'An internal server error occurred.',
 			instance: req.originalUrl,
 			isOperational: false,
 			originalError: err,

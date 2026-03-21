@@ -51,14 +51,14 @@ export default class SubscriptionService {
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
-					detail: `No se encontró ninguna suscripción con ID ${id}.`,
+					detail: `No subscription found with ID ${id}.`,
 				},
 			});
 		}
 
 		if (subscription.userId !== userId) {
 			throw forbiddenError({
-				detail: `No tiene permiso para acceder a esta suscripción.`,
+				detail: 'You do not have permission to access this subscription.',
 				instance: `/subscriptions/${id}`,
 			});
 		}
@@ -82,7 +82,7 @@ export default class SubscriptionService {
 		);
 		if (category.userId !== userId) {
 			throw forbiddenError({
-				detail: `La categoría no pertenece al usuario.`,
+				detail: 'Category does not belong to the user.',
 				instance: `/subscriptions`,
 			});
 		}
@@ -117,14 +117,14 @@ export default class SubscriptionService {
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
-					detail: `No se encontró ninguna suscripción con ID ${id}.`,
+					detail: `No subscription found with ID ${id}.`,
 				},
 			});
 		}
 
 		if (existingSubscription.userId !== userId) {
 			throw forbiddenError({
-				detail: `No tiene permiso para modificar esta suscripción.`,
+				detail: 'You do not have permission to modify this subscription.',
 			});
 		}
 
@@ -140,7 +140,7 @@ export default class SubscriptionService {
 			);
 			if (category.userId !== userId) {
 				throw forbiddenError({
-					detail: `La categoría no pertenece al usuario.`,
+					detail: 'Category does not belong to the user.',
 					instance: `/subscriptions/${id}`,
 				});
 			}
@@ -171,14 +171,14 @@ export default class SubscriptionService {
 				resource: 'Subscription',
 				identifier: id,
 				extensions: {
-					detail: `No se encontró ninguna suscripción con ID ${id}.`,
+					detail: `No subscription found with ID ${id}.`,
 				},
 			});
 		}
 
 		if (existingSubscription.userId !== userId) {
 			throw forbiddenError({
-				detail: `No tiene permiso para eliminar esta suscripción.`,
+				detail: 'You do not have permission to delete this subscription.',
 			});
 		}
 

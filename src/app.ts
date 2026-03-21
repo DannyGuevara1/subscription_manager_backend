@@ -30,7 +30,7 @@ const globalLimiter = rateLimit({
 		type: '/problems/rate-limit-exceeded',
 		title: 'Rate Limit Exceeded',
 		status: 429,
-		detail: 'Ha excedido el límite de peticiones. Intente de nuevo más tarde.',
+		detail: 'You have exceeded the request limit. Please try again later.',
 	},
 });
 
@@ -43,7 +43,7 @@ const authLimiter = rateLimit({
 		type: '/problems/rate-limit-exceeded',
 		title: 'Rate Limit Exceeded',
 		status: 429,
-		detail: 'Demasiados intentos de autenticación. Intente de nuevo más tarde.',
+		detail: 'Too many authentication attempts. Please try again later.',
 	},
 });
 
@@ -82,7 +82,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 			identifier: req.originalUrl,
 			extensions: {
 				method: req.method,
-				detail: `La ruta solicitada no existe en este servidor.`,
+				detail: 'The requested route does not exist on this server.',
 			},
 		}),
 	);

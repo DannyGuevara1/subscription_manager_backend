@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // SCHEMAS
 export const currencyParamsSchema = z.object({
-	code: z.string().length(3, 'El Código debe tener 3 caracteres').toUpperCase(),
+	code: z.string().length(3, 'Code must be 3 characters long').toUpperCase(),
 });
 
 export const createCurrencySchema = z.object({
@@ -10,25 +10,22 @@ export const createCurrencySchema = z.object({
 		.string({
 			error: (iss) =>
 				iss.input === undefined
-					? 'El campo es requerido.'
-					: 'El campo debe ser una cadena de texto.',
+					? 'Field is required.'
+					: 'Field must be a string.',
 		})
-		.length(3, 'El Código debe tener 3 caracteres')
+		.length(3, 'Code must be 3 characters long')
 		.toUpperCase(),
-	name: z
-		.string()
-		.min(3, 'El nombre es muy corto')
-		.max(100, 'El nombre es muy grande'),
+	name: z.string().min(3, 'Name is too short').max(100, 'Name is too long'),
 
 	symbol: z
 		.string({
 			error: (iss) =>
 				iss.input === undefined
-					? 'El campo es requerido.'
-					: 'El campo debe ser una cadena de texto.',
+					? 'Field is required.'
+					: 'Field must be a string.',
 		})
-		.min(1, 'Debe tener al menos un caracter como simbolo')
-		.max(10, 'El simbolo es muy grande'),
+		.min(1, 'Symbol must have at least 1 character')
+		.max(10, 'Symbol is too long'),
 });
 
 export const updateCurrencySchema = createCurrencySchema

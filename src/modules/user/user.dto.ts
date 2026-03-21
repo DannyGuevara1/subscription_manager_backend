@@ -4,7 +4,7 @@ import { ROLE_VALUES } from '@/shared/types/domain.enums.js';
 
 // Schema for the validation Params
 export const userParamsSchema = z.object({
-	id: z.uuidv7({ error: 'El ID de usuario debe ser un UUID válido' }),
+	id: z.uuidv7({ error: 'User ID must be a valid UUID' }),
 });
 
 // Schema Definitions for User DTOs

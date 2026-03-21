@@ -1,4 +1,5 @@
 import type { Category } from '@prisma/client';
+import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import {
 	type CreateCategoryDto,
 	type SafeCategoryDto,
@@ -10,7 +11,6 @@ import type {
 	CreateCategoryData,
 	UpdateCategoryData,
 } from '@/modules/category/category.type.js';
-import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import {
 	conflictError,
 	forbiddenError,
@@ -38,14 +38,14 @@ export default class CategoryService {
 				resource: 'Category',
 				identifier: `${id}`,
 				extensions: {
-					detail: `No se encontro una categoria con el ID ${id}`,
+					detail: `No category found with ID ${id}.`,
 				},
 			});
 		}
 
 		if (category.userId !== userId) {
 			throw forbiddenError({
-				detail: `No tiene permiso para acceder a esta categoría.`,
+				detail: 'You do not have permission to access this category.',
 				instance: `/categories/${id}`,
 			});
 		}
@@ -84,13 +84,13 @@ export default class CategoryService {
 				resource: 'Category',
 				identifier: id,
 				extensions: {
-					detail: `No se encontró la categoría que desea actualizar.`,
+					detail: 'The category you are trying to update was not found.',
 				},
 			});
 		}
 		if (existingCategory.userId !== userId) {
 			throw forbiddenError({
-				detail: `No tiene permiso para actualizar esta categoría.`,
+				detail: 'You do not have permission to update this category.',
 				instance: `/categories/${id}`,
 			});
 		}
@@ -116,14 +116,14 @@ export default class CategoryService {
 				resource: 'Category',
 				identifier: id,
 				extensions: {
-					detail: `No se encontró la categoría que desea eliminar.`,
+					detail: 'The category you are trying to delete was not found.',
 				},
 			});
 		}
 
 		if (existingCategory.userId !== userId) {
 			throw forbiddenError({
-				detail: `No tiene permiso para eliminar esta categoría.`,
+				detail: 'You do not have permission to delete this category.',
 				instance: `/categories/${id}`,
 			});
 		}
@@ -143,7 +143,7 @@ export default class CategoryService {
 
 		if (existingCategory && existingCategory.id !== excludeId) {
 			throw conflictError({
-				detail: `La categoría '${name}' ya existe para este usuario.`,
+				detail: `Category '${name}' already exists for this user.`,
 				resource: 'Category',
 				identifier: existingCategory.id,
 			});

@@ -10,7 +10,7 @@ export const authorize = (...allowedRoles: Role[]) => {
 			return next(
 				forbiddenError({
 					detail:
-						'No tiene los permisos necesarios para acceder a este recurso.',
+						'You do not have the required permissions to access this resource.',
 					instance: req.originalUrl,
 				}),
 			);

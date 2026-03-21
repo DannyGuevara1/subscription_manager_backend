@@ -17,8 +17,7 @@ export default class LoginService {
 
 		if (!user) {
 			throw unauthorizedError({
-				detail:
-					'Credenciales inválidas. Por favor, verifica tu correo y contraseña.',
+				detail: 'Invalid credentials. Please verify your email and password.',
 			});
 		}
 
@@ -26,8 +25,7 @@ export default class LoginService {
 		const isPasswordValid = await bcrypt.compare(password, user.password);
 		if (!isPasswordValid) {
 			throw unauthorizedError({
-				detail:
-					'Credenciales inválidas. Por favor, verifica tu correo y contraseña.',
+				detail: 'Invalid credentials. Please verify your email and password.',
 			});
 		}
 

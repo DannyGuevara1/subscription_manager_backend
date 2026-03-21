@@ -110,10 +110,10 @@ export const handlePrismaKnownRequestError = (
 		case 'P2002': {
 			// Unique constraint failed
 			const conflictField =
-				(err.meta?.target as string[])?.join(', ') || 'campo';
+				(err.meta?.target as string[])?.join(', ') || 'field';
 
 			// Creamos un mensaje de detalle mucho más claro y amigable
-			const detail = `El valor proporcionado para el campo '${conflictField}' ya está en uso. Por favor, utilice un valor diferente.`;
+			const detail = `The provided value for field '${conflictField}' is already in use. Please use a different value.`;
 			return conflictError({
 				detail,
 				instance,
@@ -131,12 +131,12 @@ export const handlePrismaKnownRequestError = (
 			// Foreign key constraint failed
 			const fieldName =
 				(err.meta?.constraint as string) ||
-				'(constraint no expuesta por Prisma en PostgreSQL)';
+				'(constraint not exposed by Prisma in PostgreSQL)';
 			const isDeleteOperation = /delete/i.test(err.message);
 
 			if (isDeleteOperation) {
 				return conflictError({
-					detail: `No se puede eliminar el registro porque está siendo referenciado por otros recursos. ${fieldName}. Elimine primero las dependencias.`,
+					detail: `Cannot delete the record because it is referenced by other resources. ${fieldName}. Delete dependencies first.`,
 					instance,
 					isOperational: true,
 					extensions: {
@@ -150,7 +150,7 @@ export const handlePrismaKnownRequestError = (
 			}
 
 			return unprocessableEntityError({
-				detail: `Violación de clave foránea. ${fieldName}. Verifique que el ID relacionado exista.`,
+				detail: `Foreign key constraint violation. ${fieldName}. Verify that the related ID exists.`,
 				instance,
 				isOperational: true,
 				extensions: {

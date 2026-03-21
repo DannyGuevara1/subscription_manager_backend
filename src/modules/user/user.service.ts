@@ -161,20 +161,20 @@ export default class UserService {
 			resource: 'User',
 			identifier: id,
 			extensions: {
-				detail: `No se encontró ningún usuario con ID ${id}.`,
+				detail: `No user found with ID ${id}.`,
 			},
 		});
 	}
 
 	private accessDeniedError() {
 		return forbiddenError({
-			detail: `No tiene permiso para acceder a este recurso.`,
+			detail: 'You do not have permission to access this resource.',
 		});
 	}
 
 	private supportRestrictedFieldError() {
 		return forbiddenError({
-			detail: 'SUPPORT no puede actualizar email o contraseña de otro usuario.',
+			detail: "SUPPORT cannot update another user's email or password.",
 		});
 	}
 }

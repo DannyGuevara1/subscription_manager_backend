@@ -5,34 +5,28 @@ import {
 } from '@/shared/types/domain.enums.js';
 
 export const subscriptionParamsSchema = z.object({
-	id: z.uuidv7({ error: 'El ID de suscripción debe ser un UUID válido' }),
+	id: z.uuidv7({ error: 'Subscription ID must be a valid UUID' }),
 });
 
 export const createSubscriptionSchema = z.object({
-	categoryId: z
-		.number()
-		.int()
-		.positive({ error: 'El ID de categoría debe ser valido' }),
+	categoryId: z.number().int().positive({ error: 'Category ID must be valid' }),
 	currencyCode: z
 		.string()
-		.length(3, { error: 'El código de moneda debe tener 3 caracteres' }),
+		.length(3, { error: 'Currency code must be 3 characters long' }),
 	name: z
 		.string()
-		.min(1, { error: 'El nombre es obligatorio' })
-		.max(100, { error: 'El nombre no puede superar los 100 caracteres' }),
-	cost: z
-		.number()
-		.nonnegative({ error: 'El costo debe ser un número positivo' }),
+		.min(1, { error: 'Name is required' })
+		.max(100, { error: 'Name must be at most 100 characters long' }),
+	cost: z.number().nonnegative({ error: 'Cost must be a positive number' }),
 	costType: z.enum(COST_TYPE_VALUES, {
-		error: () =>
-			`El tipo de costo debe ser uno de los siguientes: ${COST_TYPE_VALUES.join(', ')}`,
+		error: () => `Cost type must be one of: ${COST_TYPE_VALUES.join(', ')}`,
 	}),
 	billingFrequency: z.number().int().positive({
-		error: 'La frecuencia de facturación debe ser un número positivo',
+		error: 'Billing frequency must be a positive number',
 	}),
 	billingUnit: z.enum(BILLING_UNIT_VALUES, {
 		error: () =>
-			`La unidad de facturación debe ser uno de los siguientes: ${BILLING_UNIT_VALUES.join(', ')}`,
+			`Billing unit must be one of: ${BILLING_UNIT_VALUES.join(', ')}`,
 	}),
 	firstPaymentDate: z.coerce.date(),
 	trialEndsOn: z.coerce.date().optional(),
@@ -43,27 +37,24 @@ export const updateSubscriptionSchema = z
 		categoryId: z
 			.number()
 			.int()
-			.positive({ error: 'El ID de categoría debe ser valido' }),
+			.positive({ error: 'Category ID must be valid' }),
 		currencyCode: z
 			.string()
-			.length(3, { error: 'El código de moneda debe tener 3 caracteres' }),
+			.length(3, { error: 'Currency code must be 3 characters long' }),
 		name: z
 			.string()
-			.min(1, { error: 'El nombre es obligatorio' })
-			.max(100, { error: 'El nombre no puede superar los 100 caracteres' }),
-		cost: z
-			.number()
-			.nonnegative({ error: 'El costo debe ser un número positivo' }),
+			.min(1, { error: 'Name is required' })
+			.max(100, { error: 'Name must be at most 100 characters long' }),
+		cost: z.number().nonnegative({ error: 'Cost must be a positive number' }),
 		costType: z.enum(COST_TYPE_VALUES, {
-			error: () =>
-				`El tipo de costo debe ser uno de los siguientes: ${COST_TYPE_VALUES.join(', ')}`,
+			error: () => `Cost type must be one of: ${COST_TYPE_VALUES.join(', ')}`,
 		}),
 		billingFrequency: z.number().int().positive({
-			error: 'La frecuencia de facturación debe ser un número positivo',
+			error: 'Billing frequency must be a positive number',
 		}),
 		billingUnit: z.enum(BILLING_UNIT_VALUES, {
 			error: () =>
-				`La unidad de facturación debe ser uno de los siguientes: ${BILLING_UNIT_VALUES.join(', ')}`,
+				`Billing unit must be one of: ${BILLING_UNIT_VALUES.join(', ')}`,
 		}),
 		firstPaymentDate: z.coerce.date(),
 		trialEndsOn: z.coerce.date().optional(),

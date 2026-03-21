@@ -28,7 +28,7 @@ export default class CurrencyService {
 				resource: 'Currency',
 				identifier: code,
 				extensions: {
-					detail: `No se encontró ninguna moneda con código ${code}.`,
+					detail: `No currency found with code ${code}.`,
 				},
 			});
 		}
@@ -45,7 +45,7 @@ export default class CurrencyService {
 				resource: 'Currency',
 				identifier: data.code,
 				extensions: {
-					detail: `Ya existe una moneda con código ${data.code}.`,
+					detail: `A currency with code ${data.code} already exists.`,
 				},
 			});
 		}
@@ -69,7 +69,7 @@ export default class CurrencyService {
 				resource: 'Currency',
 				identifier: code,
 				extensions: {
-					detail: `No se encontró ninguna moneda con código ${code}.`,
+					detail: `No currency found with code ${code}.`,
 				},
 			});
 		}
@@ -92,7 +92,7 @@ export default class CurrencyService {
 				resource: 'Currency',
 				identifier: code,
 				extensions: {
-					detail: `No se encontró ninguna moneda con código ${code}.`,
+					detail: `No currency found with code ${code}.`,
 				},
 			});
 		}

@@ -19,7 +19,7 @@ export function createError(
 
 	if (!baseProblem) {
 		throw new TypeError(
-			`El tipo de problema "${typeKey}" no existe en ProblemTypes.`,
+			`Problem type "${typeKey}" does not exist in ProblemTypes.`,
 		);
 	}
 
@@ -137,7 +137,7 @@ export function conflictError(options: ErrorOptions.ConflictOptions): AppError {
 	} = options;
 
 	const finalDetail =
-		detail || 'Se ha detectado un conflicto en la operación solicitada.';
+		detail || 'A conflict was detected in the requested operation.';
 
 	return createError('CONFLICT', {
 		detail: finalDetail,
@@ -162,7 +162,7 @@ export function unauthorizedError(
 	const { detail, instance, isOperational = true, stack, ...rest } = options;
 
 	const finalDetail =
-		detail || 'No está autorizado para acceder a este recurso.';
+		detail || 'You are not authorized to access this resource.';
 
 	return createError('UNAUTHORIZED', {
 		detail: finalDetail,
