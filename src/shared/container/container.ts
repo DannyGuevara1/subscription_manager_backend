@@ -10,13 +10,14 @@ import {
 } from 'awilix';
 import prismaClient from '@/config/prisma.js';
 import redisClient from '@/config/redis.js';
+import type { Cradle } from '@/shared/container/container.types.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const baseGlob = isProduction ? 'dist/src' : 'src';
 const extensionGlob = isProduction ? '.js' : '.ts';
 
-export async function setupContainer(): Promise<AwilixContainer> {
-	const container = createContainer({
+export async function setupContainer(): Promise<AwilixContainer<Cradle>> {
+	const container = createContainer<Cradle>({
 		strict: true,
 		injectionMode: InjectionMode.CLASSIC,
 	});
