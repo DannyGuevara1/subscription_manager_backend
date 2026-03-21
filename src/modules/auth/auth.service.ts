@@ -109,7 +109,7 @@ export default class AuthService {
 			});
 		}
 
-		const user = await this.userService.getUserById(decoded.sub);
+		const user = await this.userService.getUserByIdInternal(decoded.sub);
 
 		if (!user) {
 			throw unauthorizedError({

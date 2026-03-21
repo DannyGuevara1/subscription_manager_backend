@@ -22,12 +22,21 @@ export const createUserSchema = z.object({
 
 export const updateUserSchema = createUserSchema.partial();
 
+export const updateUserRoleSchema = z.object({
+	role: z.enum(ROLE_VALUES),
+});
+
 export const createUserRequestSchema = z.object({
 	body: createUserSchema,
 });
 
 export const updateUserRequestSchema = z.object({
 	body: updateUserSchema,
+	params: userParamsSchema,
+});
+
+export const updateUserRoleRequestSchema = z.object({
+	body: updateUserRoleSchema,
 	params: userParamsSchema,
 });
 
@@ -50,3 +59,4 @@ export type SafeUserDto = z.infer<typeof safeUserSchema>;
 // Types Inferred from Schemas
 export type CreateUserDto = z.infer<typeof createUserSchema>;
 export type UpdateUserDto = z.infer<typeof updateUserSchema>;
+export type UpdateUserRoleDto = z.infer<typeof updateUserRoleSchema>;

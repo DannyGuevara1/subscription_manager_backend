@@ -5,7 +5,7 @@ Origin: http://localhost:3000
 
 ### Get User by ID
 ### Only Admins can access this endpoint
-GET http://localhost:3000/api/v1/users/019bf33c-8beb-7d73-bc6b-5819a67c6788
+GET http://localhost:3000/api/v1/users/019c6916-20df-7abd-88f6-253598ca41c2
 Origin: http://localhost:3000
 
 ### Create User
@@ -22,8 +22,8 @@ content-type: application/json
 }
 
 ### Update User
-### Only Admins and the User themselves can access this endpoint
-PUT http://localhost:3000/api/v1/users/019bf33c-8beb-7d73-bc6b-5819a67c6788
+### Owner, ADMIN y SUPPORT pueden actualizar; SUPPORT no puede cambiar email/password de otros usuarios
+PUT http://localhost:3000/api/v1/users/019ca26b-78fe-7114-aacc-b06e1783de19
 Origin: http://localhost:3000
 content-type: application/json
 
@@ -32,6 +32,16 @@ content-type: application/json
     "email": "guevarad170@gmail.com",
     "password": "Coleccion12",
     "primaryCurrencyCode": "USD"
+}
+
+### Update User Role
+### Solo ADMIN puede acceder. Revoca refresh token del usuario objetivo.
+PATCH http://localhost:3000/api/v1/users/019ca26b-78fe-7114-aacc-b06e1783de19/role
+Origin: http://localhost:3000
+content-type: application/json
+
+{
+    "role": "SUPPORT"
 }
 
 ### Delete User

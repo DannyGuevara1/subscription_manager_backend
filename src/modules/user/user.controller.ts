@@ -1,13 +1,19 @@
 // src/modules/user/user.controller.ts
 import type { NextFunction, Request, Response } from 'express';
-import type { UserParams, UserService } from '@/modules/user/index.js';
-import type { Role } from '@/shared/types/domain.enums.js';
+import type { AuthService } from '@/modules/auth/index.js';
+import type {
+	UpdateUserRoleDto,
+	UserParams,
+	UserService,
+} from '@/modules/user/index.js';
 
 export default class UserController {
 	private userService: UserService;
+	private authService: AuthService;
 
-	constructor(userService: UserService) {
+	constructor(userService: UserService, authService: AuthService) {
 		this.userService = userService;
+		this.authService = authService;
 	}
 
 	async getAllUsers(_req: Request, res: Response, _next: NextFunction) {
@@ -25,13 +31,8 @@ export default class UserController {
 		_next: NextFunction,
 	) {
 		const { id } = req.params;
-		const requesterUserId = req.user?.sub;
-		const requesterRole = req.user?.role as Role | undefined;
-		const user = await this.userService.getUserById(
-			id,
-			requesterUserId,
-			requesterRole,
-		);
+		const authUser = req.user as NonNullable<Request['user']>;
+		const user = await this.userService.getUserProfileById(id, authUser);
 
 		res.status(200).json({
 			data: user,
@@ -54,9 +55,35 @@ export default class UserController {
 	) {
 		const { id } = req.params;
 		const userData = req.body;
-		const sub = req.user?.sub as string;
+		const authUser = req.user as NonNullable<Request['user']>;
 
-		const updatedUser = await this.userService.updateUser(id, userData, sub);
+		const updatedUser = await this.userService.updateUser(
+			id,
+			userData,
+			authUser,
+		);
+
+		res.status(200).json({
+			data: updatedUser,
+		});
+	}
+
+	async updateUserRole(
+		req: Request<UserParams, unknown, UpdateUserRoleDto>,
+		res: Response,
+		_next: NextFunction,
+	) {
+		const { id } = req.params;
+		const { role } = req.body;
+		const authUser = req.user as NonNullable<Request['user']>;
+
+		const updatedUser = await this.userService.updateUserRole(
+			id,
+			authUser,
+			role,
+		);
+
+		await this.authService.invalidateRefreshToken(id);
 
 		res.status(200).json({
 			data: updatedUser,

@@ -211,6 +211,90 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			.expect(403);
 	});
 
+	it('Debe permitir que ADMIN actualice el perfil de otro usuario', async () => {
+		const updatedData = {
+			name: 'Updated by Admin',
+			primaryCurrencyCode: 'USD',
+		};
+
+		const res = await request(env.getApp())
+			.put(`/api/v1/users/${otherUser.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.send(updatedData)
+			.expect(200)
+			.expect('Content-Type', /json/);
+
+		assert.strictEqual(
+			res.body.data.id,
+			otherUser.id,
+			'ADMIN debe poder actualizar cualquier usuario',
+		);
+		assert.strictEqual(res.body.data.name, updatedData.name);
+	});
+
+	it('Debe permitir que SUPPORT actualice campos no sensibles de otro usuario', async () => {
+		const updatedData = {
+			name: 'Updated by Support',
+			primaryCurrencyCode: 'EUR',
+		};
+
+		const res = await request(env.getApp())
+			.put(`/api/v1/users/${otherUser.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', supportCookie)
+			.send(updatedData)
+			.expect(200)
+			.expect('Content-Type', /json/);
+
+		assert.strictEqual(
+			res.body.data.id,
+			otherUser.id,
+			'SUPPORT debe poder actualizar campos no sensibles',
+		);
+		assert.strictEqual(res.body.data.name, updatedData.name);
+	});
+
+	it('Debe bloquear a SUPPORT al intentar actualizar email o password de otro usuario', async () => {
+		await request(env.getApp())
+			.put(`/api/v1/users/${otherUser.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', supportCookie)
+			.send({ email: 'blocked-by-support@test.com' })
+			.expect(403);
+	});
+
+	it('Debe impedir que un USER cambie roles usando el endpoint dedicado', async () => {
+		await request(env.getApp())
+			.patch(`/api/v1/users/${otherUser.id}/role`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', cookie)
+			.send({ role: 'SUPPORT' })
+			.expect(403);
+	});
+
+	it('Debe permitir que ADMIN cambie rol y revocar refresh token previo del usuario objetivo', async () => {
+		const roleRes = await request(env.getApp())
+			.patch(`/api/v1/users/${otherUser.id}/role`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.send({ role: 'SUPPORT' })
+			.expect(200)
+			.expect('Content-Type', /json/);
+
+		assert.strictEqual(
+			roleRes.body.data.role,
+			'SUPPORT',
+			'El rol debe actualizarse correctamente',
+		);
+
+		await request(env.getApp())
+			.post('/api/v1/auth/refresh-token')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', otherUserCookie)
+			.expect(401);
+	});
+
 	it('Debe eliminar el usuario', async () => {
 		await request(env.getApp())
 			.delete(`/api/v1/users/${user.id}`)

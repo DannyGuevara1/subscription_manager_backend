@@ -4,6 +4,7 @@ import prismaClient from '@/config/prisma.js';
 import type {
 	CreateUserData,
 	UpdateUserData,
+	UpdateUserRoleData,
 } from '@/modules/user/user.type.js';
 
 export default class UserRepository {
@@ -37,7 +38,11 @@ export default class UserRepository {
 		return this.prisma.user.update({ where: { id }, data });
 	}
 
-	async delete(id: string): Promise<User | null> {
+	async updateRole(id: string, data: UpdateUserRoleData): Promise<User> {
+		return this.prisma.user.update({ where: { id }, data });
+	}
+
+	async delete(id: string): Promise<User> {
 		return this.prisma.user.delete({ where: { id } });
 	}
 }

@@ -2,6 +2,7 @@
 import type { User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
+import type { JWTPayload } from '@/modules/auth/index.js';
 import type { CreateUserData, UpdateUserData } from '@/modules/user/index.js';
 import {
 	type CreateUserDto,
@@ -44,24 +45,30 @@ export default class UserService {
 		return users.map((user) => this.toSafeUserDto(user));
 	}
 
-	async getUserById(
+	async getUserByIdInternal(id: string): Promise<SafeUserDto> {
+		const user: User | null = await this.userRepository.findById(id);
+		if (!user) {
+			throw this.userNotFoundError(id);
+		}
+
+		return this.toSafeUserDto(user);
+	}
+
+	async getUserProfileById(
 		id: string,
-		requesterUserId?: string,
-		requesterRole?: Role,
+		authUser: JWTPayload,
 	): Promise<SafeUserDto> {
 		const user: User | null = await this.userRepository.findById(id);
 		if (!user) {
 			throw this.userNotFoundError(id);
 		}
 
-		if (requesterUserId) {
-			const isOwner = user.id === requesterUserId;
-			const isPrivilegedRole =
-				requesterRole === 'ADMIN' || requesterRole === 'SUPPORT';
+		const isOwner = user.id === authUser.sub;
+		const isPrivilegedRole =
+			authUser.role === 'ADMIN' || authUser.role === 'SUPPORT';
 
-			if (!isOwner && !isPrivilegedRole) {
-				throw this.userNotFoundError(id);
-			}
+		if (!isOwner && !isPrivilegedRole) {
+			throw this.userNotFoundError(id);
 		}
 
 		return this.toSafeUserDto(user);
@@ -70,15 +77,25 @@ export default class UserService {
 	async updateUser(
 		id: string,
 		data: UpdateUserDto,
-		userId: string,
+		authUser: JWTPayload,
 	): Promise<SafeUserDto> {
 		const existingUser = await this.userRepository.findById(id);
 		if (!existingUser) {
 			throw this.userNotFoundError(id);
 		}
 
-		if (existingUser.id !== userId) {
+		const isOwner = existingUser.id === authUser.sub;
+		const isPrivilegedRole =
+			authUser.role === 'ADMIN' || authUser.role === 'SUPPORT';
+
+		if (!isOwner && !isPrivilegedRole) {
 			throw this.accessDeniedError();
+		}
+
+		if (authUser.role === 'SUPPORT' && !isOwner) {
+			if (data.email || data.password) {
+				throw this.supportRestrictedFieldError();
+			}
 		}
 
 		const { password } = data;
@@ -89,6 +106,25 @@ export default class UserService {
 		};
 
 		const updatedUser = await this.userRepository.update(id, updateData);
+
+		return this.toSafeUserDto(updatedUser);
+	}
+
+	async updateUserRole(
+		id: string,
+		authUser: JWTPayload,
+		role: Role,
+	): Promise<SafeUserDto> {
+		if (authUser.role !== 'ADMIN') {
+			throw this.accessDeniedError();
+		}
+
+		const existingUser = await this.userRepository.findById(id);
+		if (!existingUser) {
+			throw this.userNotFoundError(id);
+		}
+
+		const updatedUser = await this.userRepository.updateRole(id, { role });
 
 		return this.toSafeUserDto(updatedUser);
 	}
@@ -133,6 +169,12 @@ export default class UserService {
 	private accessDeniedError() {
 		return forbiddenError({
 			detail: `No tiene permiso para acceder a este recurso.`,
+		});
+	}
+
+	private supportRestrictedFieldError() {
+		return forbiddenError({
+			detail: 'SUPPORT no puede actualizar email o contraseña de otro usuario.',
 		});
 	}
 }

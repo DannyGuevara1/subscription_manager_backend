@@ -39,5 +39,12 @@ export default function userRoutes(
 			validateRequest(userSchema.userParamsRequestSchema),
 			catchAsync(userController.deleteUser.bind(userController)),
 		);
+
+	router.patch(
+		'/:id/role',
+		authorize('ADMIN'),
+		validateRequest(userSchema.updateUserRoleRequestSchema),
+		catchAsync(userController.updateUserRole.bind(userController)),
+	);
 	return router;
 }

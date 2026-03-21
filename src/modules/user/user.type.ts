@@ -1,5 +1,6 @@
 // src/modules/user/user.type.ts
 import type { ParamsDictionary } from 'express-serve-static-core';
+import type { Role } from '@/shared/types/domain.enums.js';
 
 export interface UserParams extends ParamsDictionary {
 	id: string;
@@ -18,4 +19,8 @@ export interface UpdateUserData {
 	email?: string;
 	password?: string;
 	primaryCurrencyCode?: string;
+}
+
+export interface UpdateUserRoleData {
+	role: Role;
 }
