@@ -5,12 +5,11 @@ import { containerPromise } from '@/shared/container/container.js';
 
 const container = await containerPromise;
 
-const userRouter = container.resolve<express.Router>('userRoutes');
-const currencyRouter = container.resolve<express.Router>('currencyRoutes');
-const subscriptionRouter =
-	container.resolve<express.Router>('subscriptionRoutes');
-const categoryRouter = container.resolve<express.Router>('categoryRoutes');
-const authRouter = container.resolve<express.Router>('authRoutes');
+const userRouter = container.cradle.userRoutes;
+const currencyRouter = container.cradle.currencyRoutes;
+const subscriptionRouter = container.cradle.subscriptionRoutes;
+const categoryRouter = container.cradle.categoryRoutes;
+const authRouter = container.cradle.authRoutes;
 
 const v1: Router = express.Router();
 
