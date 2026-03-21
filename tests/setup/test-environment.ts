@@ -54,7 +54,7 @@ export function setupIntegrationEnvironment() {
 				console.log('🔴 REDIS_URL:', process.env.REDIS_URL);
 				console.log(
 					'🔑 JWT_SECRET:',
-					process.env.JWT_SECRET ? '✓ configurado' : '✗ falta',
+					process.env.JWT_ACCESS_SECRET ? '✓ configurado' : '✗ falta',
 				);
 
 				const prismaModule = await import('@/config/prisma.js');
