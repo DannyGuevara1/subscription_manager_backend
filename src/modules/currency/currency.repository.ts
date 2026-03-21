@@ -23,14 +23,11 @@ export default class CurrencyRepository {
 		return this.prisma.currency.findUnique({ where: { code } });
 	}
 
-	async update(
-		code: string,
-		data: UpdateCurrencyData,
-	): Promise<Currency | null> {
+	async update(code: string, data: UpdateCurrencyData): Promise<Currency> {
 		return this.prisma.currency.update({ where: { code }, data });
 	}
 
-	async delete(code: string): Promise<Currency | null> {
+	async delete(code: string): Promise<Currency> {
 		return this.prisma.currency.delete({ where: { code } });
 	}
 }
