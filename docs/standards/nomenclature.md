@@ -13,6 +13,14 @@ Esta convención asegura nombres claros, predecibles y consistentes en todo el c
 - camelCase para variables, funciones y métodos.
 - Prefijos claros para funciones asíncronas: `get`, `create`, `update`, `delete`.
 
+## 2.1 Métodos de servicio: internos vs endpoint
+- Métodos internos (sin reglas de autorización por requester) deben terminar en `Internal`.
+	- Ejemplo: `getUserByIdInternal`.
+- Métodos usados por controladores para endpoints protegidos deben reflejar intención de acceso y requerir contexto autenticado.
+	- Ejemplo: `getUserProfileById(id, authUser)`.
+- Evitar firmas ambiguas con parámetros opcionales de autorización en un mismo método de servicio.
+	- Preferir separar responsabilidades en métodos distintos (interno vs endpoint).
+
 ## 3. Clases y Tipos
 - PascalCase para clases, interfaces y tipos.
 - Reservar el prefijo `Safe*` para DTOs de salida/sanitización en la frontera HTTP (`*.dto.ts`).
