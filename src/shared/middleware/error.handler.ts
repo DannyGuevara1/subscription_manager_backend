@@ -27,7 +27,7 @@ export const errorHandler = (
 			title: 'Internal Server Error',
 			status: 500,
 			detail:
-				'Ha ocurrido un error inesperado. Nuestro equipo ha sido notificado.',
+				'An unexpected error occurred. Our team has been notified.',
 		});
 		return;
 	}
