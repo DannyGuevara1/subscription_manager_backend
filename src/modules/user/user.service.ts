@@ -77,6 +77,9 @@ export default class UserService {
 		}
 
 		if (authUser.role === ROLE_VALUES[2]) {
+			if (profile.id === authUser.sub) {
+				return this.toSafeUserDto(profile);
+			}
 			return this.toSupportUserDto(profile);
 		}
 
@@ -138,6 +141,7 @@ export default class UserService {
 		return this.toSafeUserDto(updatedUser);
 	}
 
+	//TODO: add authorization for admin
 	async deleteUser(id: string, userId: string): Promise<SafeUserDto> {
 		const existingUser = await this.userRepository.findById(id);
 		if (!existingUser) {

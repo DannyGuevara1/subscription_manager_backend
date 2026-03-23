@@ -28,17 +28,17 @@ export default function userRoutes(
 	router
 		.route('/:id')
 		.get(
-			authorize('ADMIN', 'SUPPORT'),
+			authorize('USER', 'ADMIN', 'SUPPORT'),
 			validateRequest(userSchema.userParamsRequestSchema),
 			catchAsync(userController.getUserById.bind(userController)),
 		)
 		.put(
-			authorize('ADMIN', 'SUPPORT'),
+			authorize('USER', 'ADMIN', 'SUPPORT'),
 			validateRequest(userSchema.updateUserRequestSchema),
 			catchAsync(userController.updateUser.bind(userController)),
 		)
 		.delete(
-			authorize('ADMIN'),
+			authorize('USER', 'ADMIN', 'SUPPORT'),
 			validateRequest(userSchema.userParamsRequestSchema),
 			catchAsync(userController.deleteUser.bind(userController)),
 		);
