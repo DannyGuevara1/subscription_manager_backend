@@ -13,6 +13,8 @@ export const errorHandler = (
 		return next(err);
 	}
 
+	res.setHeader('Content-Type', 'application/problem+json');
+
 	// Pasamos el objeto completo del error (del toLogFormat) para un log estructurado.
 	logger.error({ error: err.toLogFormat() }, err.message);
 
