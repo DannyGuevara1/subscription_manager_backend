@@ -44,6 +44,7 @@ export const userParamsRequestSchema = z.object({
 	params: userParamsSchema,
 });
 // RESPONSE DTOs
+// Contrato completo → ADMIN y USER (owner)
 export const safeUserSchema = z.object({
 	id: z.string(),
 	email: z.string(),
@@ -55,6 +56,18 @@ export const safeUserSchema = z.object({
 });
 
 export type SafeUserDto = z.infer<typeof safeUserSchema>;
+
+// Contrato restringido → SUPPORT
+export const supportUserSchema = z.object({
+	id: z.string(),
+	primaryCurrencyCode: z.string(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
+}).strict();
+
+export type SupportUserDto = z.infer<typeof supportUserSchema>;
+
+export type ProfileDto = SafeUserDto | SupportUserDto;
 
 // Types Inferred from Schemas
 export type CreateUserDto = z.infer<typeof createUserSchema>;

@@ -3,12 +3,14 @@ import type { User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import type { JWTPayload } from '@/modules/auth/index.js';
-import type { CreateUserData, UpdateUserData } from '@/modules/user/index.js';
+import type { CreateUserData, ProfileDto, UpdateUserData } from '@/modules/user/index.js';
 import {
 	type CreateUserDto,
 	type SafeUserDto,
 	safeUserSchema,
 	type UpdateUserDto,
+	type SupportUserDto,
+	supportUserSchema,
 } from '@/modules/user/index.js';
 import type UserRepository from '@/modules/user/user.repository.js';
 import {
@@ -16,6 +18,7 @@ import {
 	notFoundError,
 } from '@/shared/errors/error.factory.js';
 import type { Role } from '@/shared/types/domain.enums.js';
+import { ROLE_VALUES } from '@/shared/types/domain.enums.js';
 
 export default class UserService {
 	private userRepository: UserRepository;
@@ -57,21 +60,27 @@ export default class UserService {
 	async getUserProfileById(
 		id: string,
 		authUser: JWTPayload,
-	): Promise<SafeUserDto> {
-		const user: User | null = await this.userRepository.findById(id);
-		if (!user) {
+	): Promise<ProfileDto> {
+		const profile: User | null = await this.userRepository.findById(id);
+
+		if (!profile) {
 			throw this.userNotFoundError(id);
 		}
 
-		const isOwner = user.id === authUser.sub;
-		const isPrivilegedRole =
-			authUser.role === 'ADMIN' || authUser.role === 'SUPPORT';
+		if (authUser.role === ROLE_VALUES[1]) return this.toSafeUserDto(profile);
 
-		if (!isOwner && !isPrivilegedRole) {
-			throw this.userNotFoundError(id);
+		if (authUser.role === ROLE_VALUES[0]) {
+			if (profile.id !== authUser.sub) {
+				throw this.accessDeniedError();
+			}
+			return this.toSafeUserDto(profile);
 		}
 
-		return this.toSafeUserDto(user);
+		if (authUser.role === ROLE_VALUES[2]) {
+			return this.toSupportUserDto(profile);
+		}
+
+		throw this.accessDeniedError();
 	}
 
 	async updateUser(
@@ -150,6 +159,15 @@ export default class UserService {
 			name: user.name,
 			primaryCurrencyCode: user.primaryCurrencyCode,
 			role: user.role,
+			createdAt: user.createdAt,
+			updatedAt: user.updatedAt,
+		});
+	}
+
+	private toSupportUserDto(user: User): SupportUserDto {
+		return supportUserSchema.parse({
+			id: user.id,
+			primaryCurrencyCode: user.primaryCurrencyCode,
 			createdAt: user.createdAt,
 			updatedAt: user.updatedAt,
 		});
