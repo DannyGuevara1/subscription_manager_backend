@@ -66,7 +66,8 @@ describe('Módulo de Autenticación y registro', () => {
 				.post('/api/v1/auth/register')
 				.set('Origin', 'http://localhost:3000')
 				.send(mockUser)
-				.expect(409);
+				.expect(409)
+				.expect('Content-Type', /application\/problem\+json/);
 		},
 	);
 
