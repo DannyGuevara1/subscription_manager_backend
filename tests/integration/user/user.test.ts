@@ -106,12 +106,12 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			.expect(404);
 	});
 
-	it('Debe retornar 404 cuando un USER intenta consultar otro usuario existente', async () => {
+it('Debe retornar 403 cuando un USER intenta consultar otro usuario existente', async () => {
 		await request(env.getApp())
 			.get(`/api/v1/users/${user.id}`)
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', otherUserCookie)
-			.expect(404);
+		.expect(403);
 	});
 
 	it('Debe permitir que ADMIN consulte el perfil de cualquier usuario', async () => {
@@ -142,6 +142,11 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			otherUser.id,
 			'SUPPORT debe poder consultar cualquier usuario por ID',
 		);
+	assert.strictEqual(
+		res.body.data.email,
+		undefined,
+		'SUPPORT no debe recibir email en el perfil',
+	);
 	});
 
 	// PUT /users/:id
