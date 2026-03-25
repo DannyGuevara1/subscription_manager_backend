@@ -19,7 +19,7 @@ export default class SubscriptionRepository {
 			categoryId: subscription.categoryId,
 			currencyCode: subscription.currencyCode,
 			name: subscription.name,
-			cost: subscription.cost.toNumber(),
+			cost: Number(subscription.cost),
 			costType: subscription.costType,
 			billingFrequency: subscription.billingFrequency,
 			billingUnit: subscription.billingUnit,
