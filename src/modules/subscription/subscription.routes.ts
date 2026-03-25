@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
 	createSubscriptionRequestSchema,
+	subscriptionCursorPaginationRequestSchema,
 	subscriptionParamsRequestSchema,
 	updateSubscriptionRequestSchema,
 } from '@/modules/subscription/index.js';
@@ -20,6 +21,7 @@ export default function subscriptionRoutes(
 	router
 		.route('/')
 		.get(
+			validateRequest(subscriptionCursorPaginationRequestSchema),
 			catchAsync(
 				subscriptionController.getAllSubscriptions.bind(subscriptionController),
 			),
