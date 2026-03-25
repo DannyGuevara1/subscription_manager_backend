@@ -11,7 +11,14 @@ export const validateRequest = (schema: ZodObject<any>) => {
 			});
 
 			if (validatedData.body) req.body = validatedData.body;
-			if (validatedData.query) req.query = validatedData.query as any;
+			if (validatedData.query) {
+				Object.defineProperty(req, 'query', {
+					value: validatedData.query,
+					writable: true,
+					configurable: true,
+					enumerable: true,
+				});
+			}
 			if (validatedData.params) req.params = validatedData.params as any;
 			next();
 		} catch (error) {
