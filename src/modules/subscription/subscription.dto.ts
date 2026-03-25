@@ -8,6 +8,16 @@ export const subscriptionParamsSchema = z.object({
 	id: z.uuidv7({ error: 'Subscription ID must be a valid UUID' }),
 });
 
+export const subscriptionCursorPaginationQuerySchema = z.object({
+	cursor: z.uuidv7({ error: 'Cursor must be a valid UUIDv7' }).optional(),
+	limit: z.coerce
+		.number()
+		.int({ error: 'Limit must be an integer' })
+		.min(1, { error: 'Limit must be at least 1' })
+		.max(100, { error: 'Limit must be at most 100' })
+		.default(10),
+});
+
 export const createSubscriptionSchema = z.object({
 	categoryId: z.number().int().positive({ error: 'Category ID must be valid' }),
 	currencyCode: z
@@ -66,6 +76,10 @@ export const createSubscriptionRequestSchema = z.object({
 	body: createSubscriptionSchema,
 });
 
+export const subscriptionCursorPaginationRequestSchema = z.object({
+	query: subscriptionCursorPaginationQuerySchema,
+});
+
 export const updateSubscriptionRequestSchema = z.object({
 	body: updateSubscriptionSchema,
 	params: subscriptionParamsSchema,
@@ -94,3 +108,6 @@ export type SafeSubscriptionDto = z.infer<typeof safeSubscriptionSchema>;
 // Infer the TypeScript types from the Zod schemas
 export type CreateSubscriptionDto = z.infer<typeof createSubscriptionSchema>;
 export type UpdateSubscriptionDto = z.infer<typeof updateSubscriptionSchema>;
+export type SubscriptionCursorPaginationQueryDto = z.infer<
+	typeof subscriptionCursorPaginationQuerySchema
+>;
