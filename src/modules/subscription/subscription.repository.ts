@@ -2,6 +2,8 @@ import type { Subscription } from '@prisma/client';
 import prismaClient from '@/config/prisma.js';
 import type {
 	CreateSubscriptionData,
+	SubscriptionCursorPaginationOptions,
+	SubscriptionCursorPaginationResult,
 	SubscriptionDomain,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
@@ -37,6 +39,33 @@ export default class SubscriptionRepository {
 		});
 
 		return subscriptions.map((subscription) => this.toDomain(subscription));
+	}
+
+	async findAllWithCursor(
+		userId: string,
+		options: SubscriptionCursorPaginationOptions,
+	): Promise<SubscriptionCursorPaginationResult> {
+		const { cursor, limit } = options;
+
+		const subscriptions = await this.prisma.subscription.findMany({
+			where: {
+				userId,
+			},
+			orderBy: { id: 'desc' },
+			take: limit + 1,
+			...(cursor
+				? {
+						cursor: { id: cursor },
+						skip: 1,
+					}
+				: {}),
+		});
+
+		return {
+			subscriptions: subscriptions.map((subscription) =>
+				this.toDomain(subscription),
+			),
+		};
 	}
 
 	async findById(id: string): Promise<SubscriptionDomain | null> {
