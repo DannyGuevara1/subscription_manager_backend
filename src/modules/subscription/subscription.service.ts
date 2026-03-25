@@ -5,6 +5,7 @@ import type CurrencyService from '@/modules/currency/currency.service.js';
 import {
 	type CreateSubscriptionDto,
 	type SafeSubscriptionDto,
+	type SubscriptionCursorPaginationQueryDto,
 	type SubscriptionRepository,
 	safeSubscriptionSchema,
 	type UpdateSubscriptionDto,
@@ -33,11 +34,33 @@ export default class SubscriptionService {
 		this.currencyService = currencyService;
 	}
 
-	async getAllSubscriptions(userId: string): Promise<SafeSubscriptionDto[]> {
-		const subscriptions = await this.subscriptionRepository.findAll(userId);
-		return subscriptions.map((subscription) =>
-			safeSubscriptionSchema.parse(subscription),
-		);
+	async getAllSubscriptions(
+		userId: string,
+		options: SubscriptionCursorPaginationQueryDto,
+	): Promise<{
+		subscriptions: SafeSubscriptionDto[];
+		nextCursor: string | null;
+		hasNextPage: boolean;
+	}> {
+		const { subscriptions } =
+			await this.subscriptionRepository.findAllWithCursor(userId, options);
+
+		const hasNextPage = subscriptions.length > options.limit;
+		const paginatedSubscriptions = hasNextPage
+			? subscriptions.slice(0, options.limit)
+			: subscriptions;
+
+		const nextCursor = hasNextPage
+			? (paginatedSubscriptions[paginatedSubscriptions.length - 1]?.id ?? null)
+			: null;
+
+		return {
+			subscriptions: paginatedSubscriptions.map((subscription) =>
+				safeSubscriptionSchema.parse(subscription),
+			),
+			nextCursor,
+			hasNextPage,
+		};
 	}
 
 	async getSubscriptionById(
