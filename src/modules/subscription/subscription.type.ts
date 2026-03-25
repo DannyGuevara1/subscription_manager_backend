@@ -39,3 +39,12 @@ export interface SubscriptionDomain {
 	firstPaymentDate: Date;
 	trialEndsOn?: Date | null;
 }
+
+export interface SubscriptionCursorPaginationOptions {
+	cursor?: string;
+	limit: number;
+}
+
+export interface SubscriptionCursorPaginationResult {
+	subscriptions: SubscriptionDomain[];
+}
