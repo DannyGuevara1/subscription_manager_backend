@@ -247,6 +247,11 @@ describe('Modulo de Suscripciones', () => {
 				.expect('Content-Type', /json/);
 
 			assert(Array.isArray(res.body.data.subscriptions));
+			assert.equal(typeof res.body.data.hasNextPage, 'boolean');
+			assert(
+				res.body.data.nextCursor === null ||
+					typeof res.body.data.nextCursor === 'string',
+			);
 			// Verificar que cada suscripción tenga el userId correcto
 			res.body.data.subscriptions.forEach((sub: any) => {
 				assert.strictEqual(
@@ -255,6 +260,79 @@ describe('Modulo de Suscripciones', () => {
 					'Cada suscripción debe pertenecer al usuario autenticado',
 				);
 			});
+		},
+	);
+
+	it(
+		'Debería paginar suscripciones usando cursor y limit',
+		{ timeout: 10000 },
+		async () => {
+			for (let i = 0; i < 3; i++) {
+				await request(env.getApp())
+					.post('/api/v1/subscriptions')
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.send({
+						categoryId,
+						currencyCode: 'USD',
+						name: `Cursor test ${Date.now()}-${i}`,
+						cost: 10 + i,
+						costType: 'FIXED',
+						billingFrequency: 1,
+						billingUnit: 'MONTHS',
+						firstPaymentDate: new Date().toISOString(),
+					})
+					.expect(201);
+			}
+
+			const firstPage = await request(env.getApp())
+				.get('/api/v1/subscriptions?limit=2')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.expect(200)
+				.expect('Content-Type', /json/);
+
+			assert(Array.isArray(firstPage.body.data.subscriptions));
+			assert.strictEqual(firstPage.body.data.subscriptions.length, 2);
+			assert.strictEqual(firstPage.body.data.hasNextPage, true);
+			assert.equal(typeof firstPage.body.data.nextCursor, 'string');
+
+			const firstPageIds = new Set(
+				firstPage.body.data.subscriptions.map((sub: any) => sub.id),
+			);
+
+			const secondPage = await request(env.getApp())
+				.get(
+					`/api/v1/subscriptions?limit=2&cursor=${firstPage.body.data.nextCursor}`,
+				)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.expect(200)
+				.expect('Content-Type', /json/);
+
+			assert(Array.isArray(secondPage.body.data.subscriptions));
+			assert(secondPage.body.data.subscriptions.length <= 2);
+			secondPage.body.data.subscriptions.forEach((sub: any) => {
+				assert.strictEqual(firstPageIds.has(sub.id), false);
+			});
+		},
+	);
+
+	it(
+		'Debería validar query params de paginación cursor-based',
+		{ timeout: 10000 },
+		async () => {
+			await request(env.getApp())
+				.get('/api/v1/subscriptions?limit=101')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.expect(422);
+
+			await request(env.getApp())
+				.get('/api/v1/subscriptions?cursor=not-a-uuidv7')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.expect(422);
 		},
 	);
 
