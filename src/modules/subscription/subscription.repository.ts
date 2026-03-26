@@ -52,7 +52,7 @@ export default class SubscriptionRepository {
 				userId,
 			},
 			orderBy: { id: 'desc' },
-			take: limit + 1,
+			take: limit,
 			...(cursor
 				? {
 						cursor: { id: cursor },

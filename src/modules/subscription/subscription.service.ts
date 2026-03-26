@@ -42,8 +42,12 @@ export default class SubscriptionService {
 		nextCursor: string | null;
 		hasNextPage: boolean;
 	}> {
+		const { cursor, limit } = options;
 		const { subscriptions } =
-			await this.subscriptionRepository.findAllWithCursor(userId, options);
+			await this.subscriptionRepository.findAllWithCursor(userId, {
+				cursor,
+				limit: limit + 1,
+			});
 
 		const hasNextPage = subscriptions.length > options.limit;
 		const paginatedSubscriptions = hasNextPage
