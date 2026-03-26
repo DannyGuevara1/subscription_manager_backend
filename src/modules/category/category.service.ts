@@ -1,6 +1,7 @@
 import type { Category } from '@prisma/client';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import {
+	type CategoryOffsetPaginationParamsDto,
 	type CreateCategoryDto,
 	type SafeCategoryDto,
 	safeCategorySchema,
@@ -17,6 +18,11 @@ import {
 	notFoundError,
 } from '@/shared/errors/error.factory.js';
 
+import {
+	buildPaginationMeta,
+	calculateOffset,
+} from '@/shared/utils/pagination-offset.util.js';
+
 export default class CategoryService {
 	private categoryRepository: CategoryRepository;
 
@@ -26,9 +32,34 @@ export default class CategoryService {
 
 	//Methods GET
 
-	async getAllCategories(userId: string): Promise<SafeCategoryDto[]> {
-		const categories = await this.categoryRepository.findAll(userId);
-		return categories.map((category) => safeCategorySchema.parse(category));
+	async getAllCategories(
+		userId: string,
+		{ page, limit }: CategoryOffsetPaginationParamsDto,
+	): Promise<{
+		categories: SafeCategoryDto[];
+		meta: ReturnType<typeof buildPaginationMeta>;
+	}> {
+		const offset = calculateOffset(page, limit);
+		const { categories, totalItems } = await this.categoryRepository.findAll(
+			userId,
+			{
+				offset,
+				limit,
+			},
+		);
+
+		const meta = buildPaginationMeta({
+			page,
+			limit,
+			totalItems: totalItems,
+		});
+
+		return {
+			categories: categories.map((category) =>
+				safeCategorySchema.parse(category),
+			),
+			meta,
+		};
 	}
 
 	async getCategoryById(id: number, userId: string): Promise<SafeCategoryDto> {
