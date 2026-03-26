@@ -2,6 +2,8 @@ import type { Category } from '@prisma/client';
 import prismaClient from '@/config/prisma.js';
 import type {
 	CreateCategoryData,
+	categoryOffsetPaginationResult,
+	offsetPaginationOptions,
 	UpdateCategoryData,
 } from '@/modules/category/category.type.js';
 
@@ -16,8 +18,20 @@ export default class CategoryRepository {
 		return this.prisma.category.create({ data });
 	}
 
-	async findAll(userId: string): Promise<Category[]> {
-		return this.prisma.category.findMany({ where: { userId } });
+	async findAll(
+		userId: string,
+		{ offset, limit }: offsetPaginationOptions,
+	): Promise<categoryOffsetPaginationResult> {
+		const [categories, totalItems] = await this.prisma.$transaction([
+			this.prisma.category.findMany({
+				where: { userId },
+				orderBy: { createdAt: 'desc' },
+				skip: offset,
+				take: limit,
+			}),
+			this.prisma.category.count({ where: { userId } }),
+		]);
+		return { categories, totalItems };
 	}
 
 	async findById(id: number): Promise<Category | null> {
