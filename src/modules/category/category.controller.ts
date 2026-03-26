@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import type { CategoryOffsetPaginationParamsDto } from '@/modules/category/category.dto.js';
 import type CategoryService from '@/modules/category/category.service.js';
 import type { categoryParams } from '@/modules/category/index.js';
 
@@ -11,10 +12,18 @@ export default class CategoryController {
 
 	//Controller method to get all categories
 	async getAllCategories(req: Request, res: Response, _next: NextFunction) {
+		const { page, limit } =
+			req.query as unknown as CategoryOffsetPaginationParamsDto;
 		const userId = req.user?.sub as string;
-		const categories = await this.categoryService.getAllCategories(userId);
+		const paginatedCategories = await this.categoryService.getAllCategories(
+			userId,
+			{
+				page,
+				limit,
+			},
+		);
 		res.status(200).json({
-			data: { categories },
+			data: paginatedCategories,
 		});
 	}
 
