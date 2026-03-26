@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+	categoryOffsetPaginationRequestSchema,
 	categoryParamsRequestSchema,
 	createCategoryRequestSchema,
 	updateCategoryRequestSchema,
@@ -15,6 +16,7 @@ export default function categoryRoutes(categoryController: CategoryController) {
 	router
 		.route('/')
 		.get(
+			validateRequest(categoryOffsetPaginationRequestSchema),
 			catchAsync(categoryController.getAllCategories.bind(categoryController)),
 		)
 		.post(
