@@ -55,9 +55,7 @@ export default class CategoryService {
 		});
 
 		return {
-			categories: categories.map((category) =>
-				safeCategorySchema.parse(category),
-			),
+			categories,
 			meta,
 		};
 	}
