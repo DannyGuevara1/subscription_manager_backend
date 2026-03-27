@@ -11,11 +11,14 @@ export default class CategoryController {
 	}
 
 	//Controller method to get all categories
-	async getAllCategories(req: Request, res: Response, _next: NextFunction) {
-		const { page, limit } =
-			req.query as unknown as CategoryOffsetPaginationParamsDto;
+	async getAllCategories(
+		req: Request<{}, {}, {}, CategoryOffsetPaginationParamsDto>,
+		res: Response,
+		_next: NextFunction,
+	) {
+		const { page, limit } = req.query;
 		const userId = req.user?.sub as string;
-		const paginatedCategories = await this.categoryService.getAllCategories(
+		const { categories, meta } = await this.categoryService.getAllCategories(
 			userId,
 			{
 				page,
@@ -23,7 +26,8 @@ export default class CategoryController {
 			},
 		);
 		res.status(200).json({
-			data: paginatedCategories,
+			data: categories,
+			meta,
 		});
 	}
 
