@@ -1,7 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { CategoryOffsetPaginationParamsDto } from '@/modules/category/category.dto.js';
+import type {
+	CategoryOffsetPaginationParamsDto,
+	UpdateCategoryDto,
+} from '@/modules/category/category.dto.js';
 import type CategoryService from '@/modules/category/category.service.js';
-import type { categoryParams } from '@/modules/category/index.js';
+import type { CategoryParams } from '@/modules/category/category.type.js';
 
 export default class CategoryController {
 	private categoryService: CategoryService;
@@ -11,12 +14,9 @@ export default class CategoryController {
 	}
 
 	//Controller method to get all categories
-	async getAllCategories(
-		req: Request<{}, {}, {}, CategoryOffsetPaginationParamsDto>,
-		res: Response,
-		_next: NextFunction,
-	) {
-		const { page, limit } = req.query;
+	async getAllCategories(req: Request, res: Response, _next: NextFunction) {
+		const { page, limit } =
+			req.query as unknown as CategoryOffsetPaginationParamsDto;
 		const userId = req.user?.sub as string;
 		const { categories, meta } = await this.categoryService.getAllCategories(
 			userId,
@@ -26,7 +26,7 @@ export default class CategoryController {
 			},
 		);
 		res.status(200).json({
-			data: categories,
+			data: { categories: categories },
 			meta,
 		});
 	}
@@ -34,16 +34,13 @@ export default class CategoryController {
 	//Controller method to get id category
 
 	async getByCategoryId(
-		req: Request<categoryParams>,
+		req: Request<CategoryParams>,
 		res: Response,
 		_next: NextFunction,
 	) {
-		const { id } = req.params;
+		const id = Number(req.params.id);
 		const sub = req.user?.sub as string;
-		const category = await this.categoryService.getCategoryById(
-			Number(id),
-			sub,
-		);
+		const category = await this.categoryService.getCategoryById(id, sub);
 		res.status(200).json({
 			data: category,
 		});
@@ -64,15 +61,15 @@ export default class CategoryController {
 	}
 
 	async updateCategory(
-		req: Request<categoryParams>,
+		req: Request<CategoryParams, unknown, UpdateCategoryDto>,
 		res: Response,
 		_next: NextFunction,
 	) {
-		const { id } = req.params;
+		const id = Number(req.params.id);
 		const categoryData = req.body;
 		const sub = req.user?.sub as string;
 		const updatedCategory = await this.categoryService.updateCategory(
-			Number(id),
+			id,
 			categoryData,
 			sub,
 		);
@@ -83,13 +80,13 @@ export default class CategoryController {
 	}
 
 	async deleteCategory(
-		req: Request<categoryParams>,
+		req: Request<CategoryParams>,
 		res: Response,
 		_next: NextFunction,
 	) {
-		const { id } = req.params;
+		const id = Number(req.params.id);
 		const sub = req.user?.sub as string;
-		await this.categoryService.deleteCategory(Number(id), sub);
+		await this.categoryService.deleteCategory(id, sub);
 
 		res.status(204).send();
 	}

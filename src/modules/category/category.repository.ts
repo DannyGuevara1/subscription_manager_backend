@@ -49,25 +49,29 @@ export default class CategoryRepository {
 		};
 	}
 
-	async findById(id: number): Promise<Category | null> {
-		return this.prisma.category.findUnique({ where: { id } });
+	async findById(id: number): Promise<CategoryDomain | null> {
+		const category = await this.prisma.category.findUnique({ where: { id } });
+		return category ? this.toDomain(category) : null;
 	}
 
-	async update(id: number, data: UpdateCategoryData): Promise<Category> {
-		return this.prisma.category.update({ where: { id }, data });
+	async update(id: number, data: UpdateCategoryData): Promise<CategoryDomain> {
+		const category = await this.prisma.category.update({ where: { id }, data });
+		return this.toDomain(category);
 	}
 
-	async delete(id: number): Promise<Category> {
-		return this.prisma.category.delete({ where: { id } });
+	async delete(id: number): Promise<CategoryDomain> {
+		const category = await this.prisma.category.delete({ where: { id } });
+		return this.toDomain(category);
 	}
 
 	//Method to find category by name and userId
 	async findByNameAndUserId(
 		name: string,
 		userId: string,
-	): Promise<Category | null> {
-		return this.prisma.category.findUnique({
+	): Promise<CategoryDomain | null> {
+		const category = await this.prisma.category.findUnique({
 			where: { name_userId: { name, userId } },
 		});
+		return category ? this.toDomain(category) : null;
 	}
 }

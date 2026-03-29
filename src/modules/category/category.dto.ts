@@ -24,7 +24,7 @@ export const updateCategorySchema = z.object({
 });
 
 export const categoryParamsSchema = z.object({
-	id: z.string().regex(/^\d+$/, 'Category ID must be a number'),
+	id: z.string().regex(/^\d+$/, { error: 'Id must be a valid integer' }),
 });
 
 //REQUEST SCHEMAS FOR VALIDATION IN ROUTES
@@ -60,3 +60,4 @@ export type UpdateCategoryDto = z.infer<typeof updateCategorySchema>;
 export type CategoryOffsetPaginationParamsDto = z.infer<
 	typeof categoryOffsetPaginationQuerySchema
 >;
+export type CategoryParamsDto = z.infer<typeof categoryParamsSchema>;

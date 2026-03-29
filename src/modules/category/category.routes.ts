@@ -5,6 +5,7 @@ import {
 	createCategoryRequestSchema,
 	updateCategoryRequestSchema,
 } from '@/modules/category/index.js';
+import { authorize } from '@/shared/middleware/authorize.js';
 import { validateRequest } from '@/shared/middleware/validate.request.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
 import type CategoryController from './category.controller.js';
@@ -17,6 +18,7 @@ export default function categoryRoutes(categoryController: CategoryController) {
 		.route('/')
 		.get(
 			validateRequest(categoryOffsetPaginationRequestSchema),
+			authorize('ADMIN', 'USER'),
 			catchAsync(categoryController.getAllCategories.bind(categoryController)),
 		)
 		.post(
