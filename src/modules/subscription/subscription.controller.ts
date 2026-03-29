@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { SubscriptionCursorPaginationQueryDto } from '@/modules/subscription/subscription.dto.js';
 import type SubscriptionService from '@/modules/subscription/subscription.service.js';
+import type { RequestWithQuery } from '@/shared/types/express.types.js';
 
 interface SubscriptionParams {
 	id: string;
@@ -13,12 +14,12 @@ export default class SubscriptionController {
 	}
 
 	async getAllSubscriptions(
-		req: Request,
+		req: RequestWithQuery<SubscriptionCursorPaginationQueryDto>,
 		res: Response,
 		_next: NextFunction,
 	) {
 		const sub = req.user?.sub as string;
-		const { cursor, limit } = req.query as unknown as SubscriptionCursorPaginationQueryDto;
+		const { cursor, limit } = req.query as SubscriptionCursorPaginationQueryDto;
 		const paginatedSubscriptions =
 			await this.subscriptionService.getAllSubscriptions(sub, {
 				cursor,
