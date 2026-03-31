@@ -1,27 +1,54 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { ZodObject } from 'zod';
+import { ZodError, type ZodType } from 'zod';
 
-export const validateRequest = (schema: ZodObject<any>) => {
+type ValidatedShape = {
+	body?: unknown;
+	query?: unknown;
+	params?: unknown;
+};
+export const validateRequest = <T extends ValidatedShape>(
+	schema: ZodType<T>,
+) => {
 	return async (req: Request, _res: Response, next: NextFunction) => {
 		try {
-			const validatedData = await schema.parseAsync({
+			const result = await schema.safeParseAsync({
 				body: req.body,
 				query: req.query,
 				params: req.params,
 			});
 
-			if (validatedData.body) req.body = validatedData.body;
-			if (validatedData.query) {
+			if (!result.success) {
+				return next(result.error); // ZodError — el error handler lo clasifica
+			}
+
+			const data = result.data as {
+				body?: unknown;
+				query?: unknown;
+				params?: unknown;
+			};
+
+			req.validated = {};
+
+			if ('body' in result.data) req.validated.body = data.body;
+			if ('query' in result.data) req.validated.query = data.query;
+			if ('params' in result.data) req.validated.params = data.params;
+
+			if ('body' in result.data) req.body = data.body;
+
+			if ('query' in result.data) {
 				Object.defineProperty(req, 'query', {
-					value: validatedData.query,
+					value: data.query,
 					writable: true,
 					configurable: true,
 					enumerable: true,
 				});
 			}
-			if (validatedData.params) req.params = validatedData.params as any;
+
 			next();
 		} catch (error) {
+			if (error instanceof ZodError) {
+				return next(error);
+			}
 			next(error);
 		}
 	};

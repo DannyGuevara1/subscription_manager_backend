@@ -1,13 +1,13 @@
 // src/utils/catch.async.ts
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import type { ParamsDictionary } from 'express-serve-static-core';
 import type { ParsedQs } from 'qs';
 
 type AsyncRequestHandler<
-	P = ParamsDictionary,
-	ResBody = any,
-	ReqBody = any,
-	ReqQuery = ParsedQs,
+	P extends ParamsDictionary = ParamsDictionary,
+	ResBody = unknown,
+	ReqBody = unknown,
+	ReqQuery extends ParsedQs = ParsedQs,
 > = (
 	req: Request<P, ResBody, ReqBody, ReqQuery>,
 	res: Response,
@@ -15,23 +15,29 @@ type AsyncRequestHandler<
 ) => Promise<void>;
 
 /**
- * The `catchAsync` function in TypeScript is a higher-order function that wraps an asynchronous
- * request handler and catches any errors that occur during its execution.
- * @param {AsyncRequestHandler} fn - AsyncRequestHandler - a function that handles asynchronous
- * requests
- * @returns A function is being returned that takes three parameters: req (Request), res (Response),
- * and next (NextFunction). Inside this function, the provided async function (fn) is called with req,
- * res, and next as arguments. If an error occurs during the execution of the async function, it is
- * caught and passed to the next middleware function using the `catch` method.
+ * Wraps an async Express handler to forward unhandled rejections
+ * to the next error-handling middleware.
+ *
+ * @example
+ * in controller:
+ * router.get('/users', catchAsync(async (req, res) => {
+ *   const users = await UserService.findAll();
+ *   res.json(users);
+ * }));
+ *
+ * @example
+ * in routes:
+ * router.get('/users', catchAsync(userController.getAllUsers.bind(userController)));
  */
-export const catchAsync = <P, ResBody, ReqBody, ReqQuery>(
+export const catchAsync = <
+	P extends ParamsDictionary = ParamsDictionary,
+	ResBody = unknown,
+	ReqBody = unknown,
+	ReqQuery extends ParsedQs = ParsedQs,
+>(
 	fn: AsyncRequestHandler<P, ResBody, ReqBody, ReqQuery>,
-) => {
-	return (
-		req: Request<P, ResBody, ReqBody, ReqQuery>,
-		res: Response,
-		next: NextFunction,
-	) => {
+): RequestHandler<P, ResBody, ReqBody, ReqQuery> => {
+	return (req, res, next) => {
 		fn(req, res, next).catch(next);
 	};
 };

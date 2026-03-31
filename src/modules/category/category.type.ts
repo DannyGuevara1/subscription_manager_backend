@@ -1,9 +1,3 @@
-import type { ParamsDictionary } from 'express-serve-static-core';
-
-export interface CategoryParams extends ParamsDictionary {
-	id: string;
-}
-
 export interface CreateCategoryData {
 	userId: string;
 	name: string;

@@ -24,7 +24,10 @@ export const updateCategorySchema = z.object({
 });
 
 export const categoryParamsSchema = z.object({
-	id: z.string().regex(/^\d+$/, { error: 'Id must be a valid integer' }),
+	id: z.coerce
+		.number({ error: 'Id must be a number' })
+		.int({ error: 'Id must be a valid integer' })
+		.positive({ error: 'Id must be greater than 0' }),
 });
 
 //REQUEST SCHEMAS FOR VALIDATION IN ROUTES

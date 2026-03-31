@@ -1,3 +1,4 @@
+import type { Router as ExpressRouter } from 'express';
 import { Router } from 'express';
 import {
 	categoryOffsetPaginationRequestSchema,
@@ -9,16 +10,18 @@ import { authorize } from '@/shared/middleware/authorize.js';
 import { validateRequest } from '@/shared/middleware/validate.request.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
 import type CategoryController from './category.controller.js';
-export const path = '/categories';
+export const CATEGORY_PATH = '/categories';
 
-export default function categoryRoutes(categoryController: CategoryController) {
+export default function categoryRoutes(
+	categoryController: CategoryController,
+): ExpressRouter {
 	const router = Router();
 	// Category Router
 	router
 		.route('/')
 		.get(
-			validateRequest(categoryOffsetPaginationRequestSchema),
 			authorize('ADMIN', 'USER'),
+			validateRequest(categoryOffsetPaginationRequestSchema),
 			catchAsync(categoryController.getAllCategories.bind(categoryController)),
 		)
 		.post(
