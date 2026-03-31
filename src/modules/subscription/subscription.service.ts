@@ -18,6 +18,7 @@ import {
 	forbiddenError,
 	notFoundError,
 } from '@/shared/errors/error.factory.js';
+import { buildCursorPaginationWindow } from '@/shared/utils/pagination-cursor.util.js';
 
 export default class SubscriptionService {
 	private subscriptionRepository: SubscriptionRepository;
@@ -43,27 +44,24 @@ export default class SubscriptionService {
 		hasNextPage: boolean;
 	}> {
 		const { cursor, limit } = options;
-		const { subscriptions } =
+		const { subscriptions: subscriptionList } =
 			await this.subscriptionRepository.findAllWithCursor(userId, {
 				cursor,
 				limit: limit + 1,
 			});
 
-		const hasNextPage = subscriptions.length > options.limit;
-		const paginatedSubscriptions = hasNextPage
-			? subscriptions.slice(0, options.limit)
-			: subscriptions;
+		const paginatedWindow = buildCursorPaginationWindow({
+			items: subscriptionList,
+			limit,
+			getCursor: (subscription) => subscription.id,
+		});
 
-		const nextCursor = hasNextPage
-			? (paginatedSubscriptions[paginatedSubscriptions.length - 1]?.id ?? null)
-			: null;
+		const subscriptions = paginatedWindow.items;
 
 		return {
-			subscriptions: paginatedSubscriptions.map((subscription) =>
-				safeSubscriptionSchema.parse(subscription),
-			),
-			nextCursor,
-			hasNextPage,
+			subscriptions,
+			nextCursor: paginatedWindow.nextCursor,
+			hasNextPage: paginatedWindow.hasNextPage,
 		};
 	}
 
