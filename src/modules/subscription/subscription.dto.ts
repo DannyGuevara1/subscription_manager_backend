@@ -108,6 +108,7 @@ export type SafeSubscriptionDto = z.infer<typeof safeSubscriptionSchema>;
 // Infer the TypeScript types from the Zod schemas
 export type CreateSubscriptionDto = z.infer<typeof createSubscriptionSchema>;
 export type UpdateSubscriptionDto = z.infer<typeof updateSubscriptionSchema>;
+export type SubscriptionParamsDto = z.infer<typeof subscriptionParamsSchema>;
 export type SubscriptionCursorPaginationQueryDto = z.infer<
 	typeof subscriptionCursorPaginationQuerySchema
 >;

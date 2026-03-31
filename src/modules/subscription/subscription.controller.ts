@@ -1,10 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { SubscriptionCursorPaginationQueryDto } from '@/modules/subscription/subscription.dto.js';
+import type {
+	CreateSubscriptionDto,
+	SubscriptionCursorPaginationQueryDto,
+	SubscriptionParamsDto,
+	UpdateSubscriptionDto,
+} from '@/modules/subscription/subscription.dto.js';
 import type SubscriptionService from '@/modules/subscription/subscription.service.js';
-
-interface SubscriptionParams {
-	id: string;
-}
 
 export default class SubscriptionController {
 	private subscriptionService: SubscriptionService;
@@ -14,8 +15,8 @@ export default class SubscriptionController {
 
 	async getAllSubscriptions(req: Request, res: Response, _next: NextFunction) {
 		const sub = req.user?.sub as string;
-		const { cursor, limit } =
-			req.query as unknown as SubscriptionCursorPaginationQueryDto;
+		const { cursor, limit } = req.validated
+			.query as SubscriptionCursorPaginationQueryDto;
 		const paginatedSubscriptions =
 			await this.subscriptionService.getAllSubscriptions(sub, {
 				cursor,
@@ -28,11 +29,11 @@ export default class SubscriptionController {
 	}
 
 	async getSubscriptionById(
-		req: Request<SubscriptionParams>,
+		req: Request,
 		res: Response,
 		_next: NextFunction,
 	) {
-		const { id } = req.params;
+		const { id } = req.validated.params as SubscriptionParamsDto;
 		const sub = req.user?.sub as string;
 		const subscription = await this.subscriptionService.getSubscriptionById(
 			id,
@@ -45,7 +46,7 @@ export default class SubscriptionController {
 	}
 
 	async createSubscription(req: Request, res: Response, _next: NextFunction) {
-		const data = req.body;
+		const data = req.validated.body as CreateSubscriptionDto;
 		const authUser = req.user as NonNullable<Request['user']>;
 		const newSubscription = await this.subscriptionService.createSubscription(
 			data,
@@ -58,13 +59,13 @@ export default class SubscriptionController {
 	}
 
 	async updateSubscription(
-		req: Request<SubscriptionParams>,
+		req: Request,
 		res: Response,
 		_next: NextFunction,
 	) {
-		const { id } = req.params;
+		const { id } = req.validated.params as SubscriptionParamsDto;
 		const sub = req.user?.sub as string;
-		const data = req.body;
+		const data = req.validated.body as UpdateSubscriptionDto;
 
 		const updatedSubscription =
 			await this.subscriptionService.updateSubscription(id, data, sub);
@@ -75,11 +76,11 @@ export default class SubscriptionController {
 	}
 
 	async deleteSubscription(
-		req: Request<SubscriptionParams>,
+		req: Request,
 		res: Response,
 		_next: NextFunction,
 	) {
-		const { id } = req.params;
+		const { id } = req.validated.params as SubscriptionParamsDto;
 		const sub = req.user?.sub as string;
 
 		await this.subscriptionService.deleteSubscription(id, sub);
