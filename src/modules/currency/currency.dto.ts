@@ -56,5 +56,6 @@ export const safeCurrencySchema = z.object({
 export type SafeCurrencyDto = z.infer<typeof safeCurrencySchema>;
 
 // Infer the TypeScript types from the Zod schemas
+export type CurrencyParamsDto = z.infer<typeof currencyParamsSchema>;
 export type CreateCurrencyDto = z.infer<typeof createCurrencySchema>;
 export type UpdateCurrencyDto = z.infer<typeof updateCurrencySchema>;
