@@ -5,6 +5,7 @@ import type {
 	SubscriptionParamsDto,
 	UpdateSubscriptionDto,
 } from '@/modules/subscription/subscription.dto.js';
+import { safeSubscriptionSchema } from '@/modules/subscription/subscription.dto.js';
 import type SubscriptionService from '@/modules/subscription/subscription.service.js';
 
 export default class SubscriptionController {
@@ -23,16 +24,22 @@ export default class SubscriptionController {
 				limit,
 			});
 
+		const serializedSubscriptions = paginatedSubscriptions.subscriptions.map(
+			(subscription) => safeSubscriptionSchema.parse(subscription),
+		);
+
 		res.status(200).json({
-			data: paginatedSubscriptions,
+			data: {
+				subscriptions: serializedSubscriptions,
+			},
+			meta: {
+				nextCursor: paginatedSubscriptions.nextCursor,
+				hasNextPage: paginatedSubscriptions.hasNextPage,
+			},
 		});
 	}
 
-	async getSubscriptionById(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async getSubscriptionById(req: Request, res: Response, _next: NextFunction) {
 		const { id } = req.validated.params as SubscriptionParamsDto;
 		const sub = req.user?.sub as string;
 		const subscription = await this.subscriptionService.getSubscriptionById(
@@ -41,7 +48,7 @@ export default class SubscriptionController {
 		);
 
 		res.status(200).json({
-			data: subscription,
+			data: safeSubscriptionSchema.parse(subscription),
 		});
 	}
 
@@ -54,15 +61,11 @@ export default class SubscriptionController {
 		);
 
 		res.status(201).json({
-			data: newSubscription,
+			data: safeSubscriptionSchema.parse(newSubscription),
 		});
 	}
 
-	async updateSubscription(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async updateSubscription(req: Request, res: Response, _next: NextFunction) {
 		const { id } = req.validated.params as SubscriptionParamsDto;
 		const sub = req.user?.sub as string;
 		const data = req.validated.body as UpdateSubscriptionDto;
@@ -71,15 +74,11 @@ export default class SubscriptionController {
 			await this.subscriptionService.updateSubscription(id, data, sub);
 
 		res.status(200).json({
-			data: updatedSubscription,
+			data: safeSubscriptionSchema.parse(updatedSubscription),
 		});
 	}
 
-	async deleteSubscription(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async deleteSubscription(req: Request, res: Response, _next: NextFunction) {
 		const { id } = req.validated.params as SubscriptionParamsDto;
 		const sub = req.user?.sub as string;
 

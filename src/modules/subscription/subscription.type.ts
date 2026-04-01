@@ -48,3 +48,14 @@ export interface SubscriptionCursorPaginationOptions {
 export interface SubscriptionCursorPaginationResult {
 	subscriptions: SubscriptionDomain[];
 }
+
+export type CreateSubscriptionInput = Omit<
+	CreateSubscriptionData,
+	'id' | 'userId'
+>;
+
+export interface SubscriptionCursorPaginationPage {
+	subscriptions: SubscriptionDomain[];
+	nextCursor: string | null;
+	hasNextPage: boolean;
+}

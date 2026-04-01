@@ -2,16 +2,13 @@ import { uuidv7 } from 'uuidv7';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import type CategoryService from '@/modules/category/category.service.js';
 import type CurrencyService from '@/modules/currency/currency.service.js';
-import {
-	type CreateSubscriptionDto,
-	type SafeSubscriptionDto,
-	type SubscriptionCursorPaginationQueryDto,
-	type SubscriptionRepository,
-	safeSubscriptionSchema,
-	type UpdateSubscriptionDto,
-} from '@/modules/subscription/index.js';
+import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 import type {
+	CreateSubscriptionInput,
 	CreateSubscriptionData,
+	SubscriptionCursorPaginationOptions,
+	SubscriptionCursorPaginationPage,
+	SubscriptionDomain,
 	UpdateSubscriptionData,
 } from '@/modules/subscription/subscription.type.js';
 import {
@@ -37,12 +34,8 @@ export default class SubscriptionService {
 
 	async getAllSubscriptions(
 		userId: string,
-		options: SubscriptionCursorPaginationQueryDto,
-	): Promise<{
-		subscriptions: SafeSubscriptionDto[];
-		nextCursor: string | null;
-		hasNextPage: boolean;
-	}> {
+		options: SubscriptionCursorPaginationOptions,
+	): Promise<SubscriptionCursorPaginationPage> {
 		const { cursor, limit } = options;
 		const { subscriptions: subscriptionList } =
 			await this.subscriptionRepository.findAllWithCursor(userId, {
@@ -68,7 +61,7 @@ export default class SubscriptionService {
 	async getSubscriptionById(
 		id: string,
 		userId: string,
-	): Promise<SafeSubscriptionDto | null> {
+	): Promise<SubscriptionDomain> {
 		const subscription = await this.subscriptionRepository.findById(id);
 
 		if (!subscription) {
@@ -88,13 +81,13 @@ export default class SubscriptionService {
 			});
 		}
 
-		return safeSubscriptionSchema.parse(subscription);
+		return subscription;
 	}
 
 	async createSubscription(
-		data: CreateSubscriptionDto,
+		data: CreateSubscriptionInput,
 		authUser: JWTPayload,
-	): Promise<SafeSubscriptionDto> {
+	): Promise<SubscriptionDomain> {
 		const userId = authUser.sub;
 
 		// Validate FK existence
@@ -128,14 +121,14 @@ export default class SubscriptionService {
 
 		const newSubscription =
 			await this.subscriptionRepository.create(subscriptionData);
-		return safeSubscriptionSchema.parse(newSubscription);
+		return newSubscription;
 	}
 
 	async updateSubscription(
 		id: string,
-		data: UpdateSubscriptionDto,
+		data: UpdateSubscriptionData,
 		userId: string,
-	): Promise<SafeSubscriptionDto> {
+	): Promise<SubscriptionDomain> {
 		const existingSubscription = await this.subscriptionRepository.findById(id);
 		if (!existingSubscription) {
 			throw notFoundError({
@@ -182,13 +175,13 @@ export default class SubscriptionService {
 			subscriptionData,
 		);
 
-		return safeSubscriptionSchema.parse(subscription);
+		return subscription;
 	}
 
 	async deleteSubscription(
 		id: string,
 		userId: string,
-	): Promise<SafeSubscriptionDto> {
+	): Promise<SubscriptionDomain> {
 		const existingSubscription = await this.subscriptionRepository.findById(id);
 
 		if (!existingSubscription) {
@@ -208,6 +201,6 @@ export default class SubscriptionService {
 		}
 
 		const deletedSubscription = await this.subscriptionRepository.delete(id);
-		return safeSubscriptionSchema.parse(deletedSubscription);
+		return deletedSubscription;
 	}
 }
