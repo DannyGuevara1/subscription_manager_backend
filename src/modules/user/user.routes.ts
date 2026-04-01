@@ -17,6 +17,7 @@ export default function userRoutes(
 		.route('/')
 		.get(
 			authorize('ADMIN'),
+			validateRequest(userSchema.userOffsetPaginationRequestSchema),
 			catchAsync(userController.getAllUsers.bind(userController)),
 		)
 		.post(
