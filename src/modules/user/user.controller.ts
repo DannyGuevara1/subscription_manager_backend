@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import type { AuthService } from '@/modules/auth/index.js';
 import type {
 	UpdateUserRoleDto,
+	UserOffsetPaginationQueryDto,
 	UserParams,
 	UserService,
 } from '@/modules/user/index.js';
@@ -16,12 +17,18 @@ export default class UserController {
 		this.authService = authService;
 	}
 
-	async getAllUsers(_req: Request, res: Response, _next: NextFunction) {
-		const users = await this.userService.getAllUsers();
+	async getAllUsers(req: Request, res: Response, _next: NextFunction) {
+		const { page, limit } = req.validated
+			.query as UserOffsetPaginationQueryDto;
+		const { users, meta } = await this.userService.getAllUsers({
+			page,
+			limit,
+		});
 		res.status(200).json({
 			data: {
 				users,
 			},
+			meta,
 		});
 	}
 
