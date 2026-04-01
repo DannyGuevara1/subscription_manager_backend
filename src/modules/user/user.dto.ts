@@ -7,6 +7,20 @@ export const userParamsSchema = z.object({
 	id: z.uuidv7({ error: 'User ID must be a valid UUID' }),
 });
 
+export const userOffsetPaginationQuerySchema = z.object({
+	page: z.coerce
+		.number({ error: 'Page must be a number' })
+		.int({ error: 'Page must be an integer' })
+		.min(1, 'Page must be at least 1')
+		.default(1),
+	limit: z.coerce
+		.number({ error: 'Limit must be a number' })
+		.int({ error: 'Limit must be an integer' })
+		.min(1, 'Limit must be at least 1')
+		.max(100, 'Limit must be at most 100')
+		.default(10),
+});
+
 // Schema Definitions for User DTOs
 export const createUserSchema = z.object({
 	email: z.email('Invalid email address').toLowerCase(),
@@ -43,6 +57,10 @@ export const updateUserRoleRequestSchema = z.object({
 export const userParamsRequestSchema = z.object({
 	params: userParamsSchema,
 });
+
+export const userOffsetPaginationRequestSchema = z.object({
+	query: userOffsetPaginationQuerySchema,
+});
 // RESPONSE DTOs
 // Contrato completo → ADMIN y USER (owner)
 export const safeUserSchema = z.object({
@@ -73,3 +91,6 @@ export type ProfileDto = SafeUserDto | SupportUserDto;
 export type CreateUserDto = z.infer<typeof createUserSchema>;
 export type UpdateUserDto = z.infer<typeof updateUserSchema>;
 export type UpdateUserRoleDto = z.infer<typeof updateUserRoleSchema>;
+export type UserOffsetPaginationQueryDto = z.infer<
+	typeof userOffsetPaginationQuerySchema
+>;
