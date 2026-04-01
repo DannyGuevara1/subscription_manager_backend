@@ -4,6 +4,7 @@ import type {
 	CurrencyParamsDto,
 	UpdateCurrencyDto,
 } from '@/modules/currency/currency.dto.js';
+import { safeCurrencySchema } from '@/modules/currency/currency.dto.js';
 import type CurrencyService from '@/modules/currency/currency.service.js';
 
 export default class CurrencyController {
@@ -15,8 +16,11 @@ export default class CurrencyController {
 
 	async getAllCurrencies(_req: Request, res: Response, _next: NextFunction) {
 		const currencies = await this.currencyService.getAllCurrencies();
+		const serializedCurrencies = currencies.map((currency) =>
+			safeCurrencySchema.parse(currency),
+		);
 		res.status(200).json({
-			data: { currencies },
+			data: { currencies: serializedCurrencies },
 		});
 	}
 
@@ -28,7 +32,7 @@ export default class CurrencyController {
 		const { code } = req.validated.params as CurrencyParamsDto;
 		const currency = await this.currencyService.getCurrencyByCode(code);
 
-		res.status(200).json({ data: currency });
+		res.status(200).json({ data: safeCurrencySchema.parse(currency) });
 	}
 
 	async createCurrency(req: Request, res: Response, _next: NextFunction) {
@@ -36,7 +40,7 @@ export default class CurrencyController {
 		const newCurrency = await this.currencyService.createCurrency(currencyData);
 
 		res.status(201).json({
-			data: newCurrency,
+			data: safeCurrencySchema.parse(newCurrency),
 		});
 	}
 
@@ -52,7 +56,7 @@ export default class CurrencyController {
 			currencyData,
 		);
 		res.status(200).json({
-			data: updatedCurrency,
+			data: safeCurrencySchema.parse(updatedCurrency),
 		});
 	}
 

@@ -1,12 +1,10 @@
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
-import {
-	type CreateCurrencyData,
-	type CreateCurrencyDto,
-	type SafeCurrencyDto,
-	safeCurrencySchema,
-	type UpdateCurrencyData,
-	type UpdateCurrencyDto,
-} from '@/modules/currency/index.js';
+import type {
+	CreateCurrencyInput,
+	CreateCurrencyData,
+	CurrencyDomain,
+	UpdateCurrencyData,
+} from '@/modules/currency/currency.type.js';
 import { conflictError, notFoundError } from '@/shared/errors/error.factory.js';
 
 export default class CurrencyService {
@@ -15,12 +13,11 @@ export default class CurrencyService {
 		this.currencyRepository = currencyRepository;
 	}
 	// Methods GET
-	async getAllCurrencies(): Promise<SafeCurrencyDto[]> {
-		const currencies = await this.currencyRepository.findAll();
-		return currencies.map((currency) => safeCurrencySchema.parse(currency));
+	async getAllCurrencies(): Promise<CurrencyDomain[]> {
+		return this.currencyRepository.findAll();
 	}
 
-	async getCurrencyByCode(code: string): Promise<SafeCurrencyDto> {
+	async getCurrencyByCode(code: string): Promise<CurrencyDomain> {
 		const currency = await this.currencyRepository.findByCode(code);
 
 		if (!currency) {
@@ -33,10 +30,10 @@ export default class CurrencyService {
 			});
 		}
 
-		return safeCurrencySchema.parse(currency);
+		return currency;
 	}
 	// Method POST
-	async createCurrency(data: CreateCurrencyDto): Promise<SafeCurrencyDto> {
+	async createCurrency(data: CreateCurrencyInput): Promise<CurrencyDomain> {
 		const existingCurrency = await this.currencyRepository.findByCode(
 			data.code,
 		);
@@ -54,15 +51,14 @@ export default class CurrencyService {
 			...data,
 		};
 
-		const newCurrency = await this.currencyRepository.create(currencyData);
-		return safeCurrencySchema.parse(newCurrency);
+		return this.currencyRepository.create(currencyData);
 	}
 
 	// Method PUT
 	async updateCurrency(
 		code: string,
-		data: UpdateCurrencyDto,
-	): Promise<SafeCurrencyDto> {
+		data: UpdateCurrencyData,
+	): Promise<CurrencyDomain> {
 		const existingCurrency = await this.currencyRepository.findByCode(code);
 		if (!existingCurrency) {
 			throw notFoundError({
@@ -80,14 +76,14 @@ export default class CurrencyService {
 			code,
 			updateData,
 		);
-		return safeCurrencySchema.parse(updatedCurrency);
+		return updatedCurrency;
 	}
 
 	// Method DELETE
-	async deleteCurrency(code: string): Promise<SafeCurrencyDto> {
-		const currency = await this.currencyRepository.delete(code);
+	async deleteCurrency(code: string): Promise<CurrencyDomain> {
+		const existingCurrency = await this.currencyRepository.findByCode(code);
 
-		if (!currency) {
+		if (!existingCurrency) {
 			throw notFoundError({
 				resource: 'Currency',
 				identifier: code,
@@ -97,6 +93,6 @@ export default class CurrencyService {
 			});
 		}
 
-		return safeCurrencySchema.parse(currency);
+		return this.currencyRepository.delete(code);
 	}
 }
