@@ -54,7 +54,7 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 	});
 
 	// GET /users
-	it('Debería obtener todos los usuarios', async () => {
+	it('Debería obtener usuarios paginados con valores por defecto', async () => {
 		const res = await request(env.getApp())
 			.get('/api/v1/users')
 			.set('Origin', 'http://localhost:3000')
@@ -66,10 +66,76 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			Array.isArray(res.body.data.users),
 			'La respuesta debe ser un array',
 		);
+		assert.strictEqual(
+			res.body.meta.currentPage,
+			1,
+			'La página por defecto debe ser 1',
+		);
+		assert.strictEqual(
+			res.body.meta.limit,
+			10,
+			'El límite por defecto debe ser 10',
+		);
+		assert.strictEqual(
+			typeof res.body.meta.totalItems,
+			'number',
+			'La metadata debe incluir totalItems',
+		);
+		assert.strictEqual(
+			typeof res.body.meta.totalPages,
+			'number',
+			'La metadata debe incluir totalPages',
+		);
+		assert.strictEqual(
+			res.body.meta.hasPreviousPage,
+			false,
+			'En la primera página no debe haber página previa',
+		);
 		assert(
 			res.body.data.users.length >= 2,
 			'Debe haber al menos dos usuarios en la respuesta',
 		);
+		assert(
+			res.body.data.users.length <= 10,
+			'La respuesta no debe exceder el límite por defecto',
+		);
+	});
+
+	it('Debería respetar los parámetros page y limit en el listado de usuarios', async () => {
+		const res = await request(env.getApp())
+			.get('/api/v1/users?page=1&limit=1')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(200)
+			.expect('Content-Type', /json/);
+
+		assert.strictEqual(
+			res.body.data.users.length,
+			1,
+			'Con limit=1 solo debe devolverse un usuario',
+		);
+		assert.strictEqual(res.body.meta.currentPage, 1);
+		assert.strictEqual(res.body.meta.limit, 1);
+		assert(
+			res.body.meta.totalItems >= 1,
+			'totalItems debe reflejar el total de usuarios',
+		);
+	});
+
+	it('Debe retornar 422 cuando page es menor que 1', async () => {
+		await request(env.getApp())
+			.get('/api/v1/users?page=0&limit=10')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(422);
+	});
+
+	it('Debe retornar 422 cuando limit excede el máximo permitido', async () => {
+		await request(env.getApp())
+			.get('/api/v1/users?page=1&limit=101')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(422);
 	});
 
 	// GET /users/:id
@@ -106,12 +172,12 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			.expect(404);
 	});
 
-it('Debe retornar 403 cuando un USER intenta consultar otro usuario existente', async () => {
+	it('Debe retornar 403 cuando un USER intenta consultar otro usuario existente', async () => {
 		await request(env.getApp())
 			.get(`/api/v1/users/${user.id}`)
 			.set('Origin', 'http://localhost:3000')
 			.set('Cookie', otherUserCookie)
-		.expect(403);
+			.expect(403);
 	});
 
 	it('Debe permitir que ADMIN consulte el perfil de cualquier usuario', async () => {
@@ -142,11 +208,11 @@ it('Debe retornar 403 cuando un USER intenta consultar otro usuario existente', 
 			otherUser.id,
 			'SUPPORT debe poder consultar cualquier usuario por ID',
 		);
-	assert.strictEqual(
-		res.body.data.email,
-		undefined,
-		'SUPPORT no debe recibir email en el perfil',
-	);
+		assert.strictEqual(
+			res.body.data.email,
+			undefined,
+			'SUPPORT no debe recibir email en el perfil',
+		);
 	});
 
 	// PUT /users/:id
