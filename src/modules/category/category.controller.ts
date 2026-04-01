@@ -5,6 +5,7 @@ import type {
 	CreateCategoryDto,
 	UpdateCategoryDto,
 } from '@/modules/category/category.dto.js';
+import { safeCategorySchema } from '@/modules/category/category.dto.js';
 import type CategoryService from '@/modules/category/category.service.js';
 
 export default class CategoryController {
@@ -26,8 +27,11 @@ export default class CategoryController {
 				limit,
 			},
 		);
+		const serializedCategories = categories.map((category) =>
+			safeCategorySchema.parse(category),
+		);
 		res.status(200).json({
-			data: { categories: categories },
+			data: { categories: serializedCategories },
 			meta,
 		});
 	}
@@ -43,7 +47,7 @@ export default class CategoryController {
 		const sub = req.user?.sub as string;
 		const category = await this.categoryService.getCategoryById(id, sub);
 		res.status(200).json({
-			data: category,
+			data: safeCategorySchema.parse(category),
 		});
 	}
 
@@ -57,7 +61,7 @@ export default class CategoryController {
 		);
 
 		res.status(201).json({
-			data: newCategory,
+			data: safeCategorySchema.parse(newCategory),
 		});
 	}
 
@@ -76,7 +80,7 @@ export default class CategoryController {
 		);
 
 		res.status(200).json({
-			data: updatedCategory,
+			data: safeCategorySchema.parse(updatedCategory),
 		});
 	}
 

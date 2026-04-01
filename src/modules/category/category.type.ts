@@ -24,3 +24,10 @@ export interface categoryOffsetPaginationResult {
 	categories: CategoryDomain[];
 	totalItems: number;
 }
+
+export type CreateCategoryInput = Omit<CreateCategoryData, 'userId'>;
+
+export interface CategoryOffsetPaginationInput {
+	page: number;
+	limit: number;
+}

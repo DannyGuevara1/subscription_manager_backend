@@ -1,14 +1,9 @@
-import type { Category } from '@prisma/client';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
-import {
-	type CategoryOffsetPaginationParamsDto,
-	type CreateCategoryDto,
-	type SafeCategoryDto,
-	safeCategorySchema,
-	type UpdateCategoryDto,
-} from '@/modules/category/category.dto.js';
 import type CategoryRepository from '@/modules/category/category.repository.js';
 import type {
+	CategoryDomain,
+	CategoryOffsetPaginationInput,
+	CreateCategoryInput,
 	CreateCategoryData,
 	UpdateCategoryData,
 } from '@/modules/category/category.type.js';
@@ -34,9 +29,9 @@ export default class CategoryService {
 
 	async getAllCategories(
 		userId: string,
-		{ page, limit }: CategoryOffsetPaginationParamsDto,
+		{ page, limit }: CategoryOffsetPaginationInput,
 	): Promise<{
-		categories: SafeCategoryDto[];
+		categories: CategoryDomain[];
 		meta: ReturnType<typeof buildPaginationMeta>;
 	}> {
 		const offset = calculateOffset(page, limit);
@@ -60,7 +55,7 @@ export default class CategoryService {
 		};
 	}
 
-	async getCategoryById(id: number, userId: string): Promise<SafeCategoryDto> {
+	async getCategoryById(id: number, userId: string): Promise<CategoryDomain> {
 		const category = await this.categoryRepository.findById(id);
 		if (!category) {
 			throw notFoundError({
@@ -78,14 +73,14 @@ export default class CategoryService {
 				instance: `/categories/${id}`,
 			});
 		}
-		return safeCategorySchema.parse(category);
+		return category;
 	}
 
 	//Methods POST
 	async createCategory(
-		data: CreateCategoryDto,
+		data: CreateCategoryInput,
 		authUser: JWTPayload,
-	): Promise<SafeCategoryDto> {
+	): Promise<CategoryDomain> {
 		const userId = authUser.sub;
 
 		// Check for existing category with the same name for the user
@@ -102,9 +97,9 @@ export default class CategoryService {
 	//Methods PUT
 	async updateCategory(
 		id: number,
-		data: UpdateCategoryDto,
+		data: UpdateCategoryData,
 		userId: string,
-	): Promise<Category> {
+	): Promise<CategoryDomain> {
 		const { name } = data;
 
 		const existingCategory = await this.categoryRepository.findById(id);
@@ -136,7 +131,7 @@ export default class CategoryService {
 	}
 
 	//Methods DELETE
-	async deleteCategory(id: number, userId: string): Promise<Category> {
+	async deleteCategory(id: number, userId: string): Promise<CategoryDomain> {
 		// Check if the category exists
 		const existingCategory = await this.categoryRepository.findById(id);
 
