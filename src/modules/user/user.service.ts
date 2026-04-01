@@ -1,9 +1,14 @@
 // src/services/user.service.ts
-import type { User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import type { JWTPayload } from '@/modules/auth/index.js';
-import type { CreateUserData, ProfileDto, UpdateUserData } from '@/modules/user/index.js';
+import type {
+	CreateUserData,
+	ProfileDto,
+	UpdateUserData,
+	UserDomain,
+	UserOffsetPaginationInput,
+} from '@/modules/user/index.js';
 import {
 	type CreateUserDto,
 	type SafeUserDto,
@@ -19,6 +24,10 @@ import {
 } from '@/shared/errors/error.factory.js';
 import type { Role } from '@/shared/types/domain.enums.js';
 import { ROLE_VALUES } from '@/shared/types/domain.enums.js';
+import {
+	buildPaginationMeta,
+	calculateOffset,
+} from '@/shared/utils/pagination-offset.util.js';
 
 export default class UserService {
 	private userRepository: UserRepository;
@@ -38,18 +47,37 @@ export default class UserService {
 			primaryCurrencyCode: primaryCurrencyCode,
 		};
 
-		const newUser: User = await this.userRepository.create(userData);
+		const newUser = await this.userRepository.create(userData);
 
 		return this.toSafeUserDto(newUser);
 	}
 
-	async getAllUsers(): Promise<SafeUserDto[]> {
-		const users: User[] = await this.userRepository.findAll();
-		return users.map((user) => this.toSafeUserDto(user));
+	async getAllUsers(
+		{ page, limit }: UserOffsetPaginationInput,
+	): Promise<{
+		users: SafeUserDto[];
+		meta: ReturnType<typeof buildPaginationMeta>;
+	}> {
+		const offset = calculateOffset(page, limit);
+		const { users, totalItems } = await this.userRepository.findAll({
+			offset,
+			limit,
+		});
+
+		const meta = buildPaginationMeta({
+			totalItems,
+			page,
+			limit,
+		});
+
+		return {
+			users: users.map((user) => this.toSafeUserDto(user)),
+			meta,
+		};
 	}
 
 	async getUserByIdInternal(id: string): Promise<SafeUserDto> {
-		const user: User | null = await this.userRepository.findById(id);
+		const user = await this.userRepository.findById(id);
 		if (!user) {
 			throw this.userNotFoundError(id);
 		}
@@ -61,7 +89,7 @@ export default class UserService {
 		id: string,
 		authUser: JWTPayload,
 	): Promise<ProfileDto> {
-		const profile: User | null = await this.userRepository.findById(id);
+		const profile = await this.userRepository.findById(id);
 
 		if (!profile) {
 			throw this.userNotFoundError(id);
@@ -156,7 +184,7 @@ export default class UserService {
 	}
 
 	// Método privado para transformación segura
-	private toSafeUserDto(user: User): SafeUserDto {
+	private toSafeUserDto(user: UserDomain): SafeUserDto {
 		return safeUserSchema.parse({
 			id: user.id,
 			email: user.email,
@@ -168,7 +196,7 @@ export default class UserService {
 		});
 	}
 
-	private toSupportUserDto(user: User): SupportUserDto {
+	private toSupportUserDto(user: UserDomain): SupportUserDto {
 		return supportUserSchema.parse({
 			id: user.id,
 			primaryCurrencyCode: user.primaryCurrencyCode,
