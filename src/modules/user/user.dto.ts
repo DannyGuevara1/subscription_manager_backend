@@ -34,7 +34,7 @@ export const createUserSchema = z.object({
 	primaryCurrencyCode: z
 		.string()
 		.length(3, 'Currency code must be 3 characters long')
-		.uppercase('Currency code must be uppercase'),
+		.toUpperCase(),
 });
 
 export const updateUserSchema = createUserSchema.partial();
@@ -72,8 +72,7 @@ export const safeUserSchema = z.object({
 	name: z.string().nullable(),
 	primaryCurrencyCode: z
 		.string()
-		.length(3, 'Currency code must be 3 characters long')
-		.uppercase('Currency code must be uppercase'),
+		.length(3, 'Currency code must be 3 characters long'),
 	role: z.enum(ROLE_VALUES),
 	createdAt: z.date(),
 	updatedAt: z.date(),
@@ -87,8 +86,7 @@ export const supportUserSchema = z
 		id: z.string(),
 		primaryCurrencyCode: z
 			.string()
-			.length(3, 'Currency code must be 3 characters long')
-			.uppercase('Currency code must be uppercase'),
+			.length(3, 'Currency code must be 3 characters long'),
 	})
 	.strict();
 

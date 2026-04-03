@@ -166,15 +166,19 @@ export default class UserService {
 		return updatedUser;
 	}
 
-	//TODO: add authorization for admin
-	async deleteUser(id: string, userId: string): Promise<UserDomain> {
+	async deleteUser(id: string, authUser: JWTPayload): Promise<UserDomain> {
 		const existingUser = await this.userRepository.findById(id);
 		if (!existingUser) {
 			throw this.userNotFoundError(id);
 		}
-		if (existingUser.id !== userId) {
+
+		const isOwner = existingUser.id === authUser.sub;
+		const isAdmin = authUser.role === ROLE_VALUES[1];
+
+		if (!isOwner && !isAdmin) {
 			throw this.accessDeniedError();
 		}
+
 		await this.userRepository.delete(id);
 
 		return existingUser;

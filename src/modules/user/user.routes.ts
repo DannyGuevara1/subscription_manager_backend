@@ -39,7 +39,7 @@ export default function userRoutes(
 			catchAsync(userController.updateUser.bind(userController)),
 		)
 		.delete(
-			authorize('USER', 'ADMIN', 'SUPPORT'),
+			authorize('USER', 'ADMIN'),
 			validateRequest(userSchema.userParamsRequestSchema),
 			catchAsync(userController.deleteUser.bind(userController)),
 		);

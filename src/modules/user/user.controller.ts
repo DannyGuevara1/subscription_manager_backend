@@ -93,8 +93,8 @@ export default class UserController {
 
 	async deleteUser(req: Request, res: Response, _next: NextFunction) {
 		const { id } = req.validated.params as UserParamsDto;
-		const sub = req.user?.sub as string;
-		await this.userService.deleteUser(id, sub);
+		const authUser = req.user as NonNullable<Request['user']>;
+		await this.userService.deleteUser(id, authUser);
 
 		res.status(204).send();
 	}

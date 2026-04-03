@@ -415,6 +415,22 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			.expect(401);
 	});
 
+	it('Debe bloquear a SUPPORT al intentar eliminar otro usuario', async () => {
+		await request(env.getApp())
+			.delete(`/api/v1/users/${otherUser.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', supportCookie)
+			.expect(403);
+	});
+
+	it('Debe permitir que ADMIN elimine a otro usuario', async () => {
+		await request(env.getApp())
+			.delete(`/api/v1/users/${otherUser.id}`)
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', adminCookie)
+			.expect(204);
+	});
+
 	it('Debe eliminar el usuario', async () => {
 		await request(env.getApp())
 			.delete(`/api/v1/users/${user.id}`)
