@@ -1,12 +1,17 @@
 // src/modules/user/user.controller.ts
 import type { NextFunction, Request, Response } from 'express';
 import type { AuthService } from '@/modules/auth/index.js';
-import type {
-	UpdateUserRoleDto,
-	UserOffsetPaginationQueryDto,
-	UserParams,
-	UserService,
-} from '@/modules/user/index.js';
+import {
+	type CreateUserDto,
+	safeUserSchema,
+	supportUserSchema,
+	type UpdateUserDto,
+	type UpdateUserRoleDto,
+	type UserOffsetPaginationQueryDto,
+	type UserParamsDto,
+} from '@/modules/user/user.dto.js';
+import type UserService from '@/modules/user/user.service.js';
+import type { ProfileDomain } from '@/modules/user/user.type.js';
 
 export default class UserController {
 	private userService: UserService;
@@ -18,50 +23,43 @@ export default class UserController {
 	}
 
 	async getAllUsers(req: Request, res: Response, _next: NextFunction) {
-		const { page, limit } = req.validated
-			.query as UserOffsetPaginationQueryDto;
+		const { page, limit } = req.validated.query as UserOffsetPaginationQueryDto;
 		const { users, meta } = await this.userService.getAllUsers({
 			page,
 			limit,
 		});
+		const serializedUsers = users.map((user) => safeUserSchema.parse(user));
+
 		res.status(200).json({
 			data: {
-				users,
+				users: serializedUsers,
 			},
 			meta,
 		});
 	}
 
-	async getUserById(
-		req: Request<UserParams>,
-		res: Response,
-		_next: NextFunction,
-	) {
-		const { id } = req.params;
+	async getUserById(req: Request, res: Response, _next: NextFunction) {
+		const { id } = req.validated.params as UserParamsDto;
 		const authUser = req.user as NonNullable<Request['user']>;
 		const user = await this.userService.getUserProfileById(id, authUser);
 
 		res.status(200).json({
-			data: user,
+			data: this.serializeProfile(user),
 		});
 	}
 
 	async createUser(req: Request, res: Response, _next: NextFunction) {
-		const userData = req.body;
+		const userData = req.validated.body as CreateUserDto;
 		const newUser = await this.userService.createUser(userData);
 
 		res.status(201).json({
-			data: newUser,
+			data: safeUserSchema.parse(newUser),
 		});
 	}
 
-	async updateUser(
-		req: Request<UserParams>,
-		res: Response,
-		_next: NextFunction,
-	) {
-		const { id } = req.params;
-		const userData = req.body;
+	async updateUser(req: Request, res: Response, _next: NextFunction) {
+		const { id } = req.validated.params as UserParamsDto;
+		const userData = req.validated.body as UpdateUserDto;
 		const authUser = req.user as NonNullable<Request['user']>;
 
 		const updatedUser = await this.userService.updateUser(
@@ -71,17 +69,13 @@ export default class UserController {
 		);
 
 		res.status(200).json({
-			data: updatedUser,
+			data: this.serializeProfile(updatedUser),
 		});
 	}
 
-	async updateUserRole(
-		req: Request<UserParams, unknown, UpdateUserRoleDto>,
-		res: Response,
-		_next: NextFunction,
-	) {
-		const { id } = req.params;
-		const { role } = req.body;
+	async updateUserRole(req: Request, res: Response, _next: NextFunction) {
+		const { id } = req.validated.params as UserParamsDto;
+		const { role } = req.validated.body as UpdateUserRoleDto;
 		const authUser = req.user as NonNullable<Request['user']>;
 
 		const updatedUser = await this.userService.updateUserRole(
@@ -93,19 +87,23 @@ export default class UserController {
 		await this.authService.invalidateRefreshToken(id);
 
 		res.status(200).json({
-			data: updatedUser,
+			data: safeUserSchema.parse(updatedUser),
 		});
 	}
 
-	async deleteUser(
-		req: Request<UserParams>,
-		res: Response,
-		_next: NextFunction,
-	) {
-		const { id } = req.params;
+	async deleteUser(req: Request, res: Response, _next: NextFunction) {
+		const { id } = req.validated.params as UserParamsDto;
 		const sub = req.user?.sub as string;
 		await this.userService.deleteUser(id, sub);
 
 		res.status(204).send();
+	}
+
+	private serializeProfile(profile: ProfileDomain) {
+		if ('email' in profile) {
+			return safeUserSchema.parse(profile);
+		}
+
+		return supportUserSchema.parse(profile);
 	}
 }

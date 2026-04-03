@@ -1,21 +1,16 @@
 // src/services/user.service.ts
+
 import bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import type { JWTPayload } from '@/modules/auth/index.js';
 import type {
+	CreateUserInput,
 	CreateUserData,
-	ProfileDto,
+	ProfileDomain,
+	SupportUserRoleDomain,
 	UpdateUserData,
 	UserDomain,
 	UserOffsetPaginationInput,
-} from '@/modules/user/index.js';
-import {
-	type CreateUserDto,
-	type SafeUserDto,
-	safeUserSchema,
-	type UpdateUserDto,
-	type SupportUserDto,
-	supportUserSchema,
 } from '@/modules/user/index.js';
 import type UserRepository from '@/modules/user/user.repository.js';
 import {
@@ -36,7 +31,7 @@ export default class UserService {
 		this.userRepository = userRepository;
 	}
 
-	async createUser(data: CreateUserDto): Promise<SafeUserDto> {
+	async createUser(data: CreateUserInput): Promise<UserDomain> {
 		const { email, password, name, primaryCurrencyCode } = data;
 
 		const userData: CreateUserData = {
@@ -49,13 +44,11 @@ export default class UserService {
 
 		const newUser = await this.userRepository.create(userData);
 
-		return this.toSafeUserDto(newUser);
+		return newUser;
 	}
 
-	async getAllUsers(
-		{ page, limit }: UserOffsetPaginationInput,
-	): Promise<{
-		users: SafeUserDto[];
+	async getAllUsers({ page, limit }: UserOffsetPaginationInput): Promise<{
+		users: UserDomain[];
 		meta: ReturnType<typeof buildPaginationMeta>;
 	}> {
 		const offset = calculateOffset(page, limit);
@@ -71,42 +64,42 @@ export default class UserService {
 		});
 
 		return {
-			users: users.map((user) => this.toSafeUserDto(user)),
+			users,
 			meta,
 		};
 	}
 
-	async getUserByIdInternal(id: string): Promise<SafeUserDto> {
+	async getUserByIdInternal(id: string): Promise<UserDomain> {
 		const user = await this.userRepository.findById(id);
 		if (!user) {
 			throw this.userNotFoundError(id);
 		}
 
-		return this.toSafeUserDto(user);
+		return user;
 	}
 
 	async getUserProfileById(
 		id: string,
 		authUser: JWTPayload,
-	): Promise<ProfileDto> {
+	): Promise<ProfileDomain> {
 		const profile = await this.userRepository.findById(id);
 
 		if (!profile) {
 			throw this.userNotFoundError(id);
 		}
 
-		if (authUser.role === ROLE_VALUES[1]) return this.toSafeUserDto(profile);
+		if (authUser.role === ROLE_VALUES[1]) return profile;
 
 		if (authUser.role === ROLE_VALUES[0]) {
 			if (profile.id !== authUser.sub) {
 				throw this.accessDeniedError();
 			}
-			return this.toSafeUserDto(profile);
+			return profile;
 		}
 
 		if (authUser.role === ROLE_VALUES[2]) {
 			if (profile.id === authUser.sub) {
-				return this.toSafeUserDto(profile);
+				return profile;
 			}
 			return this.toSupportUserDto(profile);
 		}
@@ -116,9 +109,9 @@ export default class UserService {
 
 	async updateUser(
 		id: string,
-		data: UpdateUserDto,
+		data: UpdateUserData,
 		authUser: JWTPayload,
-	): Promise<SafeUserDto> {
+	): Promise<ProfileDomain> {
 		const existingUser = await this.userRepository.findById(id);
 		if (!existingUser) {
 			throw this.userNotFoundError(id);
@@ -147,14 +140,18 @@ export default class UserService {
 
 		const updatedUser = await this.userRepository.update(id, updateData);
 
-		return this.toSafeUserDto(updatedUser);
+		if (authUser.role === ROLE_VALUES[2] && !isOwner) {
+			return this.toSupportUserDto(updatedUser);
+		}
+
+		return updatedUser;
 	}
 
 	async updateUserRole(
 		id: string,
 		authUser: JWTPayload,
 		role: Role,
-	): Promise<SafeUserDto> {
+	): Promise<UserDomain> {
 		if (authUser.role !== 'ADMIN') {
 			throw this.accessDeniedError();
 		}
@@ -166,11 +163,11 @@ export default class UserService {
 
 		const updatedUser = await this.userRepository.updateRole(id, { role });
 
-		return this.toSafeUserDto(updatedUser);
+		return updatedUser;
 	}
 
 	//TODO: add authorization for admin
-	async deleteUser(id: string, userId: string): Promise<SafeUserDto> {
+	async deleteUser(id: string, userId: string): Promise<UserDomain> {
 		const existingUser = await this.userRepository.findById(id);
 		if (!existingUser) {
 			throw this.userNotFoundError(id);
@@ -180,29 +177,14 @@ export default class UserService {
 		}
 		await this.userRepository.delete(id);
 
-		return this.toSafeUserDto(existingUser);
+		return existingUser;
 	}
 
-	// Método privado para transformación segura
-	private toSafeUserDto(user: UserDomain): SafeUserDto {
-		return safeUserSchema.parse({
-			id: user.id,
-			email: user.email,
-			name: user.name,
-			primaryCurrencyCode: user.primaryCurrencyCode,
-			role: user.role,
-			createdAt: user.createdAt,
-			updatedAt: user.updatedAt,
-		});
-	}
-
-	private toSupportUserDto(user: UserDomain): SupportUserDto {
-		return supportUserSchema.parse({
+	private toSupportUserDto(user: UserDomain): SupportUserRoleDomain {
+		return {
 			id: user.id,
 			primaryCurrencyCode: user.primaryCurrencyCode,
-			createdAt: user.createdAt,
-			updatedAt: user.updatedAt,
-		});
+		};
 	}
 
 	// Abtraer mensaje de error de usuario no encontrado

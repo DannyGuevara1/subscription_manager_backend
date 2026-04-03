@@ -48,13 +48,9 @@ export const registerSchema = z.object({
 		})
 		.min(3, 'Name must be at least 3 characters long'),
 	primaryCurrencyCode: z
-		.string({
-			error: (issue) =>
-				issue.input === undefined
-					? 'Primary currency code is required!'
-					: 'Primary currency code field is invalid',
-		})
+		.string()
 		.length(3, 'Currency code must be 3 characters long')
+		.uppercase('Currency code must be uppercase')
 		.optional(),
 });
 
@@ -68,7 +64,10 @@ export const safeUserAuthDto = z.object({
 	id: z.uuidv7(),
 	name: z.string().nullable(),
 	email: z.email(),
-	primaryCurrencyCode: z.string().length(3),
+	primaryCurrencyCode: z
+		.string()
+		.length(3, 'Currency code must be 3 characters long')
+		.uppercase('Currency code must be uppercase'),
 	role: z.enum(ROLE_VALUES),
 });
 

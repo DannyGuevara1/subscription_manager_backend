@@ -1,7 +1,6 @@
 // src/modules/user/user.type.ts
 import type { ParamsDictionary } from 'express-serve-static-core';
 import type { Role } from '@/shared/types/domain.enums.js';
-
 export interface UserParams extends ParamsDictionary {
 	id: string;
 }
@@ -13,6 +12,8 @@ export interface CreateUserData {
 	password: string;
 	primaryCurrencyCode: string;
 }
+
+export type CreateUserInput = Omit<CreateUserData, 'id'>;
 
 export interface UpdateUserData {
 	name?: string;
@@ -35,6 +36,13 @@ export interface UserDomain {
 	createdAt: Date;
 	updatedAt: Date;
 }
+
+export interface SupportUserRoleDomain {
+	id: string;
+	primaryCurrencyCode: string;
+}
+
+export type ProfileDomain = UserDomain | SupportUserRoleDomain;
 
 export interface UserOffsetPaginationInput {
 	page: number;

@@ -1,15 +1,15 @@
 // src/repositories/user/user.repository.ts
 import type { User } from '@prisma/client';
 import prismaClient from '@/config/prisma.js';
+
 import type {
 	CreateUserData,
+	UpdateUserData,
+	UpdateUserRoleData,
 	UserDomain,
 	UserOffsetPaginationOptions,
 	UserOffsetPaginationResult,
-	UpdateUserData,
-	UpdateUserRoleData,
 } from '@/modules/user/user.type.js';
-
 export default class UserRepository {
 	private readonly prisma;
 
@@ -35,9 +35,10 @@ export default class UserRepository {
 		return this.toDomain(user);
 	}
 
-	async findAll(
-		{ offset, limit }: UserOffsetPaginationOptions,
-	): Promise<UserOffsetPaginationResult> {
+	async findAll({
+		offset,
+		limit,
+	}: UserOffsetPaginationOptions): Promise<UserOffsetPaginationResult> {
 		const [users, totalItems] = await this.prisma.$transaction([
 			this.prisma.user.findMany({
 				orderBy: { createdAt: 'desc' },

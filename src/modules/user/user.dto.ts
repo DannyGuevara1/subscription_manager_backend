@@ -7,6 +7,8 @@ export const userParamsSchema = z.object({
 	id: z.uuidv7({ error: 'User ID must be a valid UUID' }),
 });
 
+export type UserParamsDto = z.infer<typeof userParamsSchema>;
+
 export const userOffsetPaginationQuerySchema = z.object({
 	page: z.coerce
 		.number({ error: 'Page must be a number' })
@@ -31,7 +33,8 @@ export const createUserSchema = z.object({
 	name: z.string().min(2, 'Name must be at least 2 characters long').optional(),
 	primaryCurrencyCode: z
 		.string()
-		.length(3, 'Currency code must be 3 characters long'),
+		.length(3, 'Currency code must be 3 characters long')
+		.uppercase('Currency code must be uppercase'),
 });
 
 export const updateUserSchema = createUserSchema.partial();
@@ -67,7 +70,10 @@ export const safeUserSchema = z.object({
 	id: z.string(),
 	email: z.string(),
 	name: z.string().nullable(),
-	primaryCurrencyCode: z.string(),
+	primaryCurrencyCode: z
+		.string()
+		.length(3, 'Currency code must be 3 characters long')
+		.uppercase('Currency code must be uppercase'),
 	role: z.enum(ROLE_VALUES),
 	createdAt: z.date(),
 	updatedAt: z.date(),
@@ -76,12 +82,15 @@ export const safeUserSchema = z.object({
 export type SafeUserDto = z.infer<typeof safeUserSchema>;
 
 // Contrato restringido → SUPPORT
-export const supportUserSchema = z.object({
-	id: z.string(),
-	primaryCurrencyCode: z.string(),
-	createdAt: z.date(),
-	updatedAt: z.date(),
-}).strict();
+export const supportUserSchema = z
+	.object({
+		id: z.string(),
+		primaryCurrencyCode: z
+			.string()
+			.length(3, 'Currency code must be 3 characters long')
+			.uppercase('Currency code must be uppercase'),
+	})
+	.strict();
 
 export type SupportUserDto = z.infer<typeof supportUserSchema>;
 

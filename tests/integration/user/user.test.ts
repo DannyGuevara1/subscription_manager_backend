@@ -209,9 +209,39 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			'SUPPORT debe poder consultar cualquier usuario por ID',
 		);
 		assert.strictEqual(
+			res.body.data.primaryCurrencyCode,
+			'USD',
+			'SUPPORT debe recibir la moneda primaria',
+		);
+		assert.strictEqual(
 			res.body.data.email,
 			undefined,
 			'SUPPORT no debe recibir email en el perfil',
+		);
+		assert.strictEqual(
+			res.body.data.name,
+			undefined,
+			'SUPPORT no debe recibir nombre en el perfil',
+		);
+		assert.strictEqual(
+			res.body.data.role,
+			undefined,
+			'SUPPORT no debe recibir rol en el perfil',
+		);
+		assert.strictEqual(
+			res.body.data.createdAt,
+			undefined,
+			'SUPPORT no debe recibir createdAt en el perfil',
+		);
+		assert.strictEqual(
+			res.body.data.updatedAt,
+			undefined,
+			'SUPPORT no debe recibir updatedAt en el perfil',
+		);
+		assert.strictEqual(
+			res.body.data.password,
+			undefined,
+			'SUPPORT no debe recibir password en el perfil',
 		);
 	});
 
@@ -323,7 +353,26 @@ describe('Módulo de Usuario - Pruebas de Integración', () => {
 			otherUser.id,
 			'SUPPORT debe poder actualizar campos no sensibles',
 		);
-		assert.strictEqual(res.body.data.name, updatedData.name);
+		assert.strictEqual(
+			res.body.data.primaryCurrencyCode,
+			updatedData.primaryCurrencyCode,
+			'SUPPORT debe recibir solo el contrato mínimo del perfil',
+		);
+		assert.strictEqual(
+			res.body.data.email,
+			undefined,
+			'SUPPORT no debe recibir email al actualizar otro usuario',
+		);
+		assert.strictEqual(
+			res.body.data.name,
+			undefined,
+			'SUPPORT no debe recibir nombre al actualizar otro usuario',
+		);
+		assert.strictEqual(
+			res.body.data.password,
+			undefined,
+			'SUPPORT no debe recibir password al actualizar otro usuario',
+		);
 	});
 
 	it('Debe bloquear a SUPPORT al intentar actualizar email o password de otro usuario', async () => {
