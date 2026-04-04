@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import type redis from 'redis';
+import { refreshTokenPayloadSchema } from '@/modules/auth/auth.dto.js';
 import type {
 	AuthLoginResponse,
 	AuthUser,
@@ -91,7 +92,11 @@ export default class AuthService {
 
 	async refreshSession(refreshToken: string): Promise<AuthLoginResponse> {
 		const SECRET = process.env.JWT_REFRESH_SECRET as string;
-		const decoded = jwt.verify(refreshToken, SECRET) as RefreshTokenPayload;
+		const decodedToken = jwt.verify(refreshToken, SECRET, {
+			algorithms: ['HS256'],
+		});
+
+		const decoded = refreshTokenPayloadSchema.parse(decodedToken);
 
 		const storedToken = await this.redis.get(`refreshToken:${decoded.sub}`);
 

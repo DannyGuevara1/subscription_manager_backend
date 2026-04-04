@@ -1,13 +1,15 @@
 import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
+import jwt from 'jsonwebtoken';
 import request from 'supertest';
+import type { SafeUserAuthDto } from '@/modules/auth/index.js';
 import { loginAsUser } from 'tests/setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
 describe('Módulo de Autenticación y registro', () => {
 	const env = setupIntegrationEnvironment();
 	let cookie: string;
-	let user: any;
+	let user: SafeUserAuthDto;
 
 	before(async () => {
 		const newUser = {
@@ -198,4 +200,37 @@ describe('Módulo de Autenticación y registro', () => {
 			);
 		},
 	);
+
+	it('Debe rechazar origen no permitido por CORS con 403', async () => {
+		await request(env.getApp())
+			.post('/api/v1/auth/login')
+			.set('Origin', 'http://evil.local')
+			.send({
+				email: mockUser.email,
+				password: mockUser.password,
+			})
+			.expect(403)
+			.expect('Content-Type', /application\/problem\+json/);
+	});
+
+	it('Debe rechazar access token con payload inválido aunque esté firmado', async () => {
+		const forgedAccessToken = jwt.sign(
+			{
+				sub: '0197f644-3f67-7f07-9537-6cc9db95fddd',
+				email: 'admin@example.com',
+				name: 'Fake Admin',
+				primaryCurrencyCode: 'USD',
+				// role omitido a propósito
+			},
+			process.env.JWT_ACCESS_SECRET as string,
+			{ algorithm: 'HS256' },
+		);
+
+		await request(env.getApp())
+			.get('/api/v1/users')
+			.set('Origin', 'http://localhost:3000')
+			.set('Cookie', `ACCESS_TOKEN=${forgedAccessToken}`)
+			.expect(401)
+			.expect('Content-Type', /application\/problem\+json/);
+	});
 });

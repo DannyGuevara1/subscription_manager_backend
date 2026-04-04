@@ -71,7 +71,34 @@ export const safeUserAuthDto = z.object({
 	role: z.enum(ROLE_VALUES),
 });
 
+export const jwtPayloadSchema = z
+	.object({
+		sub: z.uuidv7({ error: 'Token subject must be a valid UUIDv7' }),
+		email: z.email('Token email must be a valid email address'),
+		name: z.string().nullable(),
+		role: z.enum(ROLE_VALUES),
+		primaryCurrencyCode: z
+			.string()
+			.length(3, 'Currency code must be 3 characters long')
+			.uppercase('Currency code must be uppercase')
+			.optional(),
+		iat: z.number().int().optional(),
+		exp: z.number().int().optional(),
+	})
+	.strict();
+
+export const refreshTokenPayloadSchema = z
+	.object({
+		sub: z.uuidv7({ error: 'Token subject must be a valid UUIDv7' }),
+		jti: z.uuid({ error: 'Token jti must be a valid UUID' }),
+		iat: z.number().int().optional(),
+		exp: z.number().int().optional(),
+	})
+	.strict();
+
 // Types inferred from body schemas
 export type LoginDto = z.infer<typeof loginSchema>;
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type SafeUserAuthDto = z.infer<typeof safeUserAuthDto>;
+export type JwtPayloadDto = z.infer<typeof jwtPayloadSchema>;
+export type RefreshTokenPayloadDto = z.infer<typeof refreshTokenPayloadSchema>;

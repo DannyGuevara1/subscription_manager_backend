@@ -13,6 +13,14 @@ const authRouter = container.cradle.authRoutes;
 
 const v1: Router = express.Router();
 
+v1.get('/health', (_req, res) => {
+	res.status(200).json({
+		status: 'ok',
+		timestamp: new Date().toISOString(),
+		uptime: process.uptime(),
+	});
+});
+
 v1.use('/users', authMiddleware, userRouter);
 v1.use('/currencies', authMiddleware, currencyRouter);
 v1.use('/subscriptions', authMiddleware, subscriptionRouter);

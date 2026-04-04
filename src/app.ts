@@ -11,7 +11,10 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import responseTime from 'response-time';
 import v1 from '@/routes/index.js';
-import { notFoundError } from '@/shared/errors/error.factory.js';
+import {
+	forbiddenError,
+	notFoundError,
+} from '@/shared/errors/error.factory.js';
 import { errorHandler } from '@/shared/middleware/error.handler.js';
 import { errorNormalizer } from '@/shared/middleware/error.normalizer.js';
 
@@ -57,7 +60,11 @@ app.use(
 			if (allowedOrigins.includes(origin)) {
 				return callback(null, true);
 			}
-			return callback(new Error('Not allowed by CORS'));
+			return callback(
+				forbiddenError({
+					detail: 'Origin not allowed by CORS policy.',
+				}),
+			);
 		},
 		credentials: true,
 	}),

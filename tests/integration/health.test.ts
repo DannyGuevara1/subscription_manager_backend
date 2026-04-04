@@ -5,25 +5,20 @@ import { setupIntegrationEnvironment } from '../setup/test-environment.js';
 
 describe('Health Check - Smoke Test', () => {
 	const env = setupIntegrationEnvironment();
-	it('Debe responder 404 a una ruta desconocida (El server está vivo)', async () => {
-		// Act
+	it('Debe responder 200 en /api/v1/health con payload de salud', async () => {
 		const response = await request(env.getApp())
-			.get('/api/v1/ruta-inexistente')
+			.get('/api/v1/health')
 			.set('Origin', 'http://localhost:3000'); // Simula una petición desde el frontend
 
-		// Assert
-		// Como tienes un manejador de errores personalizado, verificamos que responda JSON
-		// y no se cuelgue.
-		assert.strictEqual(response.status, 404);
-		assert(response.body); // Tu formato de error
+		assert.strictEqual(response.status, 200);
+		assert.strictEqual(response.body.status, 'ok');
+		assert.strictEqual(typeof response.body.timestamp, 'string');
+		assert.strictEqual(typeof response.body.uptime, 'number');
 	});
 
 	it('Debe rechazar acceso a rutas protegidas sin token', async () => {
-		// Intentamos acceder a users sin token
 		const response = await request(env.getApp()).get('/api/v1/users');
 
-		// Debería ser 401 Unauthorized o 403 Forbidden
-		// Esto prueba que tus middlewares se están cargando en el test
-		assert([401, 403, 500].includes(response.status));
+		assert.strictEqual(response.status, 401);
 	});
 });

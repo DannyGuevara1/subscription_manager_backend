@@ -4,6 +4,16 @@ import {
 	COST_TYPE_VALUES,
 } from '@/shared/types/domain.enums.js';
 
+const moneyAmountSchema = z
+	.number()
+	.nonnegative({ error: 'Cost must be a positive number' })
+	.refine((value) => Number.isFinite(value), {
+		error: 'Cost must be a finite number',
+	})
+	.refine((value) => Number(value.toFixed(2)) === value, {
+		error: 'Cost must have at most 2 decimal places',
+	});
+
 export const subscriptionParamsSchema = z.object({
 	id: z.uuidv7({ error: 'Subscription ID must be a valid UUID' }),
 });
@@ -27,7 +37,7 @@ export const createSubscriptionSchema = z.object({
 		.string()
 		.min(1, { error: 'Name is required' })
 		.max(100, { error: 'Name must be at most 100 characters long' }),
-	cost: z.number().nonnegative({ error: 'Cost must be a positive number' }),
+	cost: moneyAmountSchema,
 	costType: z.enum(COST_TYPE_VALUES, {
 		error: () => `Cost type must be one of: ${COST_TYPE_VALUES.join(', ')}`,
 	}),
@@ -55,7 +65,7 @@ export const updateSubscriptionSchema = z
 			.string()
 			.min(1, { error: 'Name is required' })
 			.max(100, { error: 'Name must be at most 100 characters long' }),
-		cost: z.number().nonnegative({ error: 'Cost must be a positive number' }),
+		cost: moneyAmountSchema,
 		costType: z.enum(COST_TYPE_VALUES, {
 			error: () => `Cost type must be one of: ${COST_TYPE_VALUES.join(', ')}`,
 		}),

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import type { JWTPayload } from '@/modules/auth/auth.type.js';
+import { jwtPayloadSchema } from '@/modules/auth/auth.dto.js';
 import {
 	internalError,
 	unauthorizedError,
@@ -39,10 +39,12 @@ export const authMiddleware = (
 			);
 		}
 
-		const decode = jwt.verify(ACCESS_TOKEN, SECRET_KEY, {
+		const decoded = jwt.verify(ACCESS_TOKEN, SECRET_KEY, {
 			algorithms: ['HS256'],
-		}) as JWTPayload;
-		req.user = decode;
+		});
+
+		const payload = jwtPayloadSchema.parse(decoded);
+		req.user = payload;
 		next();
 	} catch (_error) {
 		return next(
