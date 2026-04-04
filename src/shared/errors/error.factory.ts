@@ -10,7 +10,7 @@ export function createError(
 	options: {
 		detail?: string;
 		instance?: string;
-		extensions?: Record<string, any>;
+		extensions?: Record<string, unknown>;
 		isOperational?: boolean;
 		stack?: string;
 	} = {},
@@ -23,13 +23,15 @@ export function createError(
 		);
 	}
 
+	const hasExtensions =
+		options.extensions !== undefined &&
+		Object.keys(options.extensions).length > 0;
+
 	const problemDetails = {
 		...baseProblem, // type, title, status
 		detail: options.detail,
 		instance: options.instance,
-		extensions: {
-			...options.extensions,
-		},
+		extensions: hasExtensions ? { ...options.extensions } : undefined,
 		stack: options.stack,
 	};
 

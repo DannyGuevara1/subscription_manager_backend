@@ -14,11 +14,19 @@ export class AppError extends Error {
 	public readonly instance?: string;
 
 	// Campos internos para control de la aplicación
-	public readonly extensions?: Record<string, any>;
+	public readonly extensions?: Record<string, unknown>;
 
 	// Campos internos para control de la aplicación
 	public readonly isOperational: boolean;
 	public readonly timestamp: Date;
+
+	private readonly reserved = new Set([
+		'type',
+		'title',
+		'status',
+		'detail',
+		'instance',
+	]);
 
 	constructor(
 		options: ProblemDetails & { stack?: string },
@@ -81,9 +89,15 @@ export class AppError extends Error {
 			instance: this.instance,
 		};
 
+		const safeExtensions = Object.fromEntries(
+			Object.entries(this.extensions ?? {}).filter(
+				([key]) => !this.reserved.has(key),
+			),
+		);
+
 		// Agregar extensiones si existen
 		if (this.extensions) {
-			Object.assign(problemDetails, this.extensions);
+			Object.assign(problemDetails, safeExtensions);
 			//problemDetails.extensions = this.extensions;
 		}
 
@@ -93,7 +107,10 @@ export class AppError extends Error {
 	/**
 	 * Convierte el error a formato completo para logging interno
 	 */
-	toLogFormat(): Record<string, any> {
+	toLogFormat(): Record<string, unknown> {
+		const hasExtensions =
+			this.extensions !== undefined && Object.keys(this.extensions).length > 0;
+
 		return {
 			// Campos RFC 9457
 			...this.toProblemDetails(),
@@ -103,9 +120,7 @@ export class AppError extends Error {
 			isOperational: this.isOperational,
 			timestamp: this.timestamp.toISOString(),
 			stack: this.stack,
-
-			// Extensiones
-			...this.extensions,
+			...(hasExtensions ? { extensions: this.extensions } : {}),
 		};
 	}
 }
