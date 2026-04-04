@@ -19,7 +19,6 @@ describe('Modulo de Suscripciones', () => {
 
 	// Second user for cross-user tests
 	let otherUserCookie: string;
-	let otherUser: SafeUserAuthDto;
 	let otherCategoryId: number;
 
 	before(async () => {
@@ -45,7 +44,6 @@ describe('Modulo de Suscripciones', () => {
 			primaryCurrencyCode: 'USD',
 		});
 		otherUserCookie = otherData.cookie;
-		otherUser = otherData.user;
 
 		const otherCatResp = await request(env.getApp())
 			.post('/api/v1/categories')
@@ -214,6 +212,28 @@ describe('Modulo de Suscripciones', () => {
 	);
 
 	it(
+		'Debería rechazar costos con más de 2 decimales',
+		{ timeout: 10000 },
+		async () => {
+			await request(env.getApp())
+				.post('/api/v1/subscriptions')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({
+					categoryId,
+					currencyCode: 'USD',
+					name: 'Service with 3 decimals',
+					cost: 10.999,
+					costType: 'FIXED',
+					billingFrequency: 1,
+					billingUnit: 'MONTHS',
+					firstPaymentDate: new Date().toISOString(),
+				})
+				.expect(422);
+		},
+	);
+
+	it(
 		'Debería rechazar nombre mayor a 100 caracteres',
 		{ timeout: 10000 },
 		async () => {
@@ -247,13 +267,13 @@ describe('Modulo de Suscripciones', () => {
 				.expect('Content-Type', /json/);
 
 			assert(Array.isArray(res.body.data.subscriptions));
-			assert.equal(typeof res.body.data.hasNextPage, 'boolean');
+			assert.equal(typeof res.body.meta.hasNextPage, 'boolean');
 			assert(
-				res.body.data.nextCursor === null ||
-					typeof res.body.data.nextCursor === 'string',
+				res.body.meta.nextCursor === null ||
+					typeof res.body.meta.nextCursor === 'string',
 			);
 			// Verificar que cada suscripción tenga el userId correcto
-			res.body.data.subscriptions.forEach((sub: any) => {
+			res.body.data.subscriptions.forEach((sub: { userId: string }) => {
 				assert.strictEqual(
 					sub.userId,
 					user.id,
@@ -294,16 +314,16 @@ describe('Modulo de Suscripciones', () => {
 
 			assert(Array.isArray(firstPage.body.data.subscriptions));
 			assert.strictEqual(firstPage.body.data.subscriptions.length, 2);
-			assert.strictEqual(firstPage.body.data.hasNextPage, true);
-			assert.equal(typeof firstPage.body.data.nextCursor, 'string');
+			assert.strictEqual(firstPage.body.meta.hasNextPage, true);
+			assert.equal(typeof firstPage.body.meta.nextCursor, 'string');
 
 			const firstPageIds = new Set(
-				firstPage.body.data.subscriptions.map((sub: any) => sub.id),
+				firstPage.body.data.subscriptions.map((sub: { id: string }) => sub.id),
 			);
 
 			const secondPage = await request(env.getApp())
 				.get(
-					`/api/v1/subscriptions?limit=2&cursor=${firstPage.body.data.nextCursor}`,
+					`/api/v1/subscriptions?limit=2&cursor=${firstPage.body.meta.nextCursor}`,
 				)
 				.set('Origin', 'http://localhost:3000')
 				.set('Cookie', cookie)
@@ -312,7 +332,7 @@ describe('Modulo de Suscripciones', () => {
 
 			assert(Array.isArray(secondPage.body.data.subscriptions));
 			assert(secondPage.body.data.subscriptions.length <= 2);
-			secondPage.body.data.subscriptions.forEach((sub: any) => {
+			secondPage.body.data.subscriptions.forEach((sub: { id: string }) => {
 				assert.strictEqual(firstPageIds.has(sub.id), false);
 			});
 		},
