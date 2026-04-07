@@ -79,7 +79,7 @@ describe('Modulo de Suscripciones', () => {
 		assert.strictEqual(sub.categoryId, categoryId);
 		assert.strictEqual(sub.currencyCode, 'USD');
 		assert.strictEqual(sub.name, 'Spotify');
-		assert.strictEqual(sub.cost, 15.99);
+		assert.strictEqual(sub.cost, '15.99');
 		assert.strictEqual(sub.costType, 'FIXED');
 		assert.strictEqual(sub.billingFrequency, 1);
 		assert.strictEqual(sub.billingUnit, 'MONTHS');
@@ -465,7 +465,7 @@ describe('Modulo de Suscripciones', () => {
 				.expect('Content-Type', /json/);
 
 			assert.strictEqual(res.body.data.name, 'HBO Max Updated');
-			assert.strictEqual(res.body.data.cost, 19.99);
+			assert.strictEqual(res.body.data.cost, '19.99');
 		},
 	);
 

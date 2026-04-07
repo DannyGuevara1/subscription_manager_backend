@@ -105,7 +105,7 @@ export const safeSubscriptionSchema = z.object({
 	categoryId: z.number(),
 	currencyCode: z.string(),
 	name: z.string(),
-	cost: z.number().nonnegative(),
+	cost: z.coerce.string(), // Convert cost to string to preserve precision in JSON
 	costType: z.enum(COST_TYPE_VALUES),
 	billingFrequency: z.number().int().positive(),
 	billingUnit: z.enum(BILLING_UNIT_VALUES),

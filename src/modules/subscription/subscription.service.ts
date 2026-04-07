@@ -4,8 +4,8 @@ import type CategoryService from '@/modules/category/category.service.js';
 import type CurrencyService from '@/modules/currency/currency.service.js';
 import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 import type {
-	CreateSubscriptionInput,
 	CreateSubscriptionData,
+	CreateSubscriptionInput,
 	SubscriptionCursorPaginationOptions,
 	SubscriptionCursorPaginationPage,
 	SubscriptionDomain,
