@@ -20,6 +20,7 @@ export class AppError extends Error {
 	public readonly isOperational: boolean;
 	public readonly timestamp: Date;
 
+	// Conjunto de campos reservados por RFC 9457 que no pueden ser sobrescritos por extensions
 	private readonly reserved = new Set([
 		'type',
 		'title',
@@ -120,7 +121,6 @@ export class AppError extends Error {
 			isOperational: this.isOperational,
 			timestamp: this.timestamp.toISOString(),
 			stack: this.stack,
-			...(hasExtensions ? { extensions: this.extensions } : {}),
 		};
 	}
 }
