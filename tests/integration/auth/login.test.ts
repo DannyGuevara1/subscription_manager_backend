@@ -2,8 +2,8 @@ import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
-import type { SafeUserAuthDto } from '@/modules/auth/index.js';
 import { loginAsUser } from 'tests/setup/auth-helper.js';
+import type { SafeUserAuthDto } from '@/modules/auth/index.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
 describe('Módulo de Autenticación y registro', () => {
@@ -91,7 +91,6 @@ describe('Módulo de Autenticación y registro', () => {
 			.send(invalidUser)
 			.expect(422)
 			.expect('Content-Type', /application\/problem\+json/);
-
 	});
 
 	it(
