@@ -203,4 +203,16 @@ export default class SubscriptionService {
 		const deletedSubscription = await this.subscriptionRepository.delete(id);
 		return deletedSubscription;
 	}
+
+	async getTotalMonthlySubscriptions(userId: string): Promise<string> {
+		const total =
+			await this.subscriptionRepository.getTotalMonthlySubscriptions(userId);
+		return total;
+	}
+
+	async getTotalAnnualSubscriptions(userId: string): Promise<string> {
+		const total =
+			await this.subscriptionRepository.getTotalAnnualSubscriptions(userId);
+		return total;
+	}
 }

@@ -107,4 +107,34 @@ export default class SubscriptionRepository {
 
 		return this.toDomain(subscription);
 	}
+
+	async getTotalMonthlySubscriptions(userId: string): Promise<string> {
+		const result = await this.prisma.subscription.aggregate({
+			where: {
+				userId,
+				costType: 'FIXED',
+				billingUnit: 'MONTHS',
+			},
+			_sum: {
+				cost: true,
+			},
+		});
+
+		return result._sum.cost ? result._sum.cost.toFixed(2) : '0.00';
+	}
+
+	async getTotalAnnualSubscriptions(userId: string): Promise<string> {
+		const result = await this.prisma.subscription.aggregate({
+			where: {
+				userId,
+				costType: 'FIXED',
+				billingUnit: 'YEARS',
+			},
+			_sum: {
+				cost: true,
+			},
+		});
+
+		return result._sum.cost ? result._sum.cost.toFixed(2) : '0.00';
+	}
 }
