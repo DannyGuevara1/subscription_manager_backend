@@ -10,6 +10,7 @@ const currencyRouter = container.cradle.currencyRoutes;
 const subscriptionRouter = container.cradle.subscriptionRoutes;
 const categoryRouter = container.cradle.categoryRoutes;
 const authRouter = container.cradle.authRoutes;
+const dashboardRouter = container.cradle.dashboardRoutes;
 
 const v1: Router = express.Router();
 
@@ -25,5 +26,6 @@ v1.use('/users', authMiddleware, userRouter);
 v1.use('/currencies', authMiddleware, currencyRouter);
 v1.use('/subscriptions', authMiddleware, subscriptionRouter);
 v1.use('/categories', authMiddleware, categoryRouter);
+v1.use('/dashboard', authMiddleware, dashboardRouter);
 v1.use('/auth', authRouter);
 export default v1;

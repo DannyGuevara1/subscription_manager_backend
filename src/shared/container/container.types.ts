@@ -17,6 +17,8 @@ import type SubscriptionService from '@/modules/subscription/subscription.servic
 import type UserController from '@/modules/user/user.controller.js';
 import type UserRepository from '@/modules/user/user.repository.js';
 import type UserService from '@/modules/user/user.service.js';
+import type DashboardController from '@/modules/dashboard/dashboard.controller.js';
+import type DashboardService from '@/modules/dashboard/dashboard.service.js';
 
 export interface Cradle {
 	prisma: typeof prismaClient;
@@ -34,16 +36,19 @@ export interface Cradle {
 	authService: AuthService;
 	loginService: LoginService;
 	registerService: RegisterService;
+	dashboardService: DashboardService;
 
 	userController: UserController;
 	categoryController: CategoryController;
 	currencyController: CurrencyController;
 	subscriptionController: SubscriptionController;
 	authController: AuthController;
+	dashboardController: DashboardController;
 
 	userRoutes: Router;
 	categoryRoutes: Router;
 	currencyRoutes: Router;
 	subscriptionRoutes: Router;
 	authRoutes: Router;
+	dashboardRoutes: Router;
 }
