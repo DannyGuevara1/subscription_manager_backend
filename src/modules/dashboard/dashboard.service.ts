@@ -1,15 +1,10 @@
 import type { DashboardSummary } from '@/modules/dashboard/dashboard.type.js';
 import type { SubscriptionService } from '@/modules/subscription/index.js';
-import type { UserService } from '@/modules/user/index.js';
+
 export default class DashboardService {
-	private userService: UserService;
 	private subscriptionService: SubscriptionService;
 
-	constructor(
-		userService: UserService,
-		subscriptionService: SubscriptionService,
-	) {
-		this.userService = userService;
+	constructor(subscriptionService: SubscriptionService) {
 		this.subscriptionService = subscriptionService;
 	}
 
