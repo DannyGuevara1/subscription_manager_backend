@@ -28,8 +28,7 @@ export const errorHandler = (
 			type: '/problems/internal-server-error',
 			title: 'Internal Server Error',
 			status: 500,
-			detail:
-				'An unexpected error occurred. Our team has been notified.',
+			detail: 'An unexpected error occurred. Our team has been notified.',
 		});
 		return;
 	}

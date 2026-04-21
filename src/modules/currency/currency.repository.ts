@@ -37,8 +37,14 @@ export default class CurrencyRepository {
 		return currency ? this.toDomain(currency) : null;
 	}
 
-	async update(code: string, data: UpdateCurrencyData): Promise<CurrencyDomain> {
-		const currency = await this.prisma.currency.update({ where: { code }, data });
+	async update(
+		code: string,
+		data: UpdateCurrencyData,
+	): Promise<CurrencyDomain> {
+		const currency = await this.prisma.currency.update({
+			where: { code },
+			data,
+		});
 		return this.toDomain(currency);
 	}
 

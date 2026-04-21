@@ -24,11 +24,7 @@ export default class CurrencyController {
 		});
 	}
 
-	async getCurrencyByCode(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async getCurrencyByCode(req: Request, res: Response, _next: NextFunction) {
 		const { code } = req.validated.params as CurrencyParamsDto;
 		const currency = await this.currencyService.getCurrencyByCode(code);
 
@@ -44,11 +40,7 @@ export default class CurrencyController {
 		});
 	}
 
-	async updateCurrency(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async updateCurrency(req: Request, res: Response, _next: NextFunction) {
 		const { code } = req.validated.params as CurrencyParamsDto;
 		const currencyData = req.validated.body as UpdateCurrencyDto;
 		const updatedCurrency = await this.currencyService.updateCurrency(
@@ -60,11 +52,7 @@ export default class CurrencyController {
 		});
 	}
 
-	async deleteCurrency(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async deleteCurrency(req: Request, res: Response, _next: NextFunction) {
 		const { code } = req.validated.params as CurrencyParamsDto;
 		await this.currencyService.deleteCurrency(code);
 

@@ -63,7 +63,10 @@ describe('Middleware errorNormalizer', () => {
 	});
 
 	it('debe mapear Error genérico a internal error no operacional', () => {
-		const captured = runNormalizer(new Error('Unexpected fail'), '/generic-error');
+		const captured = runNormalizer(
+			new Error('Unexpected fail'),
+			'/generic-error',
+		);
 
 		assert.ok(captured instanceof AppError);
 		const normalized = captured as AppError;

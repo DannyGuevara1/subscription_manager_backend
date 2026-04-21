@@ -38,11 +38,7 @@ export default class CategoryController {
 
 	//Controller method to get id category
 
-	async getByCategoryId(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async getByCategoryId(req: Request, res: Response, _next: NextFunction) {
 		const { id } = req.validated.params as CategoryParamsDto;
 		const sub = req.user?.sub as string;
 		const category = await this.categoryService.getCategoryById(id, sub);
@@ -65,11 +61,7 @@ export default class CategoryController {
 		});
 	}
 
-	async updateCategory(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async updateCategory(req: Request, res: Response, _next: NextFunction) {
 		const { id } = req.validated.params as CategoryParamsDto;
 		const categoryData = req.validated.body as UpdateCategoryDto;
 		const sub = req.user?.sub as string;
@@ -84,11 +76,7 @@ export default class CategoryController {
 		});
 	}
 
-	async deleteCategory(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async deleteCategory(req: Request, res: Response, _next: NextFunction) {
 		const { id } = req.validated.params as CategoryParamsDto;
 		const sub = req.user?.sub as string;
 		await this.categoryService.deleteCategory(id, sub);
