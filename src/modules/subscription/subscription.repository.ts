@@ -1,7 +1,9 @@
 import type { Subscription } from '@prisma/client';
 import prismaClient from '@/config/prisma.js';
 import type {
+	AnnualSubscriptionRawData,
 	CreateSubscriptionData,
+	MonthlySubscriptionRawData,
 	SubscriptionCursorPaginationOptions,
 	SubscriptionCursorPaginationResult,
 	SubscriptionDomain,
@@ -108,33 +110,45 @@ export default class SubscriptionRepository {
 		return this.toDomain(subscription);
 	}
 
-	async getTotalMonthlySubscriptions(userId: string): Promise<string> {
-		const result = await this.prisma.subscription.aggregate({
+	async getTotalMonthlySubscriptions(
+		userId: string,
+	): Promise<MonthlySubscriptionRawData[]> {
+		const result = await this.prisma.subscription.findMany({
 			where: {
 				userId,
 				costType: 'FIXED',
 				billingUnit: 'MONTHS',
 			},
-			_sum: {
+			select: {
 				cost: true,
+				billingFrequency: true,
 			},
 		});
 
-		return result._sum.cost ? result._sum.cost.toFixed(2) : '0.00';
+		return result.map((subscription) => ({
+			cost: subscription.cost.toFixed(2),
+			billingFrequency: subscription.billingFrequency,
+		}));
 	}
 
-	async getTotalAnnualSubscriptions(userId: string): Promise<string> {
-		const result = await this.prisma.subscription.aggregate({
+	async getTotalAnnualSubscriptions(
+		userId: string,
+	): Promise<AnnualSubscriptionRawData[]> {
+		const result = await this.prisma.subscription.findMany({
 			where: {
 				userId,
 				costType: 'FIXED',
 				billingUnit: 'YEARS',
 			},
-			_sum: {
+			select: {
 				cost: true,
+				billingFrequency: true,
 			},
 		});
 
-		return result._sum.cost ? result._sum.cost.toFixed(2) : '0.00';
+		return result.map((subscription) => ({
+			cost: subscription.cost.toFixed(2),
+			billingFrequency: subscription.billingFrequency,
+		}));
 	}
 }

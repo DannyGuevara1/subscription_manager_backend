@@ -49,13 +49,23 @@ export interface SubscriptionCursorPaginationResult {
 	subscriptions: SubscriptionDomain[];
 }
 
-export type CreateSubscriptionInput = Omit<
-	CreateSubscriptionData,
-	'id' | 'userId'
->;
-
 export interface SubscriptionCursorPaginationPage {
 	subscriptions: SubscriptionDomain[];
 	nextCursor: string | null;
 	hasNextPage: boolean;
 }
+
+export type CreateSubscriptionInput = Omit<
+	CreateSubscriptionData,
+	'id' | 'userId'
+>;
+
+export type MonthlySubscriptionRawData = {
+	cost: string;
+	billingFrequency: number;
+};
+
+export type AnnualSubscriptionRawData = {
+	cost: string;
+	billingFrequency: number;
+};

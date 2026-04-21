@@ -205,14 +205,22 @@ export default class SubscriptionService {
 	}
 
 	async getTotalMonthlySubscriptions(userId: string): Promise<string> {
-		const total =
+		const subscriptions =
 			await this.subscriptionRepository.getTotalMonthlySubscriptions(userId);
-		return total;
+		const total = subscriptions.reduce(
+			(acc, curr) => acc + Number(curr.cost) * curr.billingFrequency,
+			0,
+		);
+		return total.toFixed(2);
 	}
 
 	async getTotalAnnualSubscriptions(userId: string): Promise<string> {
-		const total =
+		const subscriptions =
 			await this.subscriptionRepository.getTotalAnnualSubscriptions(userId);
-		return total;
+		const total = subscriptions.reduce(
+			(acc, curr) => acc + Number(curr.cost) * curr.billingFrequency,
+			0,
+		);
+		return total.toFixed(2);
 	}
 }
