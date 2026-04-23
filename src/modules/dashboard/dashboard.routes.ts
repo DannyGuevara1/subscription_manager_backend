@@ -1,8 +1,8 @@
 import type { Router as ExpressRouter } from 'express';
 import { Router } from 'express';
+import type DashboardController from '@/modules/dashboard/dashboard.controller.js';
 import { authorize } from '@/shared/middleware/authorize.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
-import DashboardController from '@/modules/dashboard/dashboard.controller.js';
 
 export const DASHBOARD_PATH = '/dashboard';
 
