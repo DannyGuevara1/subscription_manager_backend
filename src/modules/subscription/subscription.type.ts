@@ -60,12 +60,20 @@ export type CreateSubscriptionInput = Omit<
 	'id' | 'userId'
 >;
 
-export type MonthlySubscriptionRawData = {
+type SubscriptionCostRawData = {
 	cost: string;
 	billingFrequency: number;
 };
 
-export type AnnualSubscriptionRawData = {
-	cost: string;
-	billingFrequency: number;
+export type MonthlySubscriptionRawData = SubscriptionCostRawData & {
+	billingUnit: 'MONTHS';
+};
+export type AnnualSubscriptionRawData = SubscriptionCostRawData & {
+	billingUnit: 'YEARS';
+};
+export type DailySubscriptionRawData = SubscriptionCostRawData & {
+	billingUnit: 'DAYS';
+};
+export type WeekSubscriptionRawData = SubscriptionCostRawData & {
+	billingUnit: 'WEEKS';
 };
