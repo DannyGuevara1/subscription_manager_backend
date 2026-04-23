@@ -15,6 +15,7 @@ import {
 	forbiddenError,
 	notFoundError,
 } from '@/shared/errors/error.factory.js';
+import type { BillingUnit } from '@/shared/types/domain.enums.js';
 import { buildCursorPaginationWindow } from '@/shared/utils/pagination-cursor.util.js';
 
 export default class SubscriptionService {
@@ -30,6 +31,46 @@ export default class SubscriptionService {
 		this.subscriptionRepository = subscriptionRepository;
 		this.categoryService = categoryService;
 		this.currencyService = currencyService;
+	}
+
+	private calculateTotal(
+		subscriptions: Array<{
+			cost: string;
+			billingFrequency: number;
+		}>,
+	): string {
+		const total = subscriptions.reduce(
+			(acc, curr) => acc + Number(curr.cost) * curr.billingFrequency,
+			0,
+		);
+
+		return total.toFixed(2);
+	}
+
+	private async getTotalSubscriptionsByBillingUnit(
+		userId: string,
+		billingUnit: BillingUnit,
+	): Promise<string> {
+		switch (billingUnit) {
+			case 'MONTHS':
+				return this.calculateTotal(
+					await this.subscriptionRepository.getTotalMonthlySubscriptions(
+						userId,
+					),
+				);
+			case 'YEARS':
+				return this.calculateTotal(
+					await this.subscriptionRepository.getTotalAnnualSubscriptions(userId),
+				);
+			case 'DAYS':
+				return this.calculateTotal(
+					await this.subscriptionRepository.getTotalDailySubscriptions(userId),
+				);
+			case 'WEEKS':
+				return this.calculateTotal(
+					await this.subscriptionRepository.getTotalWeeklySubscriptions(userId),
+				);
+		}
 	}
 
 	async getAllSubscriptions(
@@ -205,22 +246,18 @@ export default class SubscriptionService {
 	}
 
 	async getTotalMonthlySubscriptions(userId: string): Promise<string> {
-		const subscriptions =
-			await this.subscriptionRepository.getTotalMonthlySubscriptions(userId);
-		const total = subscriptions.reduce(
-			(acc, curr) => acc + Number(curr.cost) * curr.billingFrequency,
-			0,
-		);
-		return total.toFixed(2);
+		return this.getTotalSubscriptionsByBillingUnit(userId, 'MONTHS');
 	}
 
 	async getTotalAnnualSubscriptions(userId: string): Promise<string> {
-		const subscriptions =
-			await this.subscriptionRepository.getTotalAnnualSubscriptions(userId);
-		const total = subscriptions.reduce(
-			(acc, curr) => acc + Number(curr.cost) * curr.billingFrequency,
-			0,
-		);
-		return total.toFixed(2);
+		return this.getTotalSubscriptionsByBillingUnit(userId, 'YEARS');
+	}
+
+	async getTotalDailySubscriptions(userId: string): Promise<string> {
+		return this.getTotalSubscriptionsByBillingUnit(userId, 'DAYS');
+	}
+
+	async getTotalWeeklySubscriptions(userId: string): Promise<string> {
+		return this.getTotalSubscriptionsByBillingUnit(userId, 'WEEKS');
 	}
 }
