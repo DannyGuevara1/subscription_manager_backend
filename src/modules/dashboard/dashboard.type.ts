@@ -1,3 +1,4 @@
+import type { BillingUnit } from '@/shared/types/domain.enums.js';
 export interface DashboardSummary {
 	totalMonthly: string;
 	totalAnnual: string;
@@ -6,10 +7,5 @@ export interface DashboardSummary {
 	projectedMonthly: string;
 	projectedAnnual: string;
 	currencyCode: string;
-	expensesByType: {
-		DAYS: string;
-		WEEKS: string;
-		MONTHS: string;
-		YEARS: string;
-	};
+	expensesByType: Record<BillingUnit, string>;
 }
