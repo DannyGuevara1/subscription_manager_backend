@@ -62,6 +62,7 @@ export default class SubscriptionRepository {
 			costType: subscription.costType,
 			billingFrequency: subscription.billingFrequency,
 			billingUnit: subscription.billingUnit,
+			isActive: subscription.isActive,
 			firstPaymentDate: subscription.firstPaymentDate,
 			trialEndsOn: subscription.trialEndsOn,
 		};
@@ -167,5 +168,17 @@ export default class SubscriptionRepository {
 		userId: string,
 	): Promise<WeekSubscriptionRawData[]> {
 		return this.getActiveFixedSubscriptionsByBillingUnit(userId, 'WEEKS');
+	}
+
+	async findActiveByUserId(userId: string): Promise<SubscriptionDomain[]> {
+		const subscriptions = await this.prisma.subscription.findMany({
+			where: {
+				userId,
+				isActive: true,
+			},
+			orderBy: { createdAt: 'desc' },
+		});
+
+		return subscriptions.map((subscription) => this.toDomain(subscription));
 	}
 }
