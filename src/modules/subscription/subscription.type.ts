@@ -36,6 +36,7 @@ export interface SubscriptionDomain {
 	costType: CostType;
 	billingFrequency: number;
 	billingUnit: BillingUnit;
+	isActive: boolean;
 	firstPaymentDate: Date;
 	trialEndsOn?: Date | null;
 }
