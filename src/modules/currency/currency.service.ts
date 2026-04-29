@@ -1,7 +1,7 @@
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
 import type {
-	CreateCurrencyInput,
 	CreateCurrencyData,
+	CreateCurrencyInput,
 	CurrencyDomain,
 	UpdateCurrencyData,
 } from '@/modules/currency/currency.type.js';
