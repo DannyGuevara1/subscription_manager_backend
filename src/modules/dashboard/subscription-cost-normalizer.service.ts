@@ -1,6 +1,7 @@
-import type { NormalizedSubscriptionCost } from '@/modules/dashboard/dashboard.type.js';
+import type { DashboardSummary, NormalizedSubscriptionCost } from '@/modules/dashboard/dashboard.type.js';
 import type { ExchangeRateProvider } from '@/modules/dashboard/ports/exchange-rate.provider.js';
 import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
+import type { BillingUnit } from '@prisma/client';
 export default class SubscriptionCostNormalizerService {
 	private exchangeRateProvider: ExchangeRateProvider;
 
@@ -42,10 +43,10 @@ export default class SubscriptionCostNormalizerService {
 		const currentAnnual = isInTrial ? 0 : projectedAnnual;
 
 		return {
-			projectedMonthly: Number(projectedMonthly.toFixed(2)),
-			projectedAnnual: Number(projectedAnnual.toFixed(2)),
-			currentMonthly: Number(currentMonthly.toFixed(2)),
-			currentAnnual: Number(currentAnnual.toFixed(2)),
+			projectedMonthly: projectedMonthly,
+			projectedAnnual: projectedAnnual,
+			currentMonthly: currentMonthly,
+			currentAnnual: currentAnnual,
 			billingUnit: subscription.billingUnit,
 		};
 	}
@@ -53,5 +54,48 @@ export default class SubscriptionCostNormalizerService {
 	async normalizeAll(
 		subscriptions: SubscriptionDomain[],
 		primaryCurrency: string,
-	) {}
+	): Promise<DashboardSummary> {
+
+		let normalizedCosts: NormalizedSubscriptionCost[] = [];
+
+		for (const subscription of subscriptions) {
+			const normalizedCost = await this.normalize(subscription, primaryCurrency);
+			normalizedCosts.push(normalizedCost);
+
+		}
+
+		let totalProjectedMonthly = 0;
+		let totalCurrentMonthly = 0;
+		const expensesByType: Record<BillingUnit, number> = {
+			DAYS: 0,
+			WEEKS: 0,
+			MONTHS: 0,
+			YEARS: 0
+		};
+
+		for (const cost of normalizedCosts) {
+			totalProjectedMonthly += cost.projectedMonthly;
+			totalCurrentMonthly += cost.currentMonthly;
+			expensesByType[cost.billingUnit] += cost.projectedMonthly;
+		}
+
+		const totalProjectedAnnual = totalProjectedMonthly * 12;
+		const totalCurrentAnnual = totalCurrentMonthly * 12;
+
+		return {
+			totalMonthly: totalProjectedMonthly.toFixed(2),
+			totalAnnual: totalProjectedAnnual.toFixed(2),
+			currentMonthly: totalCurrentMonthly.toFixed(2),
+			currentAnnual: totalCurrentAnnual.toFixed(2),
+			projectedMonthly: totalProjectedMonthly.toFixed(2),
+			projectedAnnual: totalProjectedAnnual.toFixed(2),
+			currencyCode: primaryCurrency,
+			expensesByType: {
+				DAYS: expensesByType.DAYS.toFixed(2),
+				WEEKS: expensesByType.WEEKS.toFixed(2),
+				MONTHS: expensesByType.MONTHS.toFixed(2),
+				YEARS: expensesByType.YEARS.toFixed(2),
+			},
+		};
+	}
 }
