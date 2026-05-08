@@ -3,9 +3,17 @@
 GET http://localhost:3000/api/v1/subscriptions
 Origin: http://localhost:3000
 
+### GET Subscriptions with cursor-based pagination (first page)
+GET http://localhost:3000/api/v1/subscriptions?limit=2
+Origin: http://localhost:3000
+
+### GET Subscriptions with cursor-based pagination (next page)
+GET http://localhost:3000/api/v1/subscriptions?limit=2&cursor=019d2319-024e-7b88-b799-209ac6fd05fd
+Origin: http://localhost:3000
+
 ### Get Subscription by ID
 ### Only Admins and the User themselves can access this endpoint
-GET http://localhost:3000/api/v1/subscriptions/019c11ae-276d-7528-bde9-7bcbe8047caf
+GET http://localhost:3000/api/v1/subscriptions/019d55fe-d136-7256-a96b-3c6a1e512b99
 Origin: http://localhost:3000
 
 ### Create Subscription
@@ -16,28 +24,28 @@ content-type: application/json
 
 {
     "userId": "019c1090-97be-7057-9f3e-9680cf703fb7",
-    "categoryId": 1,
+    "categoryId": 4,
     "currencyCode": "USD",
-    "name": "Netflix",
-    "cost": 15.99,
-    "costType": "FIXDED",
+    "name": "Spotify",
+    "cost": 12.99,
+    "costType": "FIXED",
     "billingFrequency": 1,
     "billingUnit": "MONTHS",
-    "firstPaymentDate": "1/30/2026"
+    "firstPaymentDate": "2026-04-20"
 
 }
 
 ### Update Subscription
 ### Only Admins and the User themselves can access this endpoint
-PUT http://localhost:3000/api/v1/subscriptions/0199b1c1-01d5-725f-97bf-b309c3c61a5b
+PUT http://localhost:3000/api/v1/subscriptions/019d65dc-c70b-7b35-b74f-4e711e95bb8d
 Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "cost": 9.99
+    "cost": 99.99
 }
 
 ### Delete Subscription
 ### Only Admins and the User themselves can access this endpoint
-DELETE http://localhost:3000/api/v1/subscriptions/01998c45-4708-755c-a2b3-cfb3e4ee9902
+DELETE http://localhost:3000/api/v1/subscriptions/019dace4-48ae-7005-9e7d-81651220f6a9
 Origin: http://localhost:3000

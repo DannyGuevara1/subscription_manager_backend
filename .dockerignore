@@ -10,3 +10,5 @@ dist
 .env.dev
 .env.test
 .env.prod
+.env
+analisis_requisitos.pdf

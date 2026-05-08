@@ -48,6 +48,10 @@ export async function setupContainer(): Promise<AwilixContainer<Cradle>> {
 				`${baseGlob}/modules/**/*.controller${extensionGlob}`,
 				{ lifetime: Lifetime.SINGLETON },
 			],
+			[
+				`${baseGlob}/modules/**/*.provider${extensionGlob}`,
+				{ lifetime: Lifetime.SINGLETON },
+			],
 		],
 		{
 			esModules: true, // Para ES modules

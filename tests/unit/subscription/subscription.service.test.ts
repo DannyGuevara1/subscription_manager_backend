@@ -1,6 +1,9 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
+import type CategoryService from '@/modules/category/category.service.js';
+import type CurrencyService from '@/modules/currency/currency.service.js';
+import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 import SubscriptionService from '@/modules/subscription/subscription.service.js';
 import type {
 	CreateSubscriptionInput,
@@ -26,6 +29,7 @@ const BASE_SUBSCRIPTION: SubscriptionDomain = {
 	costType: 'FIXED',
 	billingFrequency: 1,
 	billingUnit: 'MONTHS',
+	isActive: true,
 	firstPaymentDate: new Date('2026-01-01T00:00:00.000Z'),
 	trialEndsOn: null,
 };
@@ -44,9 +48,17 @@ const CREATE_INPUT: CreateSubscriptionInput = {
 const createServiceFixture = () => {
 	const repositoryCalls: {
 		createData?: unknown;
+		getTotalMonthlySubscriptionsUserIds: string[];
+		getTotalAnnualSubscriptionsUserIds: string[];
+		getTotalDailySubscriptionsUserIds: string[];
+		getTotalWeekSubscriptionsUserIds: string[];
 		findByIdIds: string[];
 		updateData?: { id: string; data: Partial<UpdateSubscriptionData> };
 	} = {
+		getTotalMonthlySubscriptionsUserIds: [],
+		getTotalAnnualSubscriptionsUserIds: [],
+		getTotalDailySubscriptionsUserIds: [],
+		getTotalWeekSubscriptionsUserIds: [],
 		findByIdIds: [],
 	};
 
@@ -62,6 +74,56 @@ const createServiceFixture = () => {
 			repositoryCalls.findByIdIds.push(id);
 			return BASE_SUBSCRIPTION;
 		},
+		getTotalMonthlySubscriptions: async (userId: string) => {
+			repositoryCalls.getTotalMonthlySubscriptionsUserIds.push(userId);
+			return [
+				{
+					cost: '10.00',
+					billingFrequency: 2,
+					billingUnit: 'MONTHS' as const,
+				},
+				{
+					cost: '4.50',
+					billingFrequency: 3,
+					billingUnit: 'MONTHS' as const,
+				},
+			];
+		},
+		getTotalAnnualSubscriptions: async (userId: string) => {
+			repositoryCalls.getTotalAnnualSubscriptionsUserIds.push(userId);
+			return [
+				{
+					cost: '7.25',
+					billingFrequency: 4,
+					billingUnit: 'YEARS' as const,
+				},
+			];
+		},
+		getTotalDailySubscriptions: async (userId: string) => {
+			repositoryCalls.getTotalDailySubscriptionsUserIds.push(userId);
+			return [
+				{
+					cost: '1.50',
+					billingFrequency: 2,
+					billingUnit: 'DAYS' as const,
+				},
+				{
+					cost: '0.75',
+					billingFrequency: 4,
+					billingUnit: 'DAYS' as const,
+				},
+			];
+		},
+		getTotalWeeklySubscriptions: async (userId: string) => {
+			repositoryCalls.getTotalWeekSubscriptionsUserIds.push(userId);
+			return [
+				{
+					cost: '3.25',
+					billingFrequency: 2,
+					billingUnit: 'WEEKS' as const,
+				},
+			];
+		},
 		update: async (id: string, data: Partial<UpdateSubscriptionData>) => {
 			repositoryCalls.updateData = { id, data };
 			return {
@@ -69,7 +131,7 @@ const createServiceFixture = () => {
 				...data,
 			};
 		},
-	} as any;
+	} as unknown as SubscriptionRepository;
 
 	const categoryService = {
 		getCategoryById: async (id: number) => {
@@ -80,14 +142,14 @@ const createServiceFixture = () => {
 				userId: AUTH_USER.sub,
 			};
 		},
-	} as any;
+	} as unknown as CategoryService;
 
 	const currencyService = {
 		getCurrencyByCode: async (code: string) => {
 			currencyCalls.push(code);
 			return { code, name: 'US Dollar', symbol: '$' };
 		},
-	} as any;
+	} as unknown as CurrencyService;
 
 	const service = new SubscriptionService(
 		subscriptionRepository,
@@ -205,6 +267,110 @@ describe('Subscription Service', () => {
 		assert.strictEqual(
 			fixture.repositoryCalls.updateData?.data.trialEndsOn,
 			trialEndsOn,
+		);
+	});
+
+	it('getTotalMonthlySubscriptions suma los totales activos por billingUnit', async () => {
+		const fixture = createServiceFixture();
+
+		const total = await fixture.service.getTotalMonthlySubscriptions(
+			AUTH_USER.sub,
+		);
+
+		assert.strictEqual(total, '33.50');
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalMonthlySubscriptionsUserIds,
+			[AUTH_USER.sub],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalAnnualSubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalDailySubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalWeekSubscriptionsUserIds,
+			[],
+		);
+	});
+
+	it('getTotalAnnualSubscriptions suma los totales activos por billingUnit', async () => {
+		const fixture = createServiceFixture();
+
+		const total = await fixture.service.getTotalAnnualSubscriptions(
+			AUTH_USER.sub,
+		);
+
+		assert.strictEqual(total, '29.00');
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalAnnualSubscriptionsUserIds,
+			[AUTH_USER.sub],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalMonthlySubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalDailySubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalWeekSubscriptionsUserIds,
+			[],
+		);
+	});
+
+	it('getTotalDailySubscriptions suma los totales activos por billingUnit', async () => {
+		const fixture = createServiceFixture();
+
+		const total = await fixture.service.getTotalDailySubscriptions(
+			AUTH_USER.sub,
+		);
+
+		assert.strictEqual(total, '6.00');
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalDailySubscriptionsUserIds,
+			[AUTH_USER.sub],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalMonthlySubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalAnnualSubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalWeekSubscriptionsUserIds,
+			[],
+		);
+	});
+
+	it('getTotalWeekSubscriptions suma los totales activos por billingUnit', async () => {
+		const fixture = createServiceFixture();
+
+		const total = await fixture.service.getTotalWeeklySubscriptions(
+			AUTH_USER.sub,
+		);
+
+		assert.strictEqual(total, '6.50');
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalWeekSubscriptionsUserIds,
+			[AUTH_USER.sub],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalMonthlySubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalAnnualSubscriptionsUserIds,
+			[],
+		);
+		assert.deepStrictEqual(
+			fixture.repositoryCalls.getTotalDailySubscriptionsUserIds,
+			[],
 		);
 	});
 });

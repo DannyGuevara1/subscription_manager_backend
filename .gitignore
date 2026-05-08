@@ -3,3 +3,6 @@
 /.env.*
 /generated/prisma
 .vscode
+analisis_requisitos.pdf
+.atl/
+.env

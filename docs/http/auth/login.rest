@@ -6,7 +6,7 @@ Origin: http://localhost:3000
 
 {
     "email": "guevarad170@gmail.com",
-    "password": "Coleccion12"
+    "password": "admin123"
 }
 
 ### Logout

@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import type { PrismaClient } from '@prisma/client';
 import SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 
 type DecimalLike = {
@@ -36,7 +37,7 @@ describe('Subscription Repository', () => {
 				create: async () =>
 					createPrismaSubscriptionRecord(createDecimalLike('15')),
 			},
-		} as any;
+		} as unknown as PrismaClient;
 
 		const repository = new SubscriptionRepository(prismaMock);
 		const created = await repository.create({
@@ -62,7 +63,7 @@ describe('Subscription Repository', () => {
 				findUnique: async () =>
 					createPrismaSubscriptionRecord(createDecimalLike('15.9')),
 			},
-		} as any;
+		} as unknown as PrismaClient;
 
 		const repository = new SubscriptionRepository(prismaMock);
 		const subscription = await repository.findById(
@@ -72,5 +73,49 @@ describe('Subscription Repository', () => {
 		assert.ok(subscription);
 		assert.strictEqual(subscription?.cost, '15.90');
 		assert.notStrictEqual(typeof subscription?.cost, 'number');
+	});
+
+	it('reutiliza el mismo filtro para todos los billingUnit', async () => {
+		const findManyCalls: Array<{ where: { billingUnit: string } }> = [];
+		const prismaMock = {
+			subscription: {
+				findMany: async (args: { where: { billingUnit: string } }) => {
+					findManyCalls.push(args);
+					return [createPrismaSubscriptionRecord(createDecimalLike('12.5'))];
+				},
+			},
+		} as unknown as PrismaClient;
+
+		const repository = new SubscriptionRepository(prismaMock);
+
+		const monthly = await repository.getTotalMonthlySubscriptions('user-1');
+		const annual = await repository.getTotalAnnualSubscriptions('user-1');
+		const daily = await repository.getTotalDailySubscriptions('user-1');
+		const weekly = await repository.getTotalWeeklySubscriptions('user-1');
+
+		assert.deepStrictEqual(
+			findManyCalls.map((call) => call.where.billingUnit),
+			['MONTHS', 'YEARS', 'DAYS', 'WEEKS'],
+		);
+		assert.deepStrictEqual(monthly[0], {
+			cost: '12.50',
+			billingFrequency: 1,
+			billingUnit: 'MONTHS',
+		});
+		assert.deepStrictEqual(annual[0], {
+			cost: '12.50',
+			billingFrequency: 1,
+			billingUnit: 'YEARS',
+		});
+		assert.deepStrictEqual(daily[0], {
+			cost: '12.50',
+			billingFrequency: 1,
+			billingUnit: 'DAYS',
+		});
+		assert.deepStrictEqual(weekly[0], {
+			cost: '12.50',
+			billingFrequency: 1,
+			billingUnit: 'WEEKS',
+		});
 	});
 });

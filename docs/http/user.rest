@@ -46,5 +46,5 @@ content-type: application/json
 
 ### Delete User
 ### Only Admins and the User themselves can access this endpoint
-DELETE http://localhost:3000/api/v1/users/019b3dfd-cfaa-7de5-9eeb-8bc1186b1d68
+DELETE http://localhost:3000/api/v1/users/019d0e6e-b880-79a2-acc3-c74399f4bbec
 Origin: http://localhost:3000

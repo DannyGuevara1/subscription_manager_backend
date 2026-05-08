@@ -1,11 +1,11 @@
 ### GET All Categories
 ### Only Admins can access this endpoint
-GET http://localhost:3000/api/v1/categories
+GET http://localhost:3000/api/v1/categories?page=1&limit=5
 Origin: http://localhost:3000
 
 ### Get Categories by ID
 ### Only Admins and User themselves can access this endpoint
-GET http://localhost:3000/api/v1/categories/2
+GET http://localhost:3000/api/v1/categories/3
 Origin: http://localhost:3000
 
 ### Create Categories
@@ -15,13 +15,12 @@ Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "userId": "019bf33c-8beb-7d73-bc6b-5819a67c6788",
-    "name": "biblicos"
+    "name": "Entertainment"
 }
 
 ### Update Categories
 ### Only Admins and User themselves can access this endpoint
-PUT http://localhost:3000/api/v1/categories/27
+PUT http://localhost:3000/api/v1/categories/6
 Origin: http://localhost:3000
 content-type: application/json
 
@@ -31,5 +30,5 @@ content-type: application/json
 
 ### Delete Categories
 ### Only Admins and User themselves can access this endpoint
-DELETE http://localhost:3000/api/v1/categories/hhh
+DELETE http://localhost:3000/api/v1/categories/9999
 Origin: http://localhost:3000

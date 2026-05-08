@@ -5,8 +5,8 @@ content-type: application/json
 Origin: http://localhost:3000
 
 {
-    "email": "guevarad170@gmail.com",
+    "email": "rolandolga@gmail.com",
     "password": "Coleccion12",
-    "name": "Danys Guevara",
-    "primaryCurrencyCode": "USD"
+    "name": "Rolando Levid",
+    "primaryCurrencyCode": "ZZZ"
 }
