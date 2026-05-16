@@ -1,7 +1,10 @@
-import type { DashboardSummary, NormalizedSubscriptionCost } from '@/modules/dashboard/dashboard.type.js';
+import type { BillingUnit } from '@prisma/client';
+import type {
+	DashboardSummary,
+	NormalizedSubscriptionCost,
+} from '@/modules/dashboard/dashboard.type.js';
 import type { ExchangeRateProvider } from '@/modules/dashboard/ports/exchange-rate.provider.js';
 import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
-import type { BillingUnit } from '@prisma/client';
 export default class SubscriptionCostNormalizerService {
 	private exchangeRateProvider: ExchangeRateProvider;
 
@@ -55,13 +58,14 @@ export default class SubscriptionCostNormalizerService {
 		subscriptions: SubscriptionDomain[],
 		primaryCurrency: string,
 	): Promise<DashboardSummary> {
-
-		let normalizedCosts: NormalizedSubscriptionCost[] = [];
+		const normalizedCosts: NormalizedSubscriptionCost[] = [];
 
 		for (const subscription of subscriptions) {
-			const normalizedCost = await this.normalize(subscription, primaryCurrency);
+			const normalizedCost = await this.normalize(
+				subscription,
+				primaryCurrency,
+			);
 			normalizedCosts.push(normalizedCost);
-
 		}
 
 		let totalProjectedMonthly = 0;
@@ -70,7 +74,7 @@ export default class SubscriptionCostNormalizerService {
 			DAYS: 0,
 			WEEKS: 0,
 			MONTHS: 0,
-			YEARS: 0
+			YEARS: 0,
 		};
 
 		for (const cost of normalizedCosts) {
