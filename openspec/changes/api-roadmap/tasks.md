@@ -1,8 +1,8 @@
 # Tasks: API Roadmap for Dashboard and Analytics
 
 ## Phase 1: Foundation / Data Contracts
-- [ ] 1.1 Update `prisma/schema.prisma` to add `exchangeRateToUSD` and `rateUpdatedAt` on `Currency` and create the Prisma migration.
-- [ ] 1.2 Extend `src/modules/currency/currency.type.ts` and `src/modules/currency/currency.repository.ts` mapping to include `exchangeRateToUSD` and `rateUpdatedAt`.
+- [✅] 1.1 Update `prisma/schema.prisma` to add `exchangeRateToUSD` and `rateUpdatedAt` on `Currency` and create the Prisma migration.
+- [✅] 1.2 Extend `src/modules/currency/currency.type.ts` and `src/modules/currency/currency.repository.ts` mapping to include `exchangeRateToUSD` and `rateUpdatedAt`.
 - [ ] 1.3 Define request/response DTOs for new endpoints in `src/modules/dashboard/dashboard.dto.ts` and create `src/modules/analytics/analytics.dto.ts`.
 - [ ] 1.4 Add domain types for analytics payloads in `src/modules/analytics/analytics.type.ts` (expenses by category, payment history entries).
 - [ ] 1.5 Extend `src/modules/subscription/subscription.dto.ts` to accept `category` and `billingCycle` query filters in `subscriptionCursorPaginationQuerySchema`.

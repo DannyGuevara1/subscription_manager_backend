@@ -12,6 +12,8 @@ export interface CurrencyDomain {
 	code: string;
 	name: string;
 	symbol: string;
+	exchangeRateToUSD: number;
+	rateUpdatedAt: Date;
 	createdAt: Date;
 	updatedAt: Date;
 }

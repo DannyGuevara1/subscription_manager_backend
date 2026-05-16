@@ -17,6 +17,8 @@ export default class CurrencyRepository {
 			code: currency.code,
 			name: currency.name,
 			symbol: currency.symbol,
+			exchangeRateToUSD: currency.exchangeRateToUSD.toNumber(),
+			rateUpdatedAt: currency.rateUpdatedAt,
 			createdAt: currency.createdAt,
 			updatedAt: currency.updatedAt,
 		};
