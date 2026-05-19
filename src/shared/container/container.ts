@@ -10,6 +10,7 @@ import {
 } from 'awilix';
 import prismaClient from '@/config/prisma.js';
 import redisClient from '@/config/redis.js';
+import NoopExchangeRateProvider from '@/modules/dashboard/adapters/noop-exchange-rate.provider.js';
 import type { Cradle } from '@/shared/container/container.types.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -25,6 +26,9 @@ export async function setupContainer(): Promise<AwilixContainer<Cradle>> {
 	container.register({
 		prisma: asValue(prismaClient),
 		redis: asValue(redisClient),
+		exchangeRateProvider: asClass(NoopExchangeRateProvider, {
+			lifetime: Lifetime.SINGLETON,
+		}),
 	});
 
 	// Carga automática con loadModules

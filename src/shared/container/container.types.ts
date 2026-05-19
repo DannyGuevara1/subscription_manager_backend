@@ -11,18 +11,20 @@ import type CategoryService from '@/modules/category/category.service.js';
 import type CurrencyController from '@/modules/currency/currency.controller.js';
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
 import type CurrencyService from '@/modules/currency/currency.service.js';
+import type DashboardController from '@/modules/dashboard/dashboard.controller.js';
+import type DashboardService from '@/modules/dashboard/dashboard.service.js';
+import type { ExchangeRateProvider } from '@/modules/dashboard/ports/exchange-rate.provider.js';
 import type SubscriptionController from '@/modules/subscription/subscription.controller.js';
 import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 import type SubscriptionService from '@/modules/subscription/subscription.service.js';
 import type UserController from '@/modules/user/user.controller.js';
 import type UserRepository from '@/modules/user/user.repository.js';
 import type UserService from '@/modules/user/user.service.js';
-import type DashboardController from '@/modules/dashboard/dashboard.controller.js';
-import type DashboardService from '@/modules/dashboard/dashboard.service.js';
 
 export interface Cradle {
 	prisma: typeof prismaClient;
 	redis: typeof redisClient;
+	exchangeRateProvider: ExchangeRateProvider;
 
 	userRepository: UserRepository;
 	categoryRepository: CategoryRepository;
