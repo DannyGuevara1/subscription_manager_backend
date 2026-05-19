@@ -22,3 +22,17 @@ export interface NormalizedSubscriptionCost {
 	/** La unidad de facturación original — para agrupar en expensesByType */
 	billingUnit: BillingUnit;
 }
+
+export interface DashboardUpcomingRenewal {
+	category: string;
+	subscriptionName: string;
+	renewalDate: string;
+	amount: number;
+}
+
+export interface DashboardPaymentAlert {
+	category: string;
+	subscriptionName: string;
+	dueDate: string;
+	amount: number;
+}
