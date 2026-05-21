@@ -41,10 +41,11 @@ describe('SubscriptionCostNormalizerService', () => {
 				billingFrequency: 1,
 				billingUnit: 'DAYS',
 			});
-			// ((10 * 1) * 365) / 12 = 304.17
+			// ((10 * 1) * 365) / 12 = 304.1666... -> totalMonthly rounded is 304.17.
+			// Annual precise calculation: (10 * 1) * 365 = 3650.00.
 			const result = await normalizer.normalizeAll([sub], 'USD');
 			assert.strictEqual(result.totalMonthly, '304.17');
-			assert.strictEqual(result.totalAnnual, '3650.04');
+			assert.strictEqual(result.totalAnnual, '3650.00');
 		});
 	});
 
@@ -56,10 +57,11 @@ describe('SubscriptionCostNormalizerService', () => {
 				billingFrequency: 2,
 				billingUnit: 'WEEKS',
 			});
-			// ((50 * 2) * 52) / 12 = 433.33
+			// ((50 * 2) * 52) / 12 = 433.3333... -> totalMonthly rounded is 433.33.
+			// Annual precise calculation: (50 * 2) * 52 = 5200.00.
 			const result = await normalizer.normalizeAll([sub], 'USD');
 			assert.strictEqual(result.totalMonthly, '433.33');
-			assert.strictEqual(result.totalAnnual, '5199.96');
+			assert.strictEqual(result.totalAnnual, '5200.00');
 		});
 	});
 
