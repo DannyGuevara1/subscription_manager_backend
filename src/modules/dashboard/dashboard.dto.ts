@@ -19,14 +19,14 @@ export const safeDashboardUpcomingRenewalsSchema = z.object({
 	category: z.string(),
 	subscriptionName: z.string(),
 	renewalDate: z.string(),
-	amount: z.number().positive('Amount must be a positive number'),
+	amount: z.number().nonnegative('Amount must be a non-negative number'),
 });
 
 export const safeDashboardPaymentAlertsSchema = z.object({
 	category: z.string(),
 	subscriptionName: z.string(),
 	dueDate: z.string(),
-	amount: z.number().positive('Amount must be a positive number'),
+	amount: z.number().nonnegative('Amount must be a non-negative number'),
 });
 
 export type SafeUpcomingRenewalsDto = z.infer<

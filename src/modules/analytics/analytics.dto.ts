@@ -2,7 +2,11 @@ import z from 'zod';
 import { NON_DAILY_UNITS } from '@/shared/types/domain.enums.js';
 
 export const expensesByCategoryQueryParamsSchema = z.object({
-	status: z.coerce.boolean().optional(),
+	status: z.preprocess((val) => {
+		if (val === 'true') return true;
+		if (val === 'false') return false;
+		return val;
+	}, z.boolean().optional()),
 	billingUnit: z.enum(NON_DAILY_UNITS).optional(),
 });
 
