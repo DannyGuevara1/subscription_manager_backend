@@ -24,7 +24,7 @@ export interface JWTPayload extends BaseJWTPayload {
 	email: string;
 	name: string | null;
 	role: Role;
-	primaryCurrencyCode?: string;
+	primaryCurrencyCode: string;
 }
 
 export interface RefreshTokenPayload extends BaseJWTPayload {

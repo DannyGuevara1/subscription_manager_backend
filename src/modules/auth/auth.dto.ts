@@ -80,8 +80,7 @@ export const jwtPayloadSchema = z
 		primaryCurrencyCode: z
 			.string()
 			.length(3, 'Currency code must be 3 characters long')
-			.uppercase('Currency code must be uppercase')
-			.optional(),
+			.uppercase('Currency code must be uppercase'),
 		iat: z.number().int().optional(),
 		exp: z.number().int().optional(),
 	})
