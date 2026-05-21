@@ -5,7 +5,7 @@
 - [✅] 1.2 Extend `src/modules/currency/currency.type.ts` and `src/modules/currency/currency.repository.ts` mapping to include `exchangeRateToUSD` and `rateUpdatedAt`.
 - [✅] 1.3 Define request/response DTOs for new endpoints in `src/modules/dashboard/dashboard.dto.ts` and create `src/modules/analytics/analytics.dto.ts`.
 - [✅] 1.4 Add domain types for analytics payloads in `src/modules/analytics/analytics.type.ts` (expenses by category, payment history entries).
-- [ ] 1.5 Extend `src/modules/subscription/subscription.dto.ts` to accept `category` and `billingCycle` query filters in `subscriptionCursorPaginationQuerySchema`.
+- [✅] 1.5 Extend `src/modules/subscription/subscription.dto.ts` to accept `category` and `billingCycle` query filters in `subscriptionCursorPaginationQuerySchema`.
 
 ## Phase 2: Core Implementation
 - [ ] 2.1 Create `src/modules/subscription/subscription-calculator.service.ts` to compute next payment dates and projections using `firstPaymentDate`, `billingFrequency`, and `billingUnit` (trial-aware).

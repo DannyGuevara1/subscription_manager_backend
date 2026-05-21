@@ -26,11 +26,15 @@ export const subscriptionCursorPaginationQuerySchema = z.object({
 		.min(1, { error: 'Limit must be at least 1' })
 		.max(100, { error: 'Limit must be at most 100' })
 		.default(10),
-	category: z
+	category: z.coerce
 		.number()
 		.int()
 		.positive({ error: 'Category ID must be valid' })
 		.optional(),
+	billingCycle: z.enum(BILLING_UNIT_VALUES, {
+		error: () =>
+			`Billing cycle must be one of: ${BILLING_UNIT_VALUES.join(', ')}`,
+	}).optional(),
 });
 
 export const createSubscriptionSchema = z.object({
