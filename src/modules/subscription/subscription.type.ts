@@ -72,6 +72,7 @@ export interface CalculatorConfig {
 	billingFrequency: number;
 	billingUnit: BillingUnit;
 	trialEndsOn?: Date | null;
+	referenceDate?: Date;
 }
 
 export interface ProjectionConfig extends CalculatorConfig {
