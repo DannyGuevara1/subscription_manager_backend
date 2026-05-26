@@ -61,4 +61,24 @@ export type CreateSubscriptionInput = Omit<
 	'id' | 'userId'
 >;
 
+export interface NextPaymentInfo {
+	nextPaymentDate: Date;
+	subscriptionId: string;
+	subscriptionName: string;
+	amount: number;
+};
+export interface CalculatorConfig {
+	firstPaymentDate: Date;
+	billingFrequency: number;
+	billingUnit: BillingUnit;
+	trialEndsOn?: Date | null;
+}
 
+export interface ProjectionConfig extends CalculatorConfig {
+	endDate: Date;
+}
+
+export interface SubscriptionDateCalculator {
+	nextPaymentDate(config: CalculatorConfig): Date;
+	projectNextPaymentDates(config: ProjectionConfig): Date[];
+};
