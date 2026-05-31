@@ -33,9 +33,11 @@ export default class SubscriptionCalculatorService implements SubscriptionDateCa
             }
 
             let nextDate = baseDate;
-
-            while (Temporal.ZonedDateTime.compare(nextDate, this.toTemporal(today)) <= 0) {
-                nextDate = nextDate.add({ [durationStr]: billingFrequency ?? 0 });
+            const temporalFirstPaymentDate = this.toTemporal(firstPaymentDate);
+            let periods = 1;
+            while (Temporal.ZonedDateTime.compare(nextDate, this.toTemporal(today)) < 0) {
+                nextDate = temporalFirstPaymentDate.add({ [durationStr]: periods * billingFrequency });
+                periods++;
             }
 
             return this.toJsDate(nextDate);
@@ -49,17 +51,23 @@ export default class SubscriptionCalculatorService implements SubscriptionDateCa
         const nextsPaymentDate: Date[] = [];
 
         // 1. Calculamos el primer pago válido a futuro
-        const firstFuturePayment = this.nextPaymentDate(config);
+        const firstFuturePayment = this.nextPaymentDate({
+            ...config,
+            referenceDate: config.firstPaymentDate
+        });
 
         // 2. Preparamos las variables para el bucle de alta performance
         let temporalCurrent = this.toTemporal(firstFuturePayment);
+        const temporalFirstPaymentDate = this.toTemporal(config.firstPaymentDate);
         const temporalEndDate = this.toTemporal(endDate);
         const durationStr = this.unitMap[billingUnit] as keyof Temporal.Duration;
 
         // 3. Iteramos matemáticamente hasta alcanzar la fecha de fin
+        let periods = 1;
         while (Temporal.ZonedDateTime.compare(temporalCurrent, temporalEndDate) <= 0) {
             nextsPaymentDate.push(this.toJsDate(temporalCurrent));
-            temporalCurrent = temporalCurrent.add({ [durationStr]: billingFrequency });
+            temporalCurrent = temporalFirstPaymentDate.add({ [durationStr]: periods * billingFrequency });
+            periods++;
         }
 
         return nextsPaymentDate;
