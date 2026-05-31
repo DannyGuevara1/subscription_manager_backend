@@ -8,7 +8,7 @@
 - [✅] 1.5 Extend `src/modules/subscription/subscription.dto.ts` to accept `category` and `billingCycle` query filters in `subscriptionCursorPaginationQuerySchema`.
 
 ## Phase 2: Core Implementation
-- [ ] 2.1 Create `src/modules/subscription/subscription-calculator.service.ts` to compute next payment dates and projections using `firstPaymentDate`, `billingFrequency`, and `billingUnit` (trial-aware).
+- [✅] 2.1 Create `src/modules/subscription/subscription-calculator.service.ts` to compute next payment dates and projections using `firstPaymentDate`, `billingFrequency`, and `billingUnit` (trial-aware).
 - [ ] 2.2 Implement `src/modules/currency/exchange-rate.service.ts` to serve cached rates from `Currency` and trigger stale-while-revalidate updates when `rateUpdatedAt` > 24h (uses external provider).
 - [ ] 2.3 Build `src/modules/analytics/analytics.service.ts` for `expenses-by-category` (normalize via exchange rates) and `payment-history` (use calculator, chronological ordering).
 - [ ] 2.4 Extend `src/modules/dashboard/dashboard.service.ts` with `getUpcomingRenewals` (limit 5, trials first) and `getPaymentAlerts` (due within 7 days).
