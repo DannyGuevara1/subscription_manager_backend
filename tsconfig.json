@@ -4,10 +4,15 @@
 		// File Layout
 		"rootDir": "./",
 		"outDir": "./dist",
-		"typeRoots": ["./node_modules/@types", "src/shared/types"],
+		"typeRoots": [
+			"./node_modules/@types",
+			"src/shared/types"
+		],
 		"baseUrl": "./",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": [
+				"./src/*"
+			]
 		},
 		// Environment Settings
 		// See also https://aka.ms/tsconfig/module
@@ -15,8 +20,12 @@
 		"moduleResolution": "nodenext",
 		"target": "esnext",
 		// For nodejs:
-		"lib": ["esnext"],
-		"types": ["node"],
+		"lib": [
+			"esnext"
+		],
+		"types": [
+			"node"
+		],
 		// and npm install -D @types/node
 		// Other Outputs
 		"sourceMap": true,
@@ -41,9 +50,17 @@
 		"moduleDetection": "force",
 		"skipLibCheck": true
 	},
-	"include": ["src/**/*.ts"],
-	"exclude": ["node_modules", "dist"],
+	"include": [
+		"src/**/*.ts",
+		"tests/**/*.ts"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
+	],
 	"ts-node": {
-		"require": ["tsconfig-paths/register"]
+		"require": [
+			"tsconfig-paths/register"
+		]
 	}
 }

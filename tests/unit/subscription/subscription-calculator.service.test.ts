@@ -15,7 +15,7 @@ describe('SubscriptionCalculatorService', () => {
             billingFrequency: 2,
             billingUnit: 'MONTHS',
             firstPaymentDate: new Date('2024-01-27T00:00:00Z'),
-            referenceDate: new Date('2024-03-21T00:00:00Z'),
+            referenceDate: new Date('2024-02-21T00:00:00Z'),
         };
         const result = service.nextPaymentDate(config)
         console.log(result)
