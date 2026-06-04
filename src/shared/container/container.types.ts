@@ -13,7 +13,7 @@ import type CurrencyRepository from '@/modules/currency/currency.repository.js';
 import type CurrencyService from '@/modules/currency/currency.service.js';
 import type DashboardController from '@/modules/dashboard/dashboard.controller.js';
 import type DashboardService from '@/modules/dashboard/dashboard.service.js';
-import type { ExchangeRateProvider } from '@/modules/dashboard/ports/exchange-rate.provider.js';
+import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
 import type SubscriptionController from '@/modules/subscription/subscription.controller.js';
 import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 import type SubscriptionService from '@/modules/subscription/subscription.service.js';

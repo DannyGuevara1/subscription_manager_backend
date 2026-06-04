@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import type { ExchangeRateProvider } from '@/modules/dashboard/ports/exchange-rate.provider.js';
+import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
 import SubscriptionCostNormalizerService from '@/modules/dashboard/subscription-cost-normalizer.service.js';
 import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
 

@@ -3,7 +3,7 @@ import type {
 	DashboardSummary,
 	NormalizedSubscriptionCost,
 } from '@/modules/dashboard/dashboard.type.js';
-import type { ExchangeRateProvider } from '@/modules/dashboard/ports/exchange-rate.provider.js';
+import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
 import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
 export default class SubscriptionCostNormalizerService {
 	private exchangeRateProvider: ExchangeRateProvider;
