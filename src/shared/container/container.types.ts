@@ -11,6 +11,7 @@ import type CategoryService from '@/modules/category/category.service.js';
 import type CurrencyController from '@/modules/currency/currency.controller.js';
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
 import type CurrencyService from '@/modules/currency/currency.service.js';
+import type ExchangeRateService from '@/modules/currency/exchange-rate.service.js';
 import type DashboardController from '@/modules/dashboard/dashboard.controller.js';
 import type DashboardService from '@/modules/dashboard/dashboard.service.js';
 import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
@@ -39,6 +40,7 @@ export interface Cradle {
 	loginService: LoginService;
 	registerService: RegisterService;
 	dashboardService: DashboardService;
+	exchangeRateService: ExchangeRateService;
 
 	userController: UserController;
 	categoryController: CategoryController;

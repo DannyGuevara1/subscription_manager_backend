@@ -11,6 +11,8 @@ import {
 import prismaClient from '@/config/prisma.js';
 import redisClient from '@/config/redis.js';
 import NoopExchangeRateProvider from '@/modules/currency/adapters/noop-exchange-rate.provider.js';
+import OpenExchangeRateProvider from '@/modules/currency/adapters/open-exchange-rate.provider.js';
+import ExchangeRateService from '@/modules/currency/exchange-rate.service.js';
 import type { Cradle } from '@/shared/container/container.types.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -23,12 +25,17 @@ export async function setupContainer(): Promise<AwilixContainer<Cradle>> {
 		injectionMode: InjectionMode.CLASSIC,
 	});
 
+	const env = process.env.NODE_ENV || 'development'
+	const apiKey = process.env.APP_ID_OPENEXCHANGERATES ?? '';
+
+	const exchangeProvider = env === 'test'
+		? asClass(NoopExchangeRateProvider).singleton()
+		: asFunction(() => new OpenExchangeRateProvider(apiKey)).singleton();
+
 	container.register({
 		prisma: asValue(prismaClient),
 		redis: asValue(redisClient),
-		exchangeRateProvider: asClass(NoopExchangeRateProvider, {
-			lifetime: Lifetime.SINGLETON,
-		}),
+		exchangeRateProvider: exchangeProvider
 	});
 
 	// Carga automática con loadModules
