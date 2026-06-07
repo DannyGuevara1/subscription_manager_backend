@@ -3,8 +3,6 @@ import assert from 'node:assert';
 import ExchangeRateService from '@/modules/currency/exchange-rate.service.js';
 import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
-import { Temporal } from 'temporal-polyfill';
-import { asFunction, AwilixError } from 'awilix';
 
 describe('ExchangeRateService', () => {
     let service: ExchangeRateService;
@@ -39,5 +37,19 @@ describe('ExchangeRateService', () => {
         const result = await service.getRateToUSD('ARG');
         assert.strictEqual(result, 500);
         assert.strictEqual(mockProvider.getRate.mock.callCount(), 1)
-    })
+    });
+
+    it('NO debería llamar al Provider cuando la moneda está fresca (< 24h)', async () => {
+        mockRepo.findByCode.mock.mockImplementation(async () => ({
+            code: 'EUR',
+            exchangeRateToUSD: 0.85,
+            rateUpdatedAt: new Date() // ¡Hoy! Acaba de actualizarse
+        }));
+
+        const result = await service.getRateToUSD('EUR');
+
+        assert.strictEqual(result, 0.85);
+
+        assert.strictEqual(mockProvider.getRate.mock.callCount(), 0);
+    });
 })
