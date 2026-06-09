@@ -23,7 +23,7 @@
 ## Phase 4: Testing / Verification
 - [✅] 4.1 Unit: add `tests/unit/subscription/subscription-calculator.service.test.ts` for leap year, month-end, trial edge cases.
 - [✅] 4.2 Unit: add `tests/unit/currency/exchange-rate.service.test.ts` covering stale rate usage + async refresh trigger.
-- [ ] 4.3 Unit: add `tests/unit/analytics/analytics.service.test.ts` for currency normalization and payment-history ordering.
+- [✅] 4.3 Unit: add `tests/unit/analytics/analytics.service.test.ts` for currency normalization and payment-history ordering.
 - [ ] 4.4 Integration: add `tests/integration/dashboard/dashboard.test.ts` for upcoming renewals + alerts scenarios.
 - [ ] 4.5 Integration: add `tests/integration/analytics/analytics.test.ts` for expenses-by-category + payment-history scenarios.
 - [ ] 4.6 Integration: extend `tests/integration/subscription/subscription.test.ts` to validate `category` and `billingCycle` filters.
