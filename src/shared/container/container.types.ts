@@ -1,6 +1,7 @@
 import type { Router } from 'express';
 import type prismaClient from '@/config/prisma.js';
 import type redisClient from '@/config/redis.js';
+import type AnalyticsService from '@/modules/analytics/analytics.service.js';
 import type AuthController from '@/modules/auth/auth.controller.js';
 import type AuthService from '@/modules/auth/auth.service.js';
 import type LoginService from '@/modules/auth/login.service.js';
@@ -14,7 +15,9 @@ import type CurrencyService from '@/modules/currency/currency.service.js';
 import type ExchangeRateService from '@/modules/currency/exchange-rate.service.js';
 import type DashboardController from '@/modules/dashboard/dashboard.controller.js';
 import type DashboardService from '@/modules/dashboard/dashboard.service.js';
+import type SubscriptionCostNormalizerService from '@/modules/dashboard/subscription-cost-normalizer.service.js';
 import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
+import type SubscriptionCalculatorService from '@/modules/subscription/subscription-calculator.service.js';
 import type SubscriptionController from '@/modules/subscription/subscription.controller.js';
 import type SubscriptionRepository from '@/modules/subscription/subscription.repository.js';
 import type SubscriptionService from '@/modules/subscription/subscription.service.js';
@@ -41,6 +44,9 @@ export interface Cradle {
 	registerService: RegisterService;
 	dashboardService: DashboardService;
 	exchangeRateService: ExchangeRateService;
+	analyticsService: AnalyticsService;
+	subscriptionCalculatorService: SubscriptionCalculatorService;
+	subscriptionCostNormalizerService: SubscriptionCostNormalizerService;
 
 	userController: UserController;
 	categoryController: CategoryController;
