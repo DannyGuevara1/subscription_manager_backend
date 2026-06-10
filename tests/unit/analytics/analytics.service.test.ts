@@ -132,6 +132,31 @@ describe('AnalyticsService', () => {
 			assert.strictEqual(result.currency, 'USD');
 			assert.strictEqual(result.totalExpenses, 11);
 			assert.strictEqual(result.breakdown[0]?.amount, 11);
+			assert.strictEqual(result.breakdown[0]?.percentage, 100);
+			assert.strictEqual(result.breakdown[0]?.category, 'Streaming');
+
+		});
+
+		it('normaliza costos al currency primario del usuario (EUR)', async () => {
+			const authUser: JWTPayload = {
+				...AUTH_USER,
+				primaryCurrencyCode: 'EUR',
+			};
+			const fixture = createFixture([
+				makeSubscription({ currencyCode: 'USD', cost: '10.00' }),
+			]);
+
+			const result = await fixture.service.getExpensesByCategory(
+				authUser,
+				{},
+			);
+
+			assert.strictEqual(result.currency, 'EUR');
+			assert.strictEqual(result.totalExpenses, 9.09);
+			assert.strictEqual(result.breakdown[0]?.amount, 9.09);
+			assert.strictEqual(result.breakdown[0]?.percentage, 100);
+			assert.strictEqual(result.breakdown[0]?.category, 'Streaming');
+
 		});
 
 		it('agrega gastos por categoría con múltiples suscripciones', async () => {
@@ -162,14 +187,16 @@ describe('AnalyticsService', () => {
 			assert.strictEqual(result.breakdown.length, 2);
 
 			const streaming = result.breakdown.find(
-				(b) => b.category === 'Streaming',
+				(breakdown) => breakdown.category === 'Streaming',
 			);
 			const productivity = result.breakdown.find(
-				(b) => b.category === 'Productivity',
+				(breakdown) => breakdown.category === 'Productivity',
 			);
 
 			assert.strictEqual(streaming?.amount, 15);
 			assert.strictEqual(productivity?.amount, 20);
+			assert.strictEqual(streaming?.percentage, 42.86);
+			assert.strictEqual(productivity?.percentage, 57.14);
 		});
 
 		it('calcula porcentajes correctamente', async () => {
@@ -192,10 +219,10 @@ describe('AnalyticsService', () => {
 			);
 
 			const streaming = result.breakdown.find(
-				(b) => b.category === 'Streaming',
+				(breakdown) => breakdown.category === 'Streaming',
 			);
 			const productivity = result.breakdown.find(
-				(b) => b.category === 'Productivity',
+				(breakdown) => breakdown.category === 'Productivity',
 			);
 
 			assert.strictEqual(streaming?.percentage, 75);
@@ -259,6 +286,9 @@ describe('AnalyticsService', () => {
 
 			assert.strictEqual(result.totalExpenses, 20);
 			assert.strictEqual(result.breakdown.length, 1);
+			assert.strictEqual(result.breakdown[0]?.amount, 20);
+			assert.strictEqual(result.breakdown[0]?.percentage, 100);
+			assert.strictEqual(result.breakdown[0]?.category, 'Streaming');
 		});
 
 		it('normaliza multi-currency correctamente (EUR + ARS → USD)', async () => {
@@ -289,15 +319,36 @@ describe('AnalyticsService', () => {
 			assert.strictEqual(result.currency, 'USD');
 
 			const streaming = result.breakdown.find(
-				(b) => b.category === 'Streaming',
+				(breakdown) => breakdown.category === 'Streaming',
 			);
 			const productivity = result.breakdown.find(
-				(b) => b.category === 'Productivity',
+				(breakdown) => breakdown.category === 'Productivity',
 			);
 
 			assert.strictEqual(streaming?.amount, 110);
 			assert.strictEqual(productivity?.amount, 50);
 		});
+
+		it('normaliza correctamente con primary currency EUR', async () => {
+			const authUser: JWTPayload = {
+				...AUTH_USER,
+				primaryCurrencyCode: 'EUR',
+			}
+			const fixture = createFixture([
+				makeSubscription({
+					currencyCode: 'ARS',
+					cost: '100000',
+				}),
+				makeSubscription({
+					currencyCode: 'EUR',
+					cost: '10',
+				}),
+			]);
+
+			const result = await fixture.service.getExpensesByCategory(authUser, {});
+
+		});
+
 	});
 
 	// ── Tests: getPaymentHistory ──
