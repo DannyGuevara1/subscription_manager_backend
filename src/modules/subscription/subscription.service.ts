@@ -36,11 +36,13 @@ export default class SubscriptionService {
 		userId: string,
 		options: SubscriptionCursorPaginationOptions,
 	): Promise<SubscriptionCursorPaginationPage> {
-		const { cursor, limit } = options;
+		const { cursor, limit, billingCycle, categoryId } = options;
 		const { subscriptions: subscriptionList } =
 			await this.subscriptionRepository.findAllWithCursor(userId, {
 				cursor,
 				limit: limit + 1,
+				billingCycle,
+				categoryId,
 			});
 
 		const paginatedWindow = buildCursorPaginationWindow({

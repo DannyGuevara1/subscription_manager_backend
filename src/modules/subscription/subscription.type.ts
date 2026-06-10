@@ -44,6 +44,8 @@ export interface SubscriptionDomain {
 export interface SubscriptionCursorPaginationOptions {
 	cursor?: string;
 	limit: number;
+	categoryId?: number;
+	billingCycle?: BillingUnit;
 }
 
 export interface SubscriptionCursorPaginationResult {

@@ -37,19 +37,21 @@ export default class SubscriptionRepository {
 		userId: string,
 		options: SubscriptionCursorPaginationOptions,
 	): Promise<SubscriptionCursorPaginationResult> {
-		const { cursor, limit } = options;
+		const { cursor, limit, categoryId, billingCycle } = options;
 
 		const subscriptions = await this.prisma.subscription.findMany({
 			where: {
 				userId,
+				...(categoryId && { categoryId: categoryId }),
+				...(billingCycle && { billingUnit: billingCycle }),
 			},
 			orderBy: { id: 'desc' },
 			take: limit,
 			...(cursor
 				? {
-						cursor: { id: cursor },
-						skip: 1,
-					}
+					cursor: { id: cursor },
+					skip: 1,
+				}
 				: {}),
 		});
 
