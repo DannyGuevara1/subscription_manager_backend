@@ -1,18 +1,35 @@
+import { Temporal } from 'temporal-polyfill';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
-import type { DashboardSummary } from '@/modules/dashboard/dashboard.type.js';
+import type CategoryService from '@/modules/category/category.service.js';
+import type {
+	DashboardPaymentAlert,
+	DashboardSummary,
+	DashboardUpcomingRenewal,
+} from '@/modules/dashboard/dashboard.type.js';
 import type SubscriptionCostNormalizerService from '@/modules/dashboard/subscription-cost-normalizer.service.js';
+import type SubscriptionCalculatorService from '@/modules/subscription/subscription-calculator.service.js';
 import type { SubscriptionService } from '@/modules/subscription/index.js';
+import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
+
+const UPCOMING_RENEWALS_LIMIT = 5;
+const ALERT_WINDOW_DAYS = 7;
 
 export default class DashboardService {
 	private subscriptionService: SubscriptionService;
 	private subscriptionCostNormalizerService: SubscriptionCostNormalizerService;
+	private subscriptionCalculatorService: SubscriptionCalculatorService;
+	private categoryService: CategoryService;
 
 	constructor(
 		subscriptionService: SubscriptionService,
 		subscriptionCostNormalizerService: SubscriptionCostNormalizerService,
+		subscriptionCalculatorService: SubscriptionCalculatorService,
+		categoryService: CategoryService,
 	) {
 		this.subscriptionService = subscriptionService;
 		this.subscriptionCostNormalizerService = subscriptionCostNormalizerService;
+		this.subscriptionCalculatorService = subscriptionCalculatorService;
+		this.categoryService = categoryService;
 	}
 
 	/*
@@ -27,5 +44,118 @@ export default class DashboardService {
 			subscriptions,
 			userAuth.primaryCurrencyCode,
 		);
+	}
+
+	/*
+	 * Returns up to 5 closest upcoming renewals.
+	 * Prioritizes subscriptions with ending trials over regular renewals.
+	 */
+	async getUpcomingRenewals(
+		userAuth: JWTPayload,
+	): Promise<DashboardUpcomingRenewal[]> {
+		const userId = userAuth.sub;
+		const subscriptions =
+			await this.subscriptionService.getActiveSubscriptions(userId);
+
+		const now = new Date();
+
+		const renewals: (DashboardUpcomingRenewal & {
+			isTrialEnding: boolean;
+			sortDate: Date;
+		})[] = [];
+
+		for (const sub of subscriptions) {
+			const nextDate =
+				this.subscriptionCalculatorService.nextPaymentDate({
+					firstPaymentDate: sub.firstPaymentDate,
+					billingFrequency: sub.billingFrequency,
+					billingUnit: sub.billingUnit,
+					trialEndsOn: sub.trialEndsOn,
+				});
+
+			const category = await this.categoryService.getCategoryById(
+				sub.categoryId,
+				userId,
+			);
+
+			const isTrialEnding = this.isTrialEndingSoon(sub, now);
+
+			renewals.push({
+				category: category.name,
+				subscriptionName: sub.name,
+				renewalDate: nextDate.toISOString(),
+				amount: Number(sub.cost),
+				isTrialEnding,
+				sortDate: nextDate,
+			});
+		}
+
+		// Sort: trials first, then by closest date
+		renewals.sort((a, b) => {
+			if (a.isTrialEnding !== b.isTrialEnding) {
+				return a.isTrialEnding ? -1 : 1;
+			}
+			return a.sortDate.getTime() - b.sortDate.getTime();
+		});
+
+		// Return top 5, stripped of internal sort fields
+		return renewals.slice(0, UPCOMING_RENEWALS_LIMIT).map(
+			({ isTrialEnding, sortDate, ...renewal }) => renewal,
+		);
+	}
+
+	/*
+	 * Returns all subscriptions with payments due within the next 7 days.
+	 */
+	async getPaymentAlerts(
+		userAuth: JWTPayload,
+	): Promise<DashboardPaymentAlert[]> {
+		const userId = userAuth.sub;
+		const subscriptions =
+			await this.subscriptionService.getActiveSubscriptions(userId);
+
+		const now = Temporal.Now.zonedDateTimeISO('UTC');
+		const alertWindow = new Date(
+			now.add({ days: ALERT_WINDOW_DAYS }).toInstant().epochMilliseconds,
+		);
+
+		const alerts: DashboardPaymentAlert[] = [];
+
+		for (const sub of subscriptions) {
+			const nextDate =
+				this.subscriptionCalculatorService.nextPaymentDate({
+					firstPaymentDate: sub.firstPaymentDate,
+					billingFrequency: sub.billingFrequency,
+					billingUnit: sub.billingUnit,
+					trialEndsOn: sub.trialEndsOn,
+				});
+
+			if (nextDate <= alertWindow) {
+				const category = await this.categoryService.getCategoryById(
+					sub.categoryId,
+					userId,
+				);
+
+				alerts.push({
+					category: category.name,
+					subscriptionName: sub.name,
+					dueDate: nextDate.toISOString(),
+					amount: Number(sub.cost),
+				});
+			}
+		}
+
+		// Sort by closest due date
+		alerts.sort(
+			(a, b) =>
+				new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+		);
+
+		return alerts;
+	}
+
+	private isTrialEndingSoon(sub: SubscriptionDomain, now: Date): boolean {
+		if (!sub.trialEndsOn) return false;
+		return sub.trialEndsOn > now;
 	}
 }
