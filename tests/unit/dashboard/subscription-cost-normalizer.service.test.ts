@@ -87,6 +87,9 @@ describe('SubscriptionCostNormalizerService', () => {
 				billingFrequency: 1,
 				billingUnit: 'YEARS',
 			});
+			const result = await normalizer.normalizeAll([sub], 'USD');
+			assert.strictEqual(result.totalAnnual, '120.00');
+			assert.strictEqual(result.totalMonthly, '10.00');
 		});
 	});
 });
