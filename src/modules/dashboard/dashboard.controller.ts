@@ -1,6 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import type DashboardService from '@/modules/dashboard/dashboard.service.js';
+import {
+	safeDashboardUpcomingRenewalsSchema,
+	safeDashboardPaymentAlertsSchema,
+} from '@/modules/dashboard/dashboard.dto.js';
+import type {
+	SafeUpcomingRenewalsDto,
+	SafePaymentAlertsDto,
+} from '@/modules/dashboard/dashboard.dto.js';
 
 export default class DashboardController {
 	private dashboardService: DashboardService;
@@ -15,4 +23,36 @@ export default class DashboardController {
 			data: summary,
 		});
 	}
+
+	async getUpcomingRenewals(
+		req: Request,
+		res: Response,
+		_next: NextFunction,
+	) {
+		const userAuth = req.user as JWTPayload;
+		const renewals =
+			await this.dashboardService.getUpcomingRenewals(userAuth);
+
+		const serialized: SafeUpcomingRenewalsDto[] = renewals.map((renewal) =>
+			safeDashboardUpcomingRenewalsSchema.parse(renewal),
+		);
+
+		res.status(200).json({
+			data: serialized,
+		});
+	}
+
+	async getPaymentAlerts(req: Request, res: Response, _next: NextFunction) {
+		const userAuth = req.user as JWTPayload;
+		const alerts = await this.dashboardService.getPaymentAlerts(userAuth);
+
+		const serialized: SafePaymentAlertsDto[] = alerts.map((alert) =>
+			safeDashboardPaymentAlertsSchema.parse(alert),
+		);
+
+		res.status(200).json({
+			data: serialized,
+		});
+	}
 }
+

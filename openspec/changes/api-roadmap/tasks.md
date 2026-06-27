@@ -15,8 +15,8 @@
 - [✅] 2.5 Update `src/modules/subscription/subscription.service.ts` and `src/modules/subscription/subscription.repository.ts` to apply `category` + `billingCycle` filters in `findAllWithCursor`.
 
 ## Phase 3: Integration / Wiring
-- [ ] 3.1 Add `src/modules/analytics/analytics.controller.ts` and `src/modules/analytics/analytics.routes.ts` with auth + validation.
-- [ ] 3.2 Update `src/modules/dashboard/dashboard.controller.ts` and `src/modules/dashboard/dashboard.routes.ts` to expose `/upcoming-renewals` and `/alerts`.
+- [✅] 3.1 Add `src/modules/analytics/analytics.controller.ts` and `src/modules/analytics/analytics.routes.ts` with auth + validation.
+- [✅] 3.2 Update `src/modules/dashboard/dashboard.controller.ts` and `src/modules/dashboard/dashboard.routes.ts` to expose `/upcoming-renewals` and `/alerts`.
 - [ ] 3.3 Register analytics routes in `src/routes/index.ts` (`/api/v1/analytics`).
 - [ ] 3.4 Update `src/shared/container/container.types.ts` and module barrel exports (`src/modules/analytics/index.ts`, `src/modules/dashboard/index.ts` if needed) for new services/controllers/routes.
 

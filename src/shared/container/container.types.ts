@@ -1,6 +1,7 @@
 import type { Router } from 'express';
 import type prismaClient from '@/config/prisma.js';
 import type redisClient from '@/config/redis.js';
+import type AnalyticsController from '@/modules/analytics/analytics.controller.js';
 import type AnalyticsService from '@/modules/analytics/analytics.service.js';
 import type AuthController from '@/modules/auth/auth.controller.js';
 import type AuthService from '@/modules/auth/auth.service.js';
@@ -54,6 +55,7 @@ export interface Cradle {
 	subscriptionController: SubscriptionController;
 	authController: AuthController;
 	dashboardController: DashboardController;
+	analyticsController: AnalyticsController;
 
 	userRoutes: Router;
 	categoryRoutes: Router;
@@ -61,4 +63,5 @@ export interface Cradle {
 	subscriptionRoutes: Router;
 	authRoutes: Router;
 	dashboardRoutes: Router;
+	analyticsRoutes: Router;
 }
