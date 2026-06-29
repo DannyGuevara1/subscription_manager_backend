@@ -33,7 +33,11 @@ export default class CurrencyController {
 
 	async createCurrency(req: Request, res: Response, _next: NextFunction) {
 		const currencyData = req.validated.body as CreateCurrencyDto;
-		const newCurrency = await this.currencyService.createCurrency(currencyData);
+		const newCurrency = await this.currencyService.createCurrency({
+			...currencyData,
+			exchangeRateToUSD: 1,
+			rateUpdatedAt: new Date(),
+		});
 
 		res.status(201).json({
 			data: safeCurrencySchema.parse(newCurrency),

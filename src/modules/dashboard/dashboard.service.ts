@@ -64,6 +64,10 @@ export default class DashboardService {
 			sortDate: Date;
 		})[] = [];
 
+		// Batch fetch categories
+		const categoryIds = subscriptions.map(sub => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+
 		for (const sub of subscriptions) {
 			const nextDate =
 				this.subscriptionCalculatorService.nextPaymentDate({
@@ -73,15 +77,12 @@ export default class DashboardService {
 					trialEndsOn: sub.trialEndsOn,
 				});
 
-			const category = await this.categoryService.getCategoryById(
-				sub.categoryId,
-				userId,
-			);
+			const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';
 
 			const isTrialEnding = this.isTrialEndingSoon(sub, now);
 
 			renewals.push({
-				category: category.name,
+				category: categoryName,
 				subscriptionName: sub.name,
 				renewalDate: nextDate.toISOString(),
 				amount: Number(sub.cost),
@@ -121,6 +122,10 @@ export default class DashboardService {
 
 		const alerts: DashboardPaymentAlert[] = [];
 
+		// Batch fetch categories
+		const categoryIds = subscriptions.map(sub => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+
 		for (const sub of subscriptions) {
 			const nextDate =
 				this.subscriptionCalculatorService.nextPaymentDate({
@@ -131,13 +136,10 @@ export default class DashboardService {
 				});
 
 			if (nextDate <= alertWindow) {
-				const category = await this.categoryService.getCategoryById(
-					sub.categoryId,
-					userId,
-				);
+				const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';
 
 				alerts.push({
-					category: category.name,
+					category: categoryName,
 					subscriptionName: sub.name,
 					dueDate: nextDate.toISOString(),
 					amount: Number(sub.cost),

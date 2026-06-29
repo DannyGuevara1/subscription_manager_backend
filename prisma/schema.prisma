@@ -43,6 +43,7 @@ model Category {
   subscriptions Subscription[]
 
   @@unique([name, userId])
+  @@index([userId])
 }
 
 model Subscription {
@@ -63,6 +64,9 @@ model Subscription {
   category         Category    @relation(fields: [categoryId], references: [id])
   currency         Currency    @relation(fields: [currencyCode], references: [code])
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([categoryId])
 }
 
 enum CostType {

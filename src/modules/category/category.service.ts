@@ -76,6 +76,22 @@ export default class CategoryService {
 		return category;
 	}
 
+	async getCategoriesByIds(ids: number[], userId: string): Promise<Map<number, string>> {
+		if (ids.length === 0) return new Map();
+
+		const uniqueIds = Array.from(new Set(ids));
+		const categories = await this.categoryRepository.findByIds(uniqueIds);
+		
+		const categoryMap = new Map<number, string>();
+		for (const category of categories) {
+			// Solamente incluir categorías que pertenezcan al usuario
+			if (category.userId === userId) {
+				categoryMap.set(category.id, category.name);
+			}
+		}
+		return categoryMap;
+	}
+
 	//Methods POST
 	async createCategory(
 		data: CreateCategoryInput,

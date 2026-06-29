@@ -56,6 +56,10 @@ export default class AnalyticsService {
 		// Aggregate expenses by category, normalizing to user's primary currency
 		const categoryTotals = new Map<string, number>();
 
+		// Batch fetch categories to avoid N+1 queries
+		const categoryIds = filtered.map(sub => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+
 		for (const sub of filtered) {
 			const sourceRate = await this.exchangeRateService.getRateToUSD(
 				sub.currencyCode,
@@ -63,13 +67,10 @@ export default class AnalyticsService {
 			// Two-step: source → USD → primary
 			const costInPrimary = (Number(sub.cost) * sourceRate) / primaryRate;
 
-			const category = await this.categoryService.getCategoryById(
-				sub.categoryId,
-				userId,
-			);
+			const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';
 
-			const current = categoryTotals.get(category.name) ?? 0;
-			categoryTotals.set(category.name, current + costInPrimary);
+			const current = categoryTotals.get(categoryName) ?? 0;
+			categoryTotals.set(categoryName, current + costInPrimary);
 		}
 
 		const totalExpenses = [...categoryTotals.values()].reduce(
@@ -116,11 +117,12 @@ export default class AnalyticsService {
 
 		const history: PaymentHistory[] = [];
 
+		// Batch fetch categories to avoid N+1 queries
+		const categoryIds = filtered.map(sub => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+
 		for (const sub of filtered) {
-			const category = await this.categoryService.getCategoryById(
-				sub.categoryId,
-				userId,
-			);
+			const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';
 
 			const paymentDates =
 				this.subscriptionCalculatorService.projectNextPaymentDates({
@@ -134,7 +136,7 @@ export default class AnalyticsService {
 			for (const date of paymentDates) {
 				history.push({
 					subscriptionName: sub.name,
-					category: category.name,
+					category: categoryName,
 					amount: Number(sub.cost),
 					currency: sub.currencyCode,
 					date: date.toISOString(),

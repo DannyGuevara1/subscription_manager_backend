@@ -135,7 +135,15 @@ describe('Subscription Service', () => {
 
 		fixture.currencyService.getCurrencyByCode = async (code: string) => {
 			fixture.currencyCalls.push(code);
-			return { code, name: 'US Dollar', symbol: '$' };
+			return { 
+				code, 
+				name: 'US Dollar', 
+				symbol: '$',
+				exchangeRateToUSD: 1,
+				rateUpdatedAt: new Date(),
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
 		};
 		fixture.categoryService.getCategoryById = async (id: number) => {
 			fixture.categoryCalls.push(id);
@@ -143,6 +151,8 @@ describe('Subscription Service', () => {
 				id,
 				name: 'Foreign Category',
 				userId: '0197f644-3f67-7f07-9537-6cc9db95faaa',
+				createdAt: new Date(),
+				updatedAt: new Date()
 			};
 		};
 

@@ -1,6 +1,7 @@
 import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
 import { Temporal } from 'temporal-polyfill';
+import logger from '@/config/logger.js';
 import {
     notFoundError,
 } from '@/shared/errors/error.factory.js';
@@ -43,7 +44,7 @@ export default class ExchangeRateService {
 
         if (isStale.hours > 24) {
             this.updateRateInBackground(currencyCode).catch((err) => {
-                console.error(err);
+                logger.error({ err, currencyCode }, 'Background exchange rate update failed');
             });
         }
 
@@ -57,7 +58,7 @@ export default class ExchangeRateService {
             await this.currencyRepository.update(currencyCode, { exchangeRateToUSD: newRate, rateUpdatedAt: new Date() });
 
         } catch (err) {
-            console.error('Failed to update exchange rate', err);
+            logger.error({ err, currencyCode }, 'Failed to update exchange rate');
         }
     }
 

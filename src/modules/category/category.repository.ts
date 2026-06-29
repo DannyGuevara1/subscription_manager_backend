@@ -54,6 +54,13 @@ export default class CategoryRepository {
 		return category ? this.toDomain(category) : null;
 	}
 
+	async findByIds(ids: number[]): Promise<CategoryDomain[]> {
+		const categories = await this.prisma.category.findMany({
+			where: { id: { in: ids } },
+		});
+		return categories.map((category) => this.toDomain(category));
+	}
+
 	async update(id: number, data: UpdateCategoryData): Promise<CategoryDomain> {
 		const category = await this.prisma.category.update({ where: { id }, data });
 		return this.toDomain(category);

@@ -33,8 +33,8 @@
 
 ## Phase 6: Improvements (v1.1.0 — Technical Debt)
 - [ ] 6.1 Refactor `SubscriptionDomain.cost` from `string` to `number`. Update `toDomain()` in repository, remove all `Number(sub.cost)` casts across services. Boundary serialization stays in DTO output schemas only.
-- [ ] 6.2 Eliminate N+1 category lookups in `AnalyticsService` and `DashboardService`. Add `CategoryService.getCategoriesByIds(ids: number[])` with a single Prisma `findMany` + in-memory `Map<id, name>`.
-- [ ] 6.3 Replace `console.error` calls in `ExchangeRateService` with structured logger (pino). Add logger as shared infrastructure in `src/config/logger.ts`.
+- [✅] 6.2 Eliminate N+1 category lookups in `AnalyticsService` and `DashboardService`. Add `CategoryService.getCategoriesByIds(ids: number[])` with a single Prisma `findMany` + in-memory `Map<id, name>`.
+- [✅] 6.3 Replace `console.error` calls in `ExchangeRateService` with structured logger (pino). Add logger as shared infrastructure in `src/config/logger.ts`.
 - [✅] 6.4 Complete missing test assertions in `tests/unit/dashboard/subscription-cost-normalizer.service.test.ts` (YEARS normalization test has no assertions).
 - [ ] 6.5 Add rate limiting middleware for analytics and dashboard endpoints (heavy query load). Configure in `src/shared/middleware/`.
 - [✅] 6.6 Ensure consistent barrel exports: create `src/modules/analytics/index.ts` and `src/modules/dashboard/index.ts` if missing.
