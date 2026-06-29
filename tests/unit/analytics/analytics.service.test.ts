@@ -66,6 +66,13 @@ const createFixture = (subscriptions: SubscriptionDomain[] = []) => {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		}),
+		getCategoriesByIds: async (ids: number[], _userId: string) => {
+			const map = new Map<number, string>();
+			for (const id of ids) {
+				map.set(id, CATEGORIES[id] ?? `Category-${id}`);
+			}
+			return map;
+		},
 	} as unknown as CategoryService;
 
 	const subscriptionCalculatorService = {
