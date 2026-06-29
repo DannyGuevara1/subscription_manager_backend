@@ -23,15 +23,15 @@ Origin: http://localhost:3000
 content-type: application/json
 
 {
-    "userId": "019c1090-97be-7057-9f3e-9680cf703fb7",
-    "categoryId": 4,
-    "currencyCode": "USD",
-    "name": "Spotify",
-    "cost": 12.99,
+    "userId": "019d9eb9-df8b-707e-8168-f54923fa4d6c",
+    "categoryId": 5,
+    "currencyCode": "EUR",
+    "name": "AWS S3 Storage",
+    "cost": 10.99,
     "costType": "FIXED",
     "billingFrequency": 1,
-    "billingUnit": "MONTHS",
-    "firstPaymentDate": "2026-04-20"
+    "billingUnit": "DAYS",
+    "firstPaymentDate": "2026-09-06"
 
 }
 

@@ -11,6 +11,10 @@ import type {
 	PaymentHistory,
 } from '@/modules/analytics/analytics.type.js';
 
+/**
+ * Provides analytics aggregations for subscription expenses and payment projections.
+ * Handles cross-currency normalization and chronological ordering.
+ */
 export default class AnalyticsService {
 	private subscriptionService: SubscriptionService;
 	private exchangeRateService: ExchangeRateService;
@@ -29,6 +33,10 @@ export default class AnalyticsService {
 		this.categoryService = categoryService;
 	}
 
+	/**
+	 * Aggregates total expenses by category, normalized to the user's primary currency.
+	 * Uses two-step conversion: source currency → USD → primary currency.
+	 */
 	async getExpensesByCategory(
 		userAuth: JWTPayload,
 		query: ExpensesByCategoryQuery,
@@ -87,6 +95,10 @@ export default class AnalyticsService {
 		};
 	}
 
+	/**
+	 * Projects a chronological payment timeline for the next year.
+	 * Uses SubscriptionCalculatorService to compute future payment dates.
+	 */
 	async getPaymentHistory(
 		userAuth: JWTPayload,
 		query: ExpensesByCategoryQuery,

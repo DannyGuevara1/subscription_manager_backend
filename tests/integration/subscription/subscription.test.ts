@@ -656,4 +656,163 @@ describe('Modulo de Suscripciones', () => {
 				.expect(404);
 		},
 	);
+
+	describe('Category and BillingCycle filters', () => {
+		let filterCategoryId: number;
+		let yearlySubName: string;
+
+		before(async () => {
+			// Create a separate category for filter tests
+			const filterCatRes = await request(env.getApp())
+				.post('/api/v1/categories')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({ name: 'Filter Testing' });
+			filterCategoryId = filterCatRes.body.data.id;
+
+			// Create a YEARLY subscription in the filter category
+			yearlySubName = `Filter Yearly ${Date.now()}`;
+			await request(env.getApp())
+				.post('/api/v1/subscriptions')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({
+					categoryId: filterCategoryId,
+					currencyCode: 'USD',
+					name: yearlySubName,
+					cost: 99.99,
+					costType: 'FIXED',
+					billingFrequency: 1,
+					billingUnit: 'YEARS',
+					firstPaymentDate: new Date().toISOString(),
+				})
+				.expect(201);
+
+			// Create a MONTHS subscription in the original category
+			await request(env.getApp())
+				.post('/api/v1/subscriptions')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({
+					categoryId,
+					currencyCode: 'USD',
+					name: `Filter Monthly ${Date.now()}`,
+					cost: 19.99,
+					costType: 'FIXED',
+					billingFrequency: 1,
+					billingUnit: 'MONTHS',
+					firstPaymentDate: new Date().toISOString(),
+				})
+				.expect(201);
+		});
+
+		it(
+			'should filter subscriptions by category',
+			{ timeout: 10000 },
+			async () => {
+				const res = await request(env.getApp())
+					.get(`/api/v1/subscriptions?category=${filterCategoryId}`)
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.expect(200);
+
+				const subs = res.body.data.subscriptions;
+				assert(Array.isArray(subs));
+				assert(subs.length > 0, 'Should return at least one subscription');
+
+				for (const sub of subs) {
+					assert.strictEqual(
+						sub.categoryId,
+						filterCategoryId,
+						`All subscriptions should belong to category ${filterCategoryId}`,
+					);
+				}
+			},
+		);
+
+		it(
+			'should filter subscriptions by billingCycle',
+			{ timeout: 10000 },
+			async () => {
+				const res = await request(env.getApp())
+					.get('/api/v1/subscriptions?billingCycle=YEARS')
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.expect(200);
+
+				const subs = res.body.data.subscriptions;
+				assert(Array.isArray(subs));
+				assert(subs.length > 0, 'Should return at least one YEARS subscription');
+
+				for (const sub of subs) {
+					assert.strictEqual(
+						sub.billingUnit,
+						'YEARS',
+						'All subscriptions should have YEARS billing unit',
+					);
+				}
+			},
+		);
+
+		it(
+			'should combine category and billingCycle filters',
+			{ timeout: 10000 },
+			async () => {
+				const res = await request(env.getApp())
+					.get(
+						`/api/v1/subscriptions?category=${filterCategoryId}&billingCycle=YEARS`,
+					)
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.expect(200);
+
+				const subs = res.body.data.subscriptions;
+				assert(Array.isArray(subs));
+				assert(subs.length > 0, 'Should return at least one result');
+
+				for (const sub of subs) {
+					assert.strictEqual(sub.categoryId, filterCategoryId);
+					assert.strictEqual(sub.billingUnit, 'YEARS');
+				}
+			},
+		);
+
+		it(
+			'should reject invalid billingCycle value',
+			{ timeout: 10000 },
+			async () => {
+				await request(env.getApp())
+					.get('/api/v1/subscriptions?billingCycle=INVALID_CYCLE')
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.expect(422);
+			},
+		);
+
+		it(
+			'should return empty when filtering by category with no subscriptions',
+			{ timeout: 10000 },
+			async () => {
+				// Create a category with no subscriptions
+				const emptyCatRes = await request(env.getApp())
+					.post('/api/v1/categories')
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.send({ name: `Empty Category ${Date.now()}` });
+				const emptyCategoryId = emptyCatRes.body.data.id;
+
+				const res = await request(env.getApp())
+					.get(`/api/v1/subscriptions?category=${emptyCategoryId}`)
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.expect(200);
+
+				assert.strictEqual(
+					res.body.data.subscriptions.length,
+					0,
+					'Should return no subscriptions for empty category',
+				);
+			},
+		);
+	});
 });

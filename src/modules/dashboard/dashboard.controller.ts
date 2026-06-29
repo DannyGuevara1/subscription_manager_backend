@@ -10,12 +10,20 @@ import type {
 	SafePaymentAlertsDto,
 } from '@/modules/dashboard/dashboard.dto.js';
 
+/**
+ * Handles HTTP requests for dashboard endpoints.
+ * All methods require authentication via JWTPayload.
+ */
 export default class DashboardController {
 	private dashboardService: DashboardService;
 	constructor(dashboardService: DashboardService) {
 		this.dashboardService = dashboardService;
 	}
 
+	/**
+	 * GET /dashboard/summary
+	 * Returns monthly and annual totals for the authenticated user's active subscriptions.
+	 */
 	async getSummary(req: Request, res: Response, _next: NextFunction) {
 		const userAuth = req.user as JWTPayload;
 		const summary = await this.dashboardService.getSummary(userAuth);
@@ -24,6 +32,10 @@ export default class DashboardController {
 		});
 	}
 
+	/**
+	 * GET /dashboard/upcoming-renewals
+	 * Returns up to 5 closest upcoming renewals, prioritizing trials ending soon.
+	 */
 	async getUpcomingRenewals(
 		req: Request,
 		res: Response,
@@ -42,6 +54,10 @@ export default class DashboardController {
 		});
 	}
 
+	/**
+	 * GET /dashboard/alerts
+	 * Returns subscriptions with payments due within the next 7 days.
+	 */
 	async getPaymentAlerts(req: Request, res: Response, _next: NextFunction) {
 		const userAuth = req.user as JWTPayload;
 		const alerts = await this.dashboardService.getPaymentAlerts(userAuth);
