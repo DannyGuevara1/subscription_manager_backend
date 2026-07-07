@@ -57,8 +57,11 @@ export default class AnalyticsService {
 		const categoryTotals = new Map<string, number>();
 
 		// Batch fetch categories to avoid N+1 queries
-		const categoryIds = filtered.map(sub => sub.categoryId);
-		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+		const categoryIds = filtered.map((sub) => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(
+			categoryIds,
+			userId,
+		);
 
 		for (const sub of filtered) {
 			const sourceRate = await this.exchangeRateService.getRateToUSD(
@@ -118,8 +121,11 @@ export default class AnalyticsService {
 		const history: PaymentHistory[] = [];
 
 		// Batch fetch categories to avoid N+1 queries
-		const categoryIds = filtered.map(sub => sub.categoryId);
-		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+		const categoryIds = filtered.map((sub) => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(
+			categoryIds,
+			userId,
+		);
 
 		for (const sub of filtered) {
 			const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';

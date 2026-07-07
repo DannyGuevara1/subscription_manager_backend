@@ -31,8 +31,6 @@ export default class SubscriptionRepository {
 		};
 	}
 
-
-
 	async findAllWithCursor(
 		userId: string,
 		options: SubscriptionCursorPaginationOptions,
@@ -49,9 +47,9 @@ export default class SubscriptionRepository {
 			take: limit,
 			...(cursor
 				? {
-					cursor: { id: cursor },
-					skip: 1,
-				}
+						cursor: { id: cursor },
+						skip: 1,
+					}
 				: {}),
 		});
 

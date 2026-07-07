@@ -36,14 +36,9 @@ export default class DashboardController {
 	 * GET /dashboard/upcoming-renewals
 	 * Returns up to 5 closest upcoming renewals, prioritizing trials ending soon.
 	 */
-	async getUpcomingRenewals(
-		req: Request,
-		res: Response,
-		_next: NextFunction,
-	) {
+	async getUpcomingRenewals(req: Request, res: Response, _next: NextFunction) {
 		const userAuth = req.user as JWTPayload;
-		const renewals =
-			await this.dashboardService.getUpcomingRenewals(userAuth);
+		const renewals = await this.dashboardService.getUpcomingRenewals(userAuth);
 
 		const serialized: SafeUpcomingRenewalsDto[] = renewals.map((renewal) =>
 			safeDashboardUpcomingRenewalsSchema.parse(renewal),
@@ -71,4 +66,3 @@ export default class DashboardController {
 		});
 	}
 }
-

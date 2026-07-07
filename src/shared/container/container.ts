@@ -25,17 +25,18 @@ export async function setupContainer(): Promise<AwilixContainer<Cradle>> {
 		injectionMode: InjectionMode.CLASSIC,
 	});
 
-	const env = process.env.NODE_ENV || 'development'
+	const env = process.env.NODE_ENV || 'development';
 	const apiKey = process.env.APP_ID_OPENEXCHANGERATES ?? '';
 
-	const exchangeProvider = env === 'test'
-		? asClass(NoopExchangeRateProvider).singleton()
-		: asFunction(() => new OpenExchangeRateProvider(apiKey)).singleton();
+	const exchangeProvider =
+		env === 'test'
+			? asClass(NoopExchangeRateProvider).singleton()
+			: asFunction(() => new OpenExchangeRateProvider(apiKey)).singleton();
 
 	container.register({
 		prisma: asValue(prismaClient),
 		redis: asValue(redisClient),
-		exchangeRateProvider: exchangeProvider
+		exchangeRateProvider: exchangeProvider,
 	});
 
 	// Carga automática con loadModules

@@ -35,8 +35,10 @@ export default class AnalyticsController {
 		const userAuth = req.user as JWTPayload;
 		const query = (req.validated.query ?? {}) as ExpensesByCategoryQuery;
 
-		const expenses =
-			await this.analyticsService.getExpensesByCategory(userAuth, query);
+		const expenses = await this.analyticsService.getExpensesByCategory(
+			userAuth,
+			query,
+		);
 
 		const serialized: SafeExpensesByCategoryDto =
 			safeExpensesByCategorySchema.parse(expenses);
@@ -56,8 +58,10 @@ export default class AnalyticsController {
 		const userAuth = req.user as JWTPayload;
 		const query = (req.validated.query ?? {}) as ExpensesByCategoryQuery;
 
-		const history =
-			await this.analyticsService.getPaymentHistory(userAuth, query);
+		const history = await this.analyticsService.getPaymentHistory(
+			userAuth,
+			query,
+		);
 
 		const serialized: SafePaymentHistoryDto[] = history.map((entry) =>
 			safePaymentHistorySchema.parse(entry),

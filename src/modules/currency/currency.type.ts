@@ -20,7 +20,6 @@ export interface CurrencyDomain {
 	updatedAt: Date;
 }
 
-
 export interface OpenExchangeRatesResponse {
 	disclaimer: string;
 	license: string;

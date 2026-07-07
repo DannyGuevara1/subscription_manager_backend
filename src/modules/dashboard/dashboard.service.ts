@@ -65,17 +65,19 @@ export default class DashboardService {
 		})[] = [];
 
 		// Batch fetch categories
-		const categoryIds = subscriptions.map(sub => sub.categoryId);
-		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+		const categoryIds = subscriptions.map((sub) => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(
+			categoryIds,
+			userId,
+		);
 
 		for (const sub of subscriptions) {
-			const nextDate =
-				this.subscriptionCalculatorService.nextPaymentDate({
-					firstPaymentDate: sub.firstPaymentDate,
-					billingFrequency: sub.billingFrequency,
-					billingUnit: sub.billingUnit,
-					trialEndsOn: sub.trialEndsOn,
-				});
+			const nextDate = this.subscriptionCalculatorService.nextPaymentDate({
+				firstPaymentDate: sub.firstPaymentDate,
+				billingFrequency: sub.billingFrequency,
+				billingUnit: sub.billingUnit,
+				trialEndsOn: sub.trialEndsOn,
+			});
 
 			const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';
 
@@ -100,9 +102,9 @@ export default class DashboardService {
 		});
 
 		// Return top 5, stripped of internal sort fields
-		return renewals.slice(0, UPCOMING_RENEWALS_LIMIT).map(
-			({ isTrialEnding, sortDate, ...renewal }) => renewal,
-		);
+		return renewals
+			.slice(0, UPCOMING_RENEWALS_LIMIT)
+			.map(({ isTrialEnding, sortDate, ...renewal }) => renewal);
 	}
 
 	/*
@@ -123,17 +125,19 @@ export default class DashboardService {
 		const alerts: DashboardPaymentAlert[] = [];
 
 		// Batch fetch categories
-		const categoryIds = subscriptions.map(sub => sub.categoryId);
-		const categoryMap = await this.categoryService.getCategoriesByIds(categoryIds, userId);
+		const categoryIds = subscriptions.map((sub) => sub.categoryId);
+		const categoryMap = await this.categoryService.getCategoriesByIds(
+			categoryIds,
+			userId,
+		);
 
 		for (const sub of subscriptions) {
-			const nextDate =
-				this.subscriptionCalculatorService.nextPaymentDate({
-					firstPaymentDate: sub.firstPaymentDate,
-					billingFrequency: sub.billingFrequency,
-					billingUnit: sub.billingUnit,
-					trialEndsOn: sub.trialEndsOn,
-				});
+			const nextDate = this.subscriptionCalculatorService.nextPaymentDate({
+				firstPaymentDate: sub.firstPaymentDate,
+				billingFrequency: sub.billingFrequency,
+				billingUnit: sub.billingUnit,
+				trialEndsOn: sub.trialEndsOn,
+			});
 
 			if (nextDate <= alertWindow) {
 				const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';
@@ -149,8 +153,7 @@ export default class DashboardService {
 
 		// Sort by closest due date
 		alerts.sort(
-			(a, b) =>
-				new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+			(a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
 		);
 
 		return alerts;

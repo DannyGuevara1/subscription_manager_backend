@@ -38,9 +38,7 @@ export default function dashboardRoutes(
 		'/alerts',
 		authorize('ADMIN', 'USER'),
 		validateRequest(alertsRequestSchema),
-		catchAsync(
-			dashboardController.getPaymentAlerts.bind(dashboardController),
-		),
+		catchAsync(dashboardController.getPaymentAlerts.bind(dashboardController)),
 	);
 
 	return router;

@@ -209,5 +209,4 @@ export default class SubscriptionService {
 		const deletedSubscription = await this.subscriptionRepository.delete(id);
 		return deletedSubscription;
 	}
-
 }

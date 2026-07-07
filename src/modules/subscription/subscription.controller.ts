@@ -16,8 +16,12 @@ export default class SubscriptionController {
 
 	async getAllSubscriptions(req: Request, res: Response, _next: NextFunction) {
 		const sub = req.user?.sub as string;
-		const { cursor, limit, billingCycle, category: categoryId } = req.validated
-			.query as SubscriptionCursorPaginationQueryDto;
+		const {
+			cursor,
+			limit,
+			billingCycle,
+			category: categoryId,
+		} = req.validated.query as SubscriptionCursorPaginationQueryDto;
 		const paginatedSubscriptions =
 			await this.subscriptionService.getAllSubscriptions(sub, {
 				cursor,

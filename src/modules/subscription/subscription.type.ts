@@ -68,7 +68,7 @@ export interface NextPaymentInfo {
 	subscriptionId: string;
 	subscriptionName: string;
 	amount: number;
-};
+}
 export interface CalculatorConfig {
 	firstPaymentDate: Date;
 	billingFrequency: number;
@@ -84,4 +84,4 @@ export interface ProjectionConfig extends CalculatorConfig {
 export interface SubscriptionDateCalculator {
 	nextPaymentDate(config: CalculatorConfig): Date;
 	projectNextPaymentDates(config: ProjectionConfig): Date[];
-};
+}

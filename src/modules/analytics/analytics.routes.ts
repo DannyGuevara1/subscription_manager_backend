@@ -31,9 +31,7 @@ export default function analyticsRoutes(
 		'/payment-history',
 		authorize('ADMIN', 'USER'),
 		validateRequest(paymentHistoryRequestSchema),
-		catchAsync(
-			analyticsController.getPaymentHistory.bind(analyticsController),
-		),
+		catchAsync(analyticsController.getPaymentHistory.bind(analyticsController)),
 	);
 
 	return router;
