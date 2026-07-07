@@ -1,6 +1,7 @@
 // src/routes/index.ts
 import express, { type Router } from 'express';
 import { authMiddleware } from '@/modules/auth/index.js';
+import apiDocsRouter from '@/shared/api-docs/swagger.routes.js';
 import { containerPromise } from '@/shared/container/container.js';
 
 const container = await containerPromise;
@@ -30,4 +31,12 @@ v1.use('/categories', authMiddleware, categoryRouter);
 v1.use('/dashboard', authMiddleware, dashboardRouter);
 v1.use('/analytics', authMiddleware, analyticsRouter);
 v1.use('/auth', authRouter);
+
+const enableApiDocs =
+	process.env.ENABLE_API_DOCS === 'true' ||
+	process.env.NODE_ENV !== 'production';
+if (enableApiDocs) {
+	v1.use('/api-docs', authMiddleware, apiDocsRouter());
+}
+
 export default v1;

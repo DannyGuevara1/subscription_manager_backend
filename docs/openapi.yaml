@@ -1,0 +1,1696 @@
+openapi: "3.1.0"
+info:
+  title: Subscription Manager API
+  version: 1.1.0
+  description: >
+    REST API for managing user subscriptions, categories, currencies,
+    dashboard analytics, and authentication.
+    Errors follow RFC 9457 (Problem Details for HTTP APIs)
+    with `application/problem+json` content type.
+  contact:
+    url: https://github.com/DannyGuevara1/subscription_manager_backend
+  license:
+    name: ISC
+    identifier: ISC
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+# ──────────────────────────────────────────────
+# Security
+# ──────────────────────────────────────────────
+security:
+  - cookieAuth: []
+
+tags:
+  - name: Auth
+    description: Authentication & session management (no auth required)
+  - name: Users
+    description: User CRUD & role management (auth required)
+  - name: Subscriptions
+    description: Subscription CRUD with cursor pagination (auth required)
+  - name: Categories
+    description: Category CRUD with offset pagination (auth required)
+  - name: Currencies
+    description: Currency CRUD (auth required)
+  - name: Dashboard
+    description: Summary, upcoming renewals & payment alerts (auth required)
+  - name: Analytics
+    description: Expenses by category & payment history projections (auth required)
+  - name: Health
+    description: Service health check
+
+# ══════════════════════════════════════════════
+# PATHS
+# ══════════════════════════════════════════════
+paths:
+  # ── Health ─────────────────────────────────
+  /health:
+    get:
+      operationId: getHealth
+      tags: [Health]
+      summary: Service health check
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, timestamp, uptime]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+                    description: Process uptime in seconds
+                    example: 12345.678
+
+  # ── Auth ───────────────────────────────────
+  /auth/login:
+    post:
+      operationId: login
+      tags: [Auth]
+      summary: Authenticate user with credentials
+      description: >
+        Sets `ACCESS_TOKEN` and `REFRESH_TOKEN` as httpOnly cookies.
+        Rate-limited to 10 requests per 15 minutes.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: ACCESS_TOKEN and REFRESH_TOKEN httpOnly cookies
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/AuthUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimitExceeded"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [Auth]
+      summary: Register a new user
+      description: Rate-limited to 10 requests per 15 minutes.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeUserAuth"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimitExceeded"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [Auth]
+      summary: Invalidate session and clear cookies
+      description: >
+        Clears ACCESS_TOKEN and REFRESH_TOKEN cookies.
+        Can be called without valid access token — will attempt
+        to decode the refresh token cookie to invalidate it.
+      security: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message:
+                    type: string
+                    example: Logout successful
+
+  /auth/refresh-token:
+    post:
+      operationId: refreshToken
+      tags: [Auth]
+      summary: Refresh session using REFRESH_TOKEN cookie
+      description: >
+        Reads REFRESH_TOKEN from cookies, validates it, rotates both tokens,
+        and sets new cookies.
+      security: []
+      responses:
+        "200":
+          description: Session refreshed successfully
+          headers:
+            Set-Cookie:
+              description: New ACCESS_TOKEN and REFRESH_TOKEN httpOnly cookies
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/AuthUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ── Users ──────────────────────────────────
+  /users:
+    get:
+      operationId: getAllUsers
+      tags: [Users]
+      summary: List all users (paginated)
+      description: "Requires role: ADMIN"
+      parameters:
+        - $ref: "#/components/parameters/OffsetPage"
+        - $ref: "#/components/parameters/OffsetLimit"
+      responses:
+        "200":
+          description: Paginated list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [users]
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/SafeUser"
+                  meta:
+                    $ref: "#/components/schemas/OffsetPaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    post:
+      operationId: createUser
+      tags: [Users]
+      summary: Create a new user
+      description: "Requires role: ADMIN"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /users/{id}:
+    parameters:
+      - $ref: "#/components/parameters/UserIdPath"
+
+    get:
+      operationId: getUserById
+      tags: [Users]
+      summary: Get user by ID
+      description: >
+        Requires role: USER, ADMIN, or SUPPORT.
+        SUPPORT users get a restricted view (id + primaryCurrencyCode only)
+        when viewing other users.
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    oneOf:
+                      - $ref: "#/components/schemas/SafeUser"
+                      - $ref: "#/components/schemas/SupportUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    put:
+      operationId: updateUser
+      tags: [Users]
+      summary: Update user
+      description: >
+        Requires role: USER, ADMIN, or SUPPORT.
+        SUPPORT cannot update another user's email or password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    oneOf:
+                      - $ref: "#/components/schemas/SafeUser"
+                      - $ref: "#/components/schemas/SupportUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    delete:
+      operationId: deleteUser
+      tags: [Users]
+      summary: Delete user
+      description: "Requires role: USER (own account) or ADMIN"
+      responses:
+        "204":
+          description: User deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /users/{id}/role:
+    parameters:
+      - $ref: "#/components/parameters/UserIdPath"
+
+    patch:
+      operationId: updateUserRole
+      tags: [Users]
+      summary: Update user role
+      description: >
+        Requires role: ADMIN.
+        Invalidates the target user's refresh token after role change.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRoleRequest"
+      responses:
+        "200":
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ── Subscriptions ──────────────────────────
+  /subscriptions:
+    get:
+      operationId: getAllSubscriptions
+      tags: [Subscriptions]
+      summary: List user's subscriptions (cursor-paginated)
+      parameters:
+        - name: cursor
+          in: query
+          description: UUIDv7 cursor for pagination
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: Number of items per page (1–100, default 10)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: category
+          in: query
+          description: Filter by category ID
+          schema:
+            type: integer
+            minimum: 1
+        - name: billingCycle
+          in: query
+          description: Filter by billing cycle
+          schema:
+            $ref: "#/components/schemas/BillingUnit"
+      responses:
+        "200":
+          description: Paginated subscriptions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [subscriptions]
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/SafeSubscription"
+                  meta:
+                    $ref: "#/components/schemas/CursorPaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    post:
+      operationId: createSubscription
+      tags: [Subscriptions]
+      summary: Create a new subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubscriptionRequest"
+      responses:
+        "201":
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeSubscription"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /subscriptions/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SubscriptionIdPath"
+
+    get:
+      operationId: getSubscriptionById
+      tags: [Subscriptions]
+      summary: Get subscription by ID
+      responses:
+        "200":
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeSubscription"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    put:
+      operationId: updateSubscription
+      tags: [Subscriptions]
+      summary: Update subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubscriptionRequest"
+      responses:
+        "200":
+          description: Subscription updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeSubscription"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    delete:
+      operationId: deleteSubscription
+      tags: [Subscriptions]
+      summary: Delete subscription
+      responses:
+        "204":
+          description: Subscription deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ── Categories ─────────────────────────────
+  /categories:
+    get:
+      operationId: getAllCategories
+      tags: [Categories]
+      summary: List user's categories (paginated)
+      description: "Requires role: ADMIN or USER"
+      parameters:
+        - $ref: "#/components/parameters/OffsetPage"
+        - $ref: "#/components/parameters/OffsetLimit"
+      responses:
+        "200":
+          description: Paginated categories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [categories]
+                    properties:
+                      categories:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/SafeCategory"
+                  meta:
+                    $ref: "#/components/schemas/OffsetPaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    post:
+      operationId: createCategory
+      tags: [Categories]
+      summary: Create a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCategoryRequest"
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /categories/{id}:
+    parameters:
+      - $ref: "#/components/parameters/CategoryIdPath"
+
+    get:
+      operationId: getCategoryById
+      tags: [Categories]
+      summary: Get category by ID
+      responses:
+        "200":
+          description: Category details
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    put:
+      operationId: updateCategory
+      tags: [Categories]
+      summary: Update category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCategoryRequest"
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    delete:
+      operationId: deleteCategory
+      tags: [Categories]
+      summary: Delete category
+      responses:
+        "204":
+          description: Category deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ── Currencies ─────────────────────────────
+  /currencies:
+    get:
+      operationId: getAllCurrencies
+      tags: [Currencies]
+      summary: List all currencies
+      responses:
+        "200":
+          description: List of currencies
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [currencies]
+                    properties:
+                      currencies:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/SafeCurrency"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      operationId: createCurrency
+      tags: [Currencies]
+      summary: Create a new currency
+      description: "Requires role: ADMIN"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCurrencyRequest"
+      responses:
+        "201":
+          description: Currency created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeCurrency"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /currencies/{code}:
+    parameters:
+      - $ref: "#/components/parameters/CurrencyCodePath"
+
+    get:
+      operationId: getCurrencyByCode
+      tags: [Currencies]
+      summary: Get currency by code
+      responses:
+        "200":
+          description: Currency details
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeCurrency"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    put:
+      operationId: updateCurrency
+      tags: [Currencies]
+      summary: Update currency
+      description: "Requires role: ADMIN"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCurrencyRequest"
+      responses:
+        "200":
+          description: Currency updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeCurrency"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    delete:
+      operationId: deleteCurrency
+      tags: [Currencies]
+      summary: Delete currency
+      description: "Requires role: ADMIN"
+      responses:
+        "204":
+          description: Currency deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ── Dashboard ──────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [Dashboard]
+      summary: Get financial summary
+      description: >
+        Returns monthly and annual totals for the authenticated user's
+        active subscriptions, normalized to their primary currency.
+        Requires role: ADMIN or USER.
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /dashboard/upcoming-renewals:
+    get:
+      operationId: getUpcomingRenewals
+      tags: [Dashboard]
+      summary: Get upcoming subscription renewals
+      description: >
+        Returns up to 5 closest upcoming renewals, prioritizing
+        trials ending soon. Requires role: ADMIN or USER.
+      responses:
+        "200":
+          description: Upcoming renewals
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UpcomingRenewal"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /dashboard/alerts:
+    get:
+      operationId: getPaymentAlerts
+      tags: [Dashboard]
+      summary: Get payment alerts
+      description: >
+        Returns subscriptions with payments due within the next 7 days.
+        Requires role: ADMIN or USER.
+      parameters:
+        - name: billingUnit
+          in: query
+          description: Filter by billing unit
+          schema:
+            $ref: "#/components/schemas/NonDailyBillingUnit"
+      responses:
+        "200":
+          description: Payment alerts
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PaymentAlert"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ── Analytics ──────────────────────────────
+  /analytics/expenses-by-category:
+    get:
+      operationId: getExpensesByCategory
+      tags: [Analytics]
+      summary: Get expenses grouped by category
+      description: >
+        Returns aggregated expenses grouped by category, normalized
+        to the user's primary currency. Requires role: ADMIN or USER.
+      parameters:
+        - name: status
+          in: query
+          description: Filter by active (true) or inactive (false) subscriptions
+          schema:
+            type: boolean
+        - name: billingUnit
+          in: query
+          description: Filter by billing unit
+          schema:
+            $ref: "#/components/schemas/NonDailyBillingUnit"
+      responses:
+        "200":
+          description: Expenses breakdown by category
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ExpensesByCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /analytics/payment-history:
+    get:
+      operationId: getPaymentHistory
+      tags: [Analytics]
+      summary: Get payment history projection
+      description: >
+        Returns a chronological projection of future payments
+        for the next year. Requires role: ADMIN or USER.
+      parameters:
+        - name: status
+          in: query
+          description: Filter by active (true) or inactive (false) subscriptions
+          schema:
+            type: boolean
+        - name: billingUnit
+          in: query
+          description: Filter by billing unit
+          schema:
+            $ref: "#/components/schemas/NonDailyBillingUnit"
+      responses:
+        "200":
+          description: Projected payment history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PaymentHistoryEntry"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+# ══════════════════════════════════════════════
+# COMPONENTS
+# ══════════════════════════════════════════════
+components:
+  # ── Security Schemes ───────────────────────
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ACCESS_TOKEN
+      description: >
+        JWT access token stored as an httpOnly cookie.
+        Set automatically on login and refresh-token.
+
+  # ── Parameters ─────────────────────────────
+  parameters:
+    OffsetPage:
+      name: page
+      in: query
+      description: Page number (≥ 1, default 1)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    OffsetLimit:
+      name: limit
+      in: query
+      description: Items per page (1–100, default 10)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+
+    UserIdPath:
+      name: id
+      in: path
+      required: true
+      description: User UUIDv7
+      schema:
+        type: string
+        format: uuid
+
+    SubscriptionIdPath:
+      name: id
+      in: path
+      required: true
+      description: Subscription UUIDv7
+      schema:
+        type: string
+        format: uuid
+
+    CategoryIdPath:
+      name: id
+      in: path
+      required: true
+      description: Category integer ID
+      schema:
+        type: integer
+        minimum: 1
+
+    CurrencyCodePath:
+      name: code
+      in: path
+      required: true
+      description: ISO 4217 currency code (3 uppercase letters)
+      schema:
+        type: string
+        minLength: 3
+        maxLength: 3
+        example: USD
+
+  # ── Schemas ────────────────────────────────
+  schemas:
+    # ─── Enums ───────────────────────────────
+    Role:
+      type: string
+      enum: [USER, ADMIN, SUPPORT]
+
+    BillingUnit:
+      type: string
+      enum: [DAYS, WEEKS, MONTHS, YEARS]
+
+    NonDailyBillingUnit:
+      type: string
+      enum: [WEEKS, MONTHS, YEARS]
+
+    CostType:
+      type: string
+      enum: [FIXED, VARIABLE]
+
+    # ─── Auth ────────────────────────────────
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    RegisterRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+          minLength: 3
+        primaryCurrencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+          description: ISO 4217 code (defaults to USD if omitted)
+          example: USD
+
+    AuthUser:
+      type: object
+      required: [id, email, primaryCurrencyCode, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          nullable: true
+        primaryCurrencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        role:
+          $ref: "#/components/schemas/Role"
+
+    SafeUserAuth:
+      type: object
+      required: [id, email, primaryCurrencyCode, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+        primaryCurrencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        role:
+          $ref: "#/components/schemas/Role"
+
+    # ─── Users ───────────────────────────────
+    SafeUser:
+      type: object
+      required: [id, email, primaryCurrencyCode, role, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          nullable: true
+        primaryCurrencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        role:
+          $ref: "#/components/schemas/Role"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SupportUser:
+      type: object
+      required: [id, primaryCurrencyCode]
+      properties:
+        id:
+          type: string
+          format: uuid
+        primaryCurrencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+
+    CreateUserRequest:
+      type: object
+      required: [email, password, primaryCurrencyCode]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+        name:
+          type: string
+          minLength: 2
+        primaryCurrencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+
+    UpdateUserRequest:
+      type: object
+      description: All fields are optional (partial update)
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+        name:
+          type: string
+          minLength: 2
+        primaryCurrencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+
+    UpdateUserRoleRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          $ref: "#/components/schemas/Role"
+
+    # ─── Subscriptions ───────────────────────
+    SafeSubscription:
+      type: object
+      required:
+        - id
+        - userId
+        - categoryId
+        - currencyCode
+        - name
+        - cost
+        - costType
+        - billingFrequency
+        - billingUnit
+        - firstPaymentDate
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        categoryId:
+          type: integer
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        name:
+          type: string
+        cost:
+          type: string
+          description: >
+            Decimal cost serialized as string to preserve precision
+            (e.g. "9.99")
+          example: "9.99"
+        costType:
+          $ref: "#/components/schemas/CostType"
+        billingFrequency:
+          type: integer
+          minimum: 1
+        billingUnit:
+          $ref: "#/components/schemas/BillingUnit"
+        firstPaymentDate:
+          type: string
+          format: date-time
+        trialEndsOn:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateSubscriptionRequest:
+      type: object
+      required:
+        - categoryId
+        - currencyCode
+        - name
+        - cost
+        - costType
+        - billingFrequency
+        - billingUnit
+        - firstPaymentDate
+      properties:
+        categoryId:
+          type: integer
+          minimum: 1
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        cost:
+          type: number
+          minimum: 0
+          description: Non-negative number with at most 2 decimal places
+        costType:
+          $ref: "#/components/schemas/CostType"
+        billingFrequency:
+          type: integer
+          minimum: 1
+        billingUnit:
+          $ref: "#/components/schemas/BillingUnit"
+        firstPaymentDate:
+          type: string
+          format: date-time
+        trialEndsOn:
+          type: string
+          format: date-time
+
+    UpdateSubscriptionRequest:
+      type: object
+      description: All fields are optional (partial update)
+      properties:
+        categoryId:
+          type: integer
+          minimum: 1
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        cost:
+          type: number
+          minimum: 0
+        costType:
+          $ref: "#/components/schemas/CostType"
+        billingFrequency:
+          type: integer
+          minimum: 1
+        billingUnit:
+          $ref: "#/components/schemas/BillingUnit"
+        firstPaymentDate:
+          type: string
+          format: date-time
+        trialEndsOn:
+          type: string
+          format: date-time
+
+    # ─── Categories ──────────────────────────
+    SafeCategory:
+      type: object
+      required: [id, userId, name]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    CreateCategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+
+    UpdateCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+
+    # ─── Currencies ──────────────────────────
+    SafeCurrency:
+      type: object
+      required: [code, name, symbol]
+      properties:
+        code:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+        name:
+          type: string
+          example: US Dollar
+        symbol:
+          type: string
+          example: $
+
+    CreateCurrencyRequest:
+      type: object
+      required: [code, name, symbol]
+      properties:
+        code:
+          type: string
+          minLength: 3
+          maxLength: 3
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        symbol:
+          type: string
+          minLength: 1
+          maxLength: 10
+
+    UpdateCurrencyRequest:
+      type: object
+      description: All fields optional. Code cannot be changed.
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        symbol:
+          type: string
+          minLength: 1
+          maxLength: 10
+
+    # ─── Dashboard ───────────────────────────
+    DashboardSummary:
+      type: object
+      required:
+        - totalMonthly
+        - totalAnnual
+        - currentMonthly
+        - currentAnnual
+        - projectedMonthly
+        - projectedAnnual
+        - currencyCode
+        - expensesByType
+      properties:
+        totalMonthly:
+          type: string
+          description: Total monthly cost as decimal string
+          example: "45.97"
+        totalAnnual:
+          type: string
+          example: "551.64"
+        currentMonthly:
+          type: string
+          description: Current monthly (0 for trial subscriptions)
+          example: "35.97"
+        currentAnnual:
+          type: string
+          example: "431.64"
+        projectedMonthly:
+          type: string
+          description: Projected monthly (always full cost)
+          example: "45.97"
+        projectedAnnual:
+          type: string
+          example: "551.64"
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+        expensesByType:
+          type: object
+          description: Expenses grouped by BillingUnit
+          properties:
+            DAYS:
+              type: string
+            WEEKS:
+              type: string
+            MONTHS:
+              type: string
+            YEARS:
+              type: string
+
+    UpcomingRenewal:
+      type: object
+      required: [category, subscriptionName, renewalDate, amount]
+      properties:
+        category:
+          type: string
+        subscriptionName:
+          type: string
+        renewalDate:
+          type: string
+          format: date-time
+        amount:
+          type: number
+          minimum: 0
+
+    PaymentAlert:
+      type: object
+      required: [category, subscriptionName, dueDate, amount]
+      properties:
+        category:
+          type: string
+        subscriptionName:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        amount:
+          type: number
+          minimum: 0
+
+    # ─── Analytics ───────────────────────────
+    ExpensesByCategory:
+      type: object
+      required: [currency, totalExpenses, breakdown]
+      properties:
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        totalExpenses:
+          type: number
+        breakdown:
+          type: array
+          items:
+            type: object
+            required: [category, amount, percentage]
+            properties:
+              category:
+                type: string
+              amount:
+                type: number
+              percentage:
+                type: number
+
+    PaymentHistoryEntry:
+      type: object
+      required: [subscriptionName, category, amount, currency, date]
+      properties:
+        subscriptionName:
+          type: string
+        category:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        date:
+          type: string
+          format: date-time
+          description: ISO 8601 date string
+
+    # ─── Pagination ──────────────────────────
+    OffsetPaginationMeta:
+      type: object
+      required:
+        - totalItems
+        - totalPages
+        - currentPage
+        - limit
+        - hasNextPage
+        - hasPreviousPage
+      properties:
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+        limit:
+          type: integer
+        hasNextPage:
+          type: boolean
+        hasPreviousPage:
+          type: boolean
+
+    CursorPaginationMeta:
+      type: object
+      required: [nextCursor, hasNextPage]
+      properties:
+        nextCursor:
+          type: string
+          format: uuid
+          nullable: true
+          description: UUIDv7 cursor for the next page, null if no more pages
+        hasNextPage:
+          type: boolean
+
+    # ─── Errors (RFC 9457) ───────────────────
+    ProblemDetails:
+      type: object
+      description: RFC 9457 Problem Details
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          description: URI identifying the problem type
+          example: /problems/resource-not-found
+        title:
+          type: string
+          description: Short human-readable summary
+          example: Resource Not Found
+        status:
+          type: integer
+          description: HTTP status code
+          example: 404
+        detail:
+          type: string
+          description: Human-readable explanation of this occurrence
+        instance:
+          type: string
+          format: uri-reference
+          description: URI of the specific request that caused the problem
+      additionalProperties: true
+
+    ValidationProblemDetails:
+      allOf:
+        - $ref: "#/components/schemas/ProblemDetails"
+        - type: object
+          properties:
+            validationErrors:
+              type: array
+              description: List of field-level validation errors
+              items:
+                type: object
+                required: [field, message]
+                properties:
+                  field:
+                    type: string
+                    description: Dot-path of the invalid field
+                    example: body.email
+                  message:
+                    type: string
+                    example: Email must be a valid email address
+
+  # ── Responses ──────────────────────────────
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid token
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: /problems/unauthorized
+            title: Unauthorized
+            status: 401
+            detail: Access token is missing
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: /problems/access-forbidden
+            title: Access Forbidden
+            status: 403
+            detail: You do not have the required permissions to access this resource.
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: /problems/resource-not-found
+            title: Resource Not Found
+            status: 404
+            resource: User
+            identifier: 019012ab-cdef-7000-8000-000000000001
+
+    Conflict:
+      description: Resource conflict (e.g. duplicate email)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: /problems/conflict
+            title: Conflict
+            status: 409
+            detail: A conflict was detected in the requested operation.
+
+    ValidationError:
+      description: Input validation failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ValidationProblemDetails"
+          example:
+            type: /problems/validation-error
+            title: Validation Error
+            status: 422
+            detail: Input data validation failed.
+            validationErrors:
+              - field: body.email
+                message: Email must be a valid email address
+              - field: body.password
+                message: Password must be at least 8 characters long
+
+    RateLimitExceeded:
+      description: Too many requests
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: /problems/rate-limit-exceeded
+            title: Rate Limit Exceeded
+            status: 429
+            detail: Too many authentication attempts. Please try again later.
