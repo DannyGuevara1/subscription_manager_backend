@@ -19,7 +19,7 @@ export interface ExpensesByCategoryQuery {
 	billingUnit?: NonDailyBillingUnit;
 }
 
-export interface PaymentHistory {
+export interface PaymentTimelineEntry {
 	subscriptionName: string;
 	category: string;
 	amount: number;

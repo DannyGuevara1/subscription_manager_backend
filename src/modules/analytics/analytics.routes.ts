@@ -2,7 +2,7 @@ import type { Router as ExpressRouter } from 'express';
 import { Router } from 'express';
 import {
 	expensesByCategoryRequestSchema,
-	paymentHistoryRequestSchema,
+	paymentTimelineRequestSchema,
 } from '@/modules/analytics/analytics.dto.js';
 import type AnalyticsController from '@/modules/analytics/analytics.controller.js';
 import { authorize } from '@/shared/middleware/authorize.js';
@@ -26,12 +26,14 @@ export default function analyticsRoutes(
 		),
 	);
 
-	// GET /analytics/payment-history?status=true&billingUnit=MONTHS
+	// GET /analytics/payment-timeline?status=true&billingUnit=MONTHS
 	router.get(
-		'/payment-history',
+		'/payment-timeline',
 		authorize('ADMIN', 'USER'),
-		validateRequest(paymentHistoryRequestSchema),
-		catchAsync(analyticsController.getPaymentHistory.bind(analyticsController)),
+		validateRequest(paymentTimelineRequestSchema),
+		catchAsync(
+			analyticsController.getPaymentTimeline.bind(analyticsController),
+		),
 	);
 
 	return router;

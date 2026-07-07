@@ -358,9 +358,9 @@ describe('AnalyticsService', () => {
 
 	});
 
-	// ── Tests: getPaymentHistory ──
+	// ── Tests: getPaymentTimeline ──
 
-	describe('getPaymentHistory', () => {
+	describe('getPaymentTimeline', () => {
 		it('retorna historial de pagos en orden cronológico', async () => {
 			const fixture = createFixture([
 				makeSubscription({
@@ -368,7 +368,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentHistory(
+			const result = await fixture.service.getPaymentTimeline(
 				AUTH_USER,
 				{},
 			);
@@ -397,7 +397,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentHistory(
+			const result = await fixture.service.getPaymentTimeline(
 				AUTH_USER,
 				{},
 			);
@@ -426,7 +426,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentHistory(
+			const result = await fixture.service.getPaymentTimeline(
 				AUTH_USER,
 				{},
 			);
@@ -449,7 +449,7 @@ describe('AnalyticsService', () => {
 		it('retorna array vacío sin suscripciones activas', async () => {
 			const fixture = createFixture([]);
 
-			const result = await fixture.service.getPaymentHistory(
+			const result = await fixture.service.getPaymentTimeline(
 				AUTH_USER,
 				{},
 			);
@@ -473,7 +473,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentHistory(AUTH_USER, {
+			const result = await fixture.service.getPaymentTimeline(AUTH_USER, {
 				billingUnit: 'YEARS',
 			});
 
@@ -492,7 +492,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentHistory(
+			const result = await fixture.service.getPaymentTimeline(
 				AUTH_USER,
 				{},
 			);

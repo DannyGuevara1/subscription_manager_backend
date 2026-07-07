@@ -8,7 +8,7 @@ import type { SubscriptionDomain } from '@/modules/subscription/subscription.typ
 import type {
 	ExpensesByCategory,
 	ExpensesByCategoryQuery,
-	PaymentHistory,
+	PaymentTimelineEntry,
 } from '@/modules/analytics/analytics.type.js';
 
 /**
@@ -100,13 +100,14 @@ export default class AnalyticsService {
 	}
 
 	/**
-	 * Projects a chronological payment timeline for the next year.
-	 * Uses SubscriptionCalculatorService to compute future payment dates.
+	 * Returns a chronological payment timeline from each subscription's
+	 * firstPaymentDate up to one year from now. Includes past and future
+	 * payments. Uses SubscriptionCalculatorService to compute payment dates.
 	 */
-	async getPaymentHistory(
+	async getPaymentTimeline(
 		userAuth: JWTPayload,
 		query: ExpensesByCategoryQuery,
-	): Promise<PaymentHistory[]> {
+	): Promise<PaymentTimelineEntry[]> {
 		const userId = userAuth.sub;
 		const subscriptions =
 			await this.subscriptionService.getActiveSubscriptions(userId);
@@ -118,7 +119,7 @@ export default class AnalyticsService {
 			now.add({ years: 1 }).toInstant().epochMilliseconds,
 		);
 
-		const history: PaymentHistory[] = [];
+		const timeline: PaymentTimelineEntry[] = [];
 
 		// Batch fetch categories to avoid N+1 queries
 		const categoryIds = filtered.map((sub) => sub.categoryId);
@@ -140,7 +141,7 @@ export default class AnalyticsService {
 				});
 
 			for (const date of paymentDates) {
-				history.push({
+				timeline.push({
 					subscriptionName: sub.name,
 					category: categoryName,
 					amount: Number(sub.cost),
@@ -151,11 +152,11 @@ export default class AnalyticsService {
 		}
 
 		// Chronological ordering
-		history.sort(
+		timeline.sort(
 			(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
 		);
 
-		return history;
+		return timeline;
 	}
 
 	private applyFilters(

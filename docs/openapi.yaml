@@ -920,14 +920,15 @@ paths:
         "422":
           $ref: "#/components/responses/ValidationError"
 
-  /analytics/payment-history:
+  /analytics/payment-timeline:
     get:
-      operationId: getPaymentHistory
+      operationId: getPaymentTimeline
       tags: [Analytics]
-      summary: Get payment history projection
+      summary: Get payment timeline
       description: >
-        Returns a chronological projection of future payments
-        for the next year. Requires role: ADMIN or USER.
+        Returns a chronological timeline of all payments from each
+        subscription's firstPaymentDate up to one year from now.
+        Includes past and future payments. Requires role: ADMIN or USER.
       parameters:
         - name: status
           in: query
@@ -941,7 +942,7 @@ paths:
             $ref: "#/components/schemas/NonDailyBillingUnit"
       responses:
         "200":
-          description: Projected payment history
+          description: Payment timeline
           content:
             application/json:
               schema:
@@ -951,7 +952,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/PaymentHistoryEntry"
+                      $ref: "#/components/schemas/PaymentTimelineEntry"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -1512,7 +1513,7 @@ components:
               percentage:
                 type: number
 
-    PaymentHistoryEntry:
+    PaymentTimelineEntry:
       type: object
       required: [subscriptionName, category, amount, currency, date]
       properties:

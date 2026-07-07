@@ -2,11 +2,11 @@ import type { NextFunction, Request, Response } from 'express';
 import type { JWTPayload } from '@/modules/auth/auth.type.js';
 import type {
 	SafeExpensesByCategoryDto,
-	SafePaymentHistoryDto,
+	SafePaymentTimelineEntryDto,
 } from '@/modules/analytics/analytics.dto.js';
 import {
 	safeExpensesByCategorySchema,
-	safePaymentHistorySchema,
+	safePaymentTimelineEntrySchema,
 } from '@/modules/analytics/analytics.dto.js';
 import type AnalyticsService from '@/modules/analytics/analytics.service.js';
 import type { ExpensesByCategoryQuery } from '@/modules/analytics/analytics.type.js';
@@ -49,22 +49,22 @@ export default class AnalyticsController {
 	}
 
 	/**
-	 * GET /analytics/payment-history
-	 * Returns a chronological projection of future payments for the next year.
+	 * GET /analytics/payment-timeline
+	 * Returns a chronological payment timeline from firstPaymentDate to one year from now.
 	 * @query status - Optional boolean to filter active/inactive subscriptions
 	 * @query billingUnit - Optional filter by billing unit (WEEKS | MONTHS | YEARS)
 	 */
-	async getPaymentHistory(req: Request, res: Response, _next: NextFunction) {
+	async getPaymentTimeline(req: Request, res: Response, _next: NextFunction) {
 		const userAuth = req.user as JWTPayload;
 		const query = (req.validated.query ?? {}) as ExpensesByCategoryQuery;
 
-		const history = await this.analyticsService.getPaymentHistory(
+		const timeline = await this.analyticsService.getPaymentTimeline(
 			userAuth,
 			query,
 		);
 
-		const serialized: SafePaymentHistoryDto[] = history.map((entry) =>
-			safePaymentHistorySchema.parse(entry),
+		const serialized: SafePaymentTimelineEntryDto[] = timeline.map((entry) =>
+			safePaymentTimelineEntrySchema.parse(entry),
 		);
 
 		res.status(200).json({

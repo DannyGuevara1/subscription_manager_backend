@@ -5,7 +5,7 @@ import type { SafeUserAuthDto } from '@/modules/auth/index.js';
 import { loginAsUser } from '../../setup/auth-helper.js';
 import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 
-describe('Analytics — Expenses by Category & Payment History', () => {
+describe('Analytics — Expenses by Category & Payment Timeline', () => {
 	const env = setupIntegrationEnvironment();
 	const mockUser = {
 		email: 'analytics-test@example.com',
@@ -204,13 +204,13 @@ describe('Analytics — Expenses by Category & Payment History', () => {
 		);
 	});
 
-	describe('GET /api/v1/analytics/payment-history', () => {
+	describe('GET /api/v1/analytics/payment-timeline', () => {
 		it(
 			'should return chronological payment projections',
 			{ timeout: 10000 },
 			async () => {
 				const res = await request(env.getApp())
-					.get('/api/v1/analytics/payment-history')
+					.get('/api/v1/analytics/payment-timeline')
 					.set('Origin', 'http://localhost:3000')
 					.set('Cookie', cookie)
 					.expect(200)
@@ -236,7 +236,7 @@ describe('Analytics — Expenses by Category & Payment History', () => {
 			{ timeout: 10000 },
 			async () => {
 				const res = await request(env.getApp())
-					.get('/api/v1/analytics/payment-history')
+					.get('/api/v1/analytics/payment-timeline')
 					.set('Origin', 'http://localhost:3000')
 					.set('Cookie', cookie)
 					.expect(200);
@@ -258,13 +258,13 @@ describe('Analytics — Expenses by Category & Payment History', () => {
 			{ timeout: 10000 },
 			async () => {
 				const allRes = await request(env.getApp())
-					.get('/api/v1/analytics/payment-history')
+					.get('/api/v1/analytics/payment-timeline')
 					.set('Origin', 'http://localhost:3000')
 					.set('Cookie', cookie)
 					.expect(200);
 
 				const monthsRes = await request(env.getApp())
-					.get('/api/v1/analytics/payment-history?billingUnit=MONTHS')
+					.get('/api/v1/analytics/payment-timeline?billingUnit=MONTHS')
 					.set('Origin', 'http://localhost:3000')
 					.set('Cookie', cookie)
 					.expect(200);
@@ -282,7 +282,7 @@ describe('Analytics — Expenses by Category & Payment History', () => {
 			{ timeout: 10000 },
 			async () => {
 				await request(env.getApp())
-					.get('/api/v1/analytics/payment-history')
+					.get('/api/v1/analytics/payment-timeline')
 					.set('Origin', 'http://localhost:3000')
 					.expect(401);
 			},

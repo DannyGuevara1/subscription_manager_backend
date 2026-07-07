@@ -10,18 +10,18 @@ export const expensesByCategoryQueryParamsSchema = z.object({
 	billingUnit: z.enum(NON_DAILY_UNITS).optional(),
 });
 
-export const paymentHistoryQueryParamsSchema =
+export const paymentTimelineQueryParamsSchema =
 	expensesByCategoryQueryParamsSchema;
 
 export const expensesByCategoryRequestSchema = z.object({
 	query: expensesByCategoryQueryParamsSchema,
 });
 
-export const paymentHistoryRequestSchema = z.object({
-	query: paymentHistoryQueryParamsSchema,
+export const paymentTimelineRequestSchema = z.object({
+	query: paymentTimelineQueryParamsSchema,
 });
 
-export const safePaymentHistorySchema = z.object({
+export const safePaymentTimelineEntrySchema = z.object({
 	subscriptionName: z.string(),
 	category: z.string(),
 	amount: z.number(),
@@ -44,4 +44,6 @@ export const safeExpensesByCategorySchema = z.object({
 export type SafeExpensesByCategoryDto = z.infer<
 	typeof safeExpensesByCategorySchema
 >;
-export type SafePaymentHistoryDto = z.infer<typeof safePaymentHistorySchema>;
+export type SafePaymentTimelineEntryDto = z.infer<
+	typeof safePaymentTimelineEntrySchema
+>;
