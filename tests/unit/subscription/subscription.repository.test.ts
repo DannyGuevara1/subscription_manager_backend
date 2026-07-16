@@ -31,7 +31,7 @@ const createPrismaSubscriptionRecord = (cost: DecimalLike) => ({
 });
 
 describe('Subscription Repository', () => {
-	it('serializa cost como string exacto con dos decimales', async () => {
+	it('convierte Decimal a number con dos decimales en toDomain()', async () => {
 		const prismaMock = {
 			subscription: {
 				create: async () =>
@@ -53,11 +53,11 @@ describe('Subscription Repository', () => {
 			firstPaymentDate: new Date('2026-01-01T00:00:00.000Z'),
 		});
 
-		assert.strictEqual(created.cost, '15.00');
-		assert.strictEqual(typeof created.cost, 'string');
+		assert.strictEqual(created.cost, 15);
+		assert.strictEqual(typeof created.cost, 'number');
 	});
 
-	it('no retorna number en cost (regresion de precision)', async () => {
+	it('preserva precision decimal al convertir a number', async () => {
 		const prismaMock = {
 			subscription: {
 				findUnique: async () =>
@@ -71,7 +71,7 @@ describe('Subscription Repository', () => {
 		);
 
 		assert.ok(subscription);
-		assert.strictEqual(subscription?.cost, '15.90');
-		assert.notStrictEqual(typeof subscription?.cost, 'number');
+		assert.strictEqual(subscription?.cost, 15.9);
+		assert.strictEqual(typeof subscription?.cost, 'number');
 	});
 });

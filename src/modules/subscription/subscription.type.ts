@@ -32,7 +32,7 @@ export interface SubscriptionDomain {
 	categoryId: number;
 	currencyCode: string;
 	name: string;
-	cost: string;
+	cost: number;
 	costType: CostType;
 	billingFrequency: number;
 	billingUnit: BillingUnit;

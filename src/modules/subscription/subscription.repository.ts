@@ -21,7 +21,7 @@ export default class SubscriptionRepository {
 			categoryId: subscription.categoryId,
 			currencyCode: subscription.currencyCode,
 			name: subscription.name,
-			cost: subscription.cost.toFixed(2),
+			cost: Number(subscription.cost.toFixed(2)),
 			costType: subscription.costType,
 			billingFrequency: subscription.billingFrequency,
 			billingUnit: subscription.billingUnit,

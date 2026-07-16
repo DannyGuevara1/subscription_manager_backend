@@ -21,7 +21,7 @@ export default class SubscriptionCostNormalizerService {
 		);
 
 		const baseCost: number =
-			Number(subscription.cost) * subscription.billingFrequency * rate;
+			subscription.cost * subscription.billingFrequency * rate;
 		let projectedMonthly: number = 0;
 		switch (subscription.billingUnit) {
 			case 'DAYS':

@@ -26,7 +26,7 @@ const makeSubscription = (
 	categoryId: 1,
 	currencyCode: 'USD',
 	name: 'Spotify',
-	cost: '10.00',
+	cost: 10,
 	costType: 'FIXED',
 	billingFrequency: 1,
 	billingUnit: 'MONTHS',
@@ -128,7 +128,7 @@ describe('AnalyticsService', () => {
 			// cost=10 EUR, EUR→USD rate=1.10, USD→USD rate=1
 			// costInPrimary = (10 * 1.10) / 1 = 11.00
 			const fixture = createFixture([
-				makeSubscription({ currencyCode: 'EUR', cost: '10.00' }),
+				makeSubscription({ currencyCode: 'EUR', cost: 10 }),
 			]);
 
 			const result = await fixture.service.getExpensesByCategory(
@@ -150,7 +150,7 @@ describe('AnalyticsService', () => {
 				primaryCurrencyCode: 'EUR',
 			};
 			const fixture = createFixture([
-				makeSubscription({ currencyCode: 'USD', cost: '10.00' }),
+				makeSubscription({ currencyCode: 'USD', cost: 10 }),
 			]);
 
 			const result = await fixture.service.getExpensesByCategory(
@@ -171,17 +171,17 @@ describe('AnalyticsService', () => {
 				makeSubscription({
 					id: 'sub-1',
 					categoryId: 1,
-					cost: '10.00',
+					cost: 10,
 				}),
 				makeSubscription({
 					id: 'sub-2',
 					categoryId: 1,
-					cost: '5.00',
+					cost: 5,
 				}),
 				makeSubscription({
 					id: 'sub-3',
 					categoryId: 2,
-					cost: '20.00',
+					cost: 20,
 				}),
 			]);
 
@@ -211,12 +211,12 @@ describe('AnalyticsService', () => {
 				makeSubscription({
 					id: 'sub-1',
 					categoryId: 1,
-					cost: '75.00',
+					cost: 75,
 				}),
 				makeSubscription({
 					id: 'sub-2',
 					categoryId: 2,
-					cost: '25.00',
+					cost: 25,
 				}),
 			]);
 
@@ -254,12 +254,12 @@ describe('AnalyticsService', () => {
 				makeSubscription({
 					id: 'sub-1',
 					billingUnit: 'MONTHS',
-					cost: '10.00',
+					cost: 10,
 				}),
 				makeSubscription({
 					id: 'sub-2',
 					billingUnit: 'YEARS',
-					cost: '120.00',
+					cost: 120,
 				}),
 			]);
 
@@ -277,12 +277,12 @@ describe('AnalyticsService', () => {
 				makeSubscription({
 					id: 'sub-1',
 					isActive: true,
-					cost: '10.00',
+					cost: 10,
 				}),
 				makeSubscription({
 					id: 'sub-2',
 					isActive: false,
-					cost: '20.00',
+					cost: 20,
 				}),
 			]);
 
@@ -307,13 +307,13 @@ describe('AnalyticsService', () => {
 					id: 'sub-1',
 					categoryId: 1,
 					currencyCode: 'EUR',
-					cost: '100.00',
+					cost: 100,
 				}),
 				makeSubscription({
 					id: 'sub-2',
 					categoryId: 2,
 					currencyCode: 'ARS',
-					cost: '50000.00',
+					cost: 50000,
 				}),
 			]);
 
@@ -344,11 +344,11 @@ describe('AnalyticsService', () => {
 			const fixture = createFixture([
 				makeSubscription({
 					currencyCode: 'ARS',
-					cost: '100000',
+					cost: 100000,
 				}),
 				makeSubscription({
 					currencyCode: 'EUR',
-					cost: '10',
+					cost: 10,
 				}),
 			]);
 
@@ -391,7 +391,7 @@ describe('AnalyticsService', () => {
 				makeSubscription({
 					name: 'Netflix',
 					categoryId: 1,
-					cost: '15.99',
+					cost: 15.99,
 					currencyCode: 'EUR',
 					firstPaymentDate: new Date('2026-06-01T00:00:00Z'),
 				}),

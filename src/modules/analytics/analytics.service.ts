@@ -68,7 +68,7 @@ export default class AnalyticsService {
 				sub.currencyCode,
 			);
 			// Two-step: source → USD → primary
-			const costInPrimary = (Number(sub.cost) * sourceRate) / primaryRate;
+			const costInPrimary = (sub.cost * sourceRate) / primaryRate;
 
 			const categoryName = categoryMap.get(sub.categoryId) ?? 'Unknown';
 
@@ -144,7 +144,7 @@ export default class AnalyticsService {
 				timeline.push({
 					subscriptionName: sub.name,
 					category: categoryName,
-					amount: Number(sub.cost),
+					amount: sub.cost,
 					currency: sub.currencyCode,
 					date: date.toISOString(),
 				});

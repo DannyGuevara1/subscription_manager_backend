@@ -22,7 +22,7 @@ const makeSubscription = (
 	categoryId: 1,
 	currencyCode: 'USD',
 	name: 'Test Sub',
-	cost: '10.00',
+	cost: 10,
 	costType: 'FIXED',
 	billingFrequency: 1,
 	billingUnit: 'MONTHS',
@@ -37,7 +37,7 @@ describe('SubscriptionCostNormalizerService', () => {
 		it('calcula mensual equivalente para DAYS: ((cost * freq) * 365) / 12', async () => {
 			const normalizer = createNormalizer();
 			const sub = makeSubscription({
-				cost: '10.00',
+				cost: 10,
 				billingFrequency: 1,
 				billingUnit: 'DAYS',
 			});
@@ -53,7 +53,7 @@ describe('SubscriptionCostNormalizerService', () => {
 		it('calcula mensual equivalente para WEEKS: ((cost * freq) * 52) / 12', async () => {
 			const normalizer = createNormalizer();
 			const sub = makeSubscription({
-				cost: '50.00',
+				cost: 50,
 				billingFrequency: 2,
 				billingUnit: 'WEEKS',
 			});
@@ -69,7 +69,7 @@ describe('SubscriptionCostNormalizerService', () => {
 		it('calcula mensual equivalente para MONTHS: cost * freq', async () => {
 			const normalizer = createNormalizer();
 			const sub = makeSubscription({
-				cost: '15.99',
+				cost: 15.99,
 				billingFrequency: 1,
 				billingUnit: 'MONTHS',
 			});
@@ -83,7 +83,7 @@ describe('SubscriptionCostNormalizerService', () => {
 		it('calcula mensual equivalente para YEARS: (cost * freq) / 12', async () => {
 			const normalizer = createNormalizer();
 			const sub = makeSubscription({
-				cost: '120.00',
+				cost: 120,
 				billingFrequency: 1,
 				billingUnit: 'YEARS',
 			});

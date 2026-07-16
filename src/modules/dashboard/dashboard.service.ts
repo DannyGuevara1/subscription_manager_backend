@@ -87,7 +87,7 @@ export default class DashboardService {
 				category: categoryName,
 				subscriptionName: sub.name,
 				renewalDate: nextDate.toISOString(),
-				amount: Number(sub.cost),
+				amount: sub.cost,
 				isTrialEnding,
 				sortDate: nextDate,
 			});
@@ -146,7 +146,7 @@ export default class DashboardService {
 					category: categoryName,
 					subscriptionName: sub.name,
 					dueDate: nextDate.toISOString(),
-					amount: Number(sub.cost),
+					amount: sub.cost,
 				});
 			}
 		}

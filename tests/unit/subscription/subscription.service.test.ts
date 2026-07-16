@@ -25,7 +25,7 @@ const BASE_SUBSCRIPTION: SubscriptionDomain = {
 	categoryId: 1,
 	currencyCode: 'USD',
 	name: 'Spotify',
-	cost: '10.00',
+	cost: 10,
 	costType: 'FIXED',
 	billingFrequency: 1,
 	billingUnit: 'MONTHS',
