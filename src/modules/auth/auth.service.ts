@@ -2,7 +2,7 @@
 
 import { randomUUID } from 'node:crypto';
 import jwt, { type SignOptions } from 'jsonwebtoken';
-import type { StringValue } from 'ms';
+import { parseMs, parseMsToSeconds } from '@/shared/utils/parse-ms.util.js';
 import type redis from 'redis';
 import { refreshTokenPayloadSchema } from '@/modules/auth/auth.dto.js';
 import type {
@@ -15,6 +15,10 @@ import type { LoginDto } from '@/modules/auth/index.js';
 import type LoginService from '@/modules/auth/login.service.js';
 import type UserService from '@/modules/user/user.service.js';
 import { unauthorizedError } from '@/shared/errors/error.factory.js';
+
+const REFRESH_TOKEN_TTL_SECONDS = parseMsToSeconds(
+	process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ?? '7d',
+);
 
 export default class AuthService {
 	private loginService: LoginService;
@@ -37,7 +41,7 @@ export default class AuthService {
 		const refreshToken = this.generateRefreshToken(credentials as AuthUser);
 
 		await this.redis.set(`refreshToken:${credentials.id}`, refreshToken, {
-			EX: 7 * 24 * 60 * 60, // Expira en 7 días
+			EX: REFRESH_TOKEN_TTL_SECONDS,
 		});
 
 		return {
@@ -49,8 +53,9 @@ export default class AuthService {
 
 	generateAccessToken(user: AuthUser): string {
 		const SECRET = process.env.JWT_ACCESS_SECRET as string;
-		const EXPIRESIN = (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ??
-			'5m') as StringValue;
+		const EXPIRESIN = parseMs(
+			process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ?? '5m',
+		);
 
 		const payload: JWTPayload = {
 			sub: user.id, // Subject (user ID)
@@ -70,8 +75,9 @@ export default class AuthService {
 
 	generateRefreshToken(user: AuthUser): string {
 		const SECRET = process.env.JWT_REFRESH_SECRET as string;
-		const EXPIRESIN = (process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ??
-			'7d') as StringValue;
+		const EXPIRESIN = parseMs(
+			process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ?? '7d',
+		);
 
 		const payload: RefreshTokenPayload = {
 			sub: user.id, // Subject (user ID)
@@ -126,7 +132,7 @@ export default class AuthService {
 		const newRefreshToken = this.generateRefreshToken(user as AuthUser);
 
 		await this.redis.set(`refreshToken:${user.id}`, newRefreshToken, {
-			EX: 7 * 24 * 60 * 60, // Expira en 7 días
+			EX: REFRESH_TOKEN_TTL_SECONDS,
 		});
 
 		return {

@@ -2,6 +2,7 @@
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import type { AuthService, RegisterService } from '@/modules/auth/index.js';
+import { parseMs } from '@/shared/utils/parse-ms.util.js';
 
 // Definimos las opciones base fuera de la clase para asegurar consistencia
 // Esto evita bugs donde el logout no borra la cookie por diferencias en la config.
@@ -10,6 +11,13 @@ const AUTH_COOKIE_OPTIONS: CookieOptions = {
 	secure: process.env.NODE_ENV === 'production',
 	sameSite: 'strict',
 };
+
+const ACCESS_COOKIE_MAX_AGE = parseMs(
+	process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ?? '5m',
+);
+const REFRESH_COOKIE_MAX_AGE = parseMs(
+	process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ?? '7d',
+);
 
 export default class AuthController {
 	private authService: AuthService;
@@ -26,11 +34,11 @@ export default class AuthController {
 		res
 			.cookie('ACCESS_TOKEN', accessToken, {
 				...AUTH_COOKIE_OPTIONS,
-				maxAge: 1000 * 60 * 5, // 5m
+				maxAge: ACCESS_COOKIE_MAX_AGE,
 			})
 			.cookie('REFRESH_TOKEN', refreshToken, {
 				...AUTH_COOKIE_OPTIONS,
-				maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+				maxAge: REFRESH_COOKIE_MAX_AGE,
 			})
 			.status(200)
 			.json({
@@ -74,11 +82,11 @@ export default class AuthController {
 		res
 			.cookie('ACCESS_TOKEN', accessToken, {
 				...AUTH_COOKIE_OPTIONS,
-				maxAge: 1000 * 60 * 5, // 5m
+				maxAge: ACCESS_COOKIE_MAX_AGE,
 			})
 			.cookie('REFRESH_TOKEN', newRefreshToken, {
 				...AUTH_COOKIE_OPTIONS,
-				maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+				maxAge: REFRESH_COOKIE_MAX_AGE,
 			})
 			.status(200)
 			.json({
