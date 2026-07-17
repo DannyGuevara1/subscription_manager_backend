@@ -7,8 +7,10 @@ docker-compose.yml
 .gitignore
 README.md
 dist
-.env.dev
-.env.test
-.env.prod
-.env
+.env*
 analisis_requisitos.pdf
+tests
+openspec
+coverage
+.agents
+.vscode
