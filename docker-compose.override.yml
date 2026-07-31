@@ -1,0 +1,16 @@
+# Este archivo se carga AUTOMÁTICAMENTE cuando corres `docker-compose up`
+# Contiene los "overrides" específicos para Desarrollo.
+services:
+  api:
+    build:
+      # Apunta específicamente al stage de desarrollo
+      target: development
+    env_file:
+      - .env.dev
+    # Sobreescribimos el comando (opcional, el Dockerfile ya lo tiene)
+    command: npm run dev
+    volumes:
+      # Montamos el código fuente local para tener hot-reloading (nodemon)
+      - .:/app
+      # Protegemos los node_modules del contenedor para que no se sobreescriban con los de tu host (Windows/Mac)
+      - /app/node_modules

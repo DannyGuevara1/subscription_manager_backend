@@ -1,0 +1,11 @@
+# Para usar este archivo en producción:
+# docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  api:
+    build:
+      # Apunta a la imagen súper ligera y segura
+      target: production
+    env_file:
+      - .env
+    restart: always
+    # No necesitamos volumes aquí, el código ya está horneado dentro de la imagen
