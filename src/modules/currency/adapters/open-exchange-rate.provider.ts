@@ -22,7 +22,7 @@ export default class OpenExchangeRateProvider implements ExchangeRateProvider {
 		this.apiKey = apiKey;
 	}
 
-	async getRate(fromCurrency: string, toCurrency: string): Promise<number> {
+	private async fetchRates(): Promise<OpenExchangeRatesResponse> {
 		const url = `https://openexchangerates.org/api/latest.json?app_id=${this.apiKey}`;
 		const response = await fetch(url);
 
@@ -41,7 +41,16 @@ export default class OpenExchangeRateProvider implements ExchangeRateProvider {
 				isOperational: false,
 			});
 		}
-		const data = (await response.json()) as OpenExchangeRatesResponse;
+		return (await response.json()) as OpenExchangeRatesResponse;
+	}
+
+	async getAllRates(): Promise<Record<string, number>> {
+		const data = await this.fetchRates();
+		return data.rates;
+	}
+
+	async getRate(fromCurrency: string, toCurrency: string): Promise<number> {
+		const data = await this.fetchRates();
 
 		const rateTo = data.rates[toCurrency];
 		const rateFrom = data.rates[fromCurrency];

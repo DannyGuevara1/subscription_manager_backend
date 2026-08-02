@@ -52,6 +52,34 @@ export default class ExchangeRateService {
 		return currency.exchangeRateToUSD ?? 1;
 	}
 
+	/**
+	 * Actualiza las tasas de TODAS las monedas en una sola llamada al provider.
+	 * Devuelve cuántas monedas se actualizaron. No lanza errores: un fallo del
+	 * job no debe tumbar el servidor; el SWR sigue sirviendo las tasas viejas.
+	 */
+	async updateAllRates(): Promise<number> {
+		try {
+			const rates = await this.exchangeRateProvider.getAllRates();
+			const currencies = await this.currencyRepository.findAll();
+			const now = new Date();
+
+			let updated = 0;
+			for (const currency of currencies) {
+				const rate = rates[currency.code];
+				if (rate == null) continue;
+				await this.currencyRepository.update(currency.code, {
+					exchangeRateToUSD: rate,
+					rateUpdatedAt: now,
+				});
+				updated++;
+			}
+			return updated;
+		} catch (err) {
+			logger.error({ err }, 'Failed to update all exchange rates');
+			return 0;
+		}
+	}
+
 	private async updateRateInBackground(currencyCode: string) {
 		try {
 			const newRate = await this.exchangeRateProvider.getRate(

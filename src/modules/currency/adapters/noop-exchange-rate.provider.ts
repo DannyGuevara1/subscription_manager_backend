@@ -8,4 +8,8 @@ export default class NoopExchangeRateProvider implements ExchangeRateProvider {
 		}
 		return 1;
 	}
+
+	async getAllRates(): Promise<Record<string, number>> {
+		return { USD: 1 };
+	}
 }

@@ -9,6 +9,9 @@ const sameCurrencyProvider: ExchangeRateProvider = {
 		if (from !== to) throw new Error('Currency mismatch');
 		return 1;
 	},
+	async getAllRates() {
+		return { USD: 1 };
+	},
 };
 
 const createNormalizer = () =>
