@@ -1,4 +1,4 @@
-import type { BillingUnit, CostType } from '@/shared/types/domain.enums.js';
+import type { BillingUnit, CostType, StatusSubscription } from '@/shared/types/domain.enums.js';
 
 export interface CreateSubscriptionData {
 	id: string;
@@ -36,7 +36,7 @@ export interface SubscriptionDomain {
 	costType: CostType;
 	billingFrequency: number;
 	billingUnit: BillingUnit;
-	isActive: boolean;
+	status: StatusSubscription;
 	firstPaymentDate: Date;
 	trialEndsOn?: Date | null;
 }
