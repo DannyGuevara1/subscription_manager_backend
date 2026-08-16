@@ -8,15 +8,15 @@ datasource db {
 }
 
 model Currency {
-  code          String         @id @unique
-  name          String
-  symbol        String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  exchangeRateToUSD Decimal    @db.Decimal(11, 4) @default(1.0000)
-  rateUpdatedAt DateTime       @default(now())
-  subscriptions Subscription[]
-  users         User[]
+  code              String         @id @unique
+  name              String
+  symbol            String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  exchangeRateToUSD Decimal        @default(1.0000) @db.Decimal(11, 4)
+  rateUpdatedAt     DateTime       @default(now())
+  subscriptions     Subscription[]
+  users             User[]
 }
 
 model User {
@@ -47,23 +47,23 @@ model Category {
 }
 
 model Subscription {
-  id               String      @id @db.Uuid
-  userId           String      @db.Uuid
+  id               String             @id @db.Uuid
+  userId           String             @db.Uuid
   categoryId       Int
   currencyCode     String
   name             String
-  cost             Decimal     @db.Decimal(10, 2)
+  cost             Decimal            @db.Decimal(10, 2)
   costType         CostType
   billingFrequency Int
   billingUnit      BillingUnit
   firstPaymentDate DateTime
   trialEndsOn      DateTime?
-  isActive         Boolean     @default(true)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  category         Category    @relation(fields: [categoryId], references: [id])
-  currency         Currency    @relation(fields: [currencyCode], references: [code])
-  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status           StatusSubscription @default(ACTIVE)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  category         Category           @relation(fields: [categoryId], references: [id])
+  currency         Currency           @relation(fields: [currencyCode], references: [code])
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([categoryId])
@@ -85,4 +85,10 @@ enum Role {
   USER
   ADMIN
   SUPPORT
+}
+
+enum StatusSubscription {
+  PAUSED
+  ACTIVE
+  CANCELLED
 }

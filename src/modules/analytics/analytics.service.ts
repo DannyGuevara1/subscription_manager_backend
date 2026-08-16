@@ -166,7 +166,7 @@ export default class AnalyticsService {
 		let filtered = subscriptions;
 
 		if (query.status !== undefined) {
-			filtered = filtered.filter((sub) => sub.isActive === query.status);
+			filtered = filtered.filter((sub) => sub.status === query.status);
 		}
 
 		if (query.billingUnit) {

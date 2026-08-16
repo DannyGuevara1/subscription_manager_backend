@@ -25,7 +25,7 @@ export default class SubscriptionRepository {
 			costType: subscription.costType,
 			billingFrequency: subscription.billingFrequency,
 			billingUnit: subscription.billingUnit,
-			isActive: subscription.isActive,
+			status: subscription.status,
 			firstPaymentDate: subscription.firstPaymentDate,
 			trialEndsOn: subscription.trialEndsOn,
 		};
@@ -47,9 +47,9 @@ export default class SubscriptionRepository {
 			take: limit,
 			...(cursor
 				? {
-						cursor: { id: cursor },
-						skip: 1,
-					}
+					cursor: { id: cursor },
+					skip: 1,
+				}
 				: {}),
 		});
 
@@ -104,7 +104,7 @@ export default class SubscriptionRepository {
 		const subscriptions = await this.prisma.subscription.findMany({
 			where: {
 				userId,
-				isActive: true,
+				status: 'ACTIVE',
 			},
 			orderBy: { createdAt: 'desc' },
 		});

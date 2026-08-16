@@ -1,4 +1,4 @@
-import type { NON_DAILY_UNITS } from '@/shared/types/domain.enums.js';
+import type { NON_DAILY_UNITS, StatusSubscription } from '@/shared/types/domain.enums.js';
 
 export type NonDailyBillingUnit = (typeof NON_DAILY_UNITS)[number];
 
@@ -15,7 +15,7 @@ export interface ExpensesByCategory {
 }
 
 export interface ExpensesByCategoryQuery {
-	status?: boolean;
+	status?: StatusSubscription;
 	billingUnit?: NonDailyBillingUnit;
 }
 

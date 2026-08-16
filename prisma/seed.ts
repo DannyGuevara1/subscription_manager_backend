@@ -8,6 +8,7 @@ import {
 	Role,
 	type Subscription,
 	type User,
+	StatusSubscription
 } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
@@ -136,6 +137,7 @@ async function main() {
 			costType: CostType.FIXED,
 			billingUnit: BillingUnit.MONTHS,
 			currencyCode: 'USD',
+			status: StatusSubscription.PAUSED,
 			firstPaymentDate: new Date('2024-01-15'),
 			cost: new Prisma.Decimal('15.99'),
 			trialEndsOn: null,
@@ -151,6 +153,7 @@ async function main() {
 			costType: CostType.FIXED,
 			billingUnit: BillingUnit.MONTHS,
 			currencyCode: 'USD',
+			status: StatusSubscription.CANCELLED,
 			firstPaymentDate: new Date('2024-02-01'),
 			cost: new Prisma.Decimal('52.99'),
 			trialEndsOn: null,
