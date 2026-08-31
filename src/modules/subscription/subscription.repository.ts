@@ -6,6 +6,7 @@ import type {
 	SubscriptionCursorPaginationResult,
 	SubscriptionDomain,
 	UpdateSubscriptionData,
+	UpdateSubscriptionStatusData,
 } from '@/modules/subscription/subscription.type.js';
 
 export default class SubscriptionRepository {
@@ -28,6 +29,7 @@ export default class SubscriptionRepository {
 			status: subscription.status,
 			firstPaymentDate: subscription.firstPaymentDate,
 			trialEndsOn: subscription.trialEndsOn,
+			resumedAt: subscription.resumedAt,
 		};
 	}
 
@@ -35,21 +37,22 @@ export default class SubscriptionRepository {
 		userId: string,
 		options: SubscriptionCursorPaginationOptions,
 	): Promise<SubscriptionCursorPaginationResult> {
-		const { cursor, limit, categoryId, billingCycle } = options;
+		const { cursor, limit, categoryId, billingCycle, status } = options;
 
 		const subscriptions = await this.prisma.subscription.findMany({
 			where: {
 				userId,
 				...(categoryId && { categoryId: categoryId }),
 				...(billingCycle && { billingUnit: billingCycle }),
+				...(status && { status: status }),
 			},
 			orderBy: { id: 'desc' },
 			take: limit,
 			...(cursor
 				? {
-					cursor: { id: cursor },
-					skip: 1,
-				}
+						cursor: { id: cursor },
+						skip: 1,
+					}
 				: {}),
 		});
 
@@ -82,7 +85,7 @@ export default class SubscriptionRepository {
 
 	async update(
 		id: string,
-		data: Partial<UpdateSubscriptionData>,
+		data: Partial<UpdateSubscriptionData | UpdateSubscriptionStatusData>,
 	): Promise<SubscriptionDomain> {
 		const subscription = await this.prisma.subscription.update({
 			where: { id },

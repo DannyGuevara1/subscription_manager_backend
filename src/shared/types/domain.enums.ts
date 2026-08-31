@@ -10,5 +10,9 @@ export type BillingUnit = (typeof BILLING_UNIT_VALUES)[number];
 export const ROLE_VALUES = ['USER', 'ADMIN', 'SUPPORT'] as const;
 export type Role = (typeof ROLE_VALUES)[number];
 
-export const STATUS_SUBSCRIPTION_VALUES = ['PAUSED', 'ACTIVE', 'CANCELLED'] as const;
+export const STATUS_SUBSCRIPTION_VALUES = [
+	'PAUSED',
+	'ACTIVE',
+	'CANCELLED',
+] as const;
 export type StatusSubscription = (typeof STATUS_SUBSCRIPTION_VALUES)[number];

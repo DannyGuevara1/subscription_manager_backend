@@ -29,7 +29,7 @@ const BASE_SUBSCRIPTION: SubscriptionDomain = {
 	costType: 'FIXED',
 	billingFrequency: 1,
 	billingUnit: 'MONTHS',
-	isActive: true,
+	status: 'ACTIVE',
 	firstPaymentDate: new Date('2026-01-01T00:00:00.000Z'),
 	trialEndsOn: null,
 };
@@ -235,7 +235,7 @@ describe('Subscription Service', () => {
 		);
 	});
 
-	it('updateSubscription auto-asigna firstPaymentDate si trialEndsOn se actualiza', async () => {
+	it('updateSubscription NO toca firstPaymentDate al actualizar trialEndsOn (campo inmutable)', async () => {
 		const fixture = createServiceFixture();
 		const trialEndsOn = new Date('2026-03-01T00:00:00.000Z');
 		const id = '0197f644-3f67-7f07-9537-6cc9db95f111';
@@ -247,9 +247,9 @@ describe('Subscription Service', () => {
 		);
 
 		assert.deepStrictEqual(fixture.repositoryCalls.updateData?.id, id);
-		assert.deepStrictEqual(
-			fixture.repositoryCalls.updateData?.data.firstPaymentDate,
-			trialEndsOn,
+		assert.ok(
+			!('firstPaymentDate' in (fixture.repositoryCalls.updateData?.data ?? {})),
+			'firstPaymentDate es inmutable tras la creación',
 		);
 		assert.deepStrictEqual(
 			fixture.repositoryCalls.updateData?.data.trialEndsOn,

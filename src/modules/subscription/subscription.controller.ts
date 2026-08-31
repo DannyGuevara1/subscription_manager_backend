@@ -4,6 +4,7 @@ import type {
 	SubscriptionCursorPaginationQueryDto,
 	SubscriptionParamsDto,
 	UpdateSubscriptionDto,
+	UpdateSubscriptionStatusDto,
 } from '@/modules/subscription/subscription.dto.js';
 import { safeSubscriptionSchema } from '@/modules/subscription/subscription.dto.js';
 import type SubscriptionService from '@/modules/subscription/subscription.service.js';
@@ -21,6 +22,7 @@ export default class SubscriptionController {
 			limit,
 			billingCycle,
 			category: categoryId,
+			status,
 		} = req.validated.query as SubscriptionCursorPaginationQueryDto;
 		const paginatedSubscriptions =
 			await this.subscriptionService.getAllSubscriptions(sub, {
@@ -28,6 +30,7 @@ export default class SubscriptionController {
 				limit,
 				billingCycle,
 				categoryId,
+				status,
 			});
 
 		const serializedSubscriptions = paginatedSubscriptions.subscriptions.map(
@@ -78,6 +81,23 @@ export default class SubscriptionController {
 
 		const updatedSubscription =
 			await this.subscriptionService.updateSubscription(id, data, sub);
+
+		res.status(200).json({
+			data: safeSubscriptionSchema.parse(updatedSubscription),
+		});
+	}
+
+	async updateStatusSubscription(
+		req: Request,
+		res: Response,
+		_next: NextFunction,
+	) {
+		const { id } = req.validated.params as SubscriptionParamsDto;
+		const sub = req.user?.sub as string;
+		const data = req.validated.body as UpdateSubscriptionStatusDto;
+
+		const updatedSubscription =
+			await this.subscriptionService.updateSubscriptionStatus(id, data, sub);
 
 		res.status(200).json({
 			data: safeSubscriptionSchema.parse(updatedSubscription),

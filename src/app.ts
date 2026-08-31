@@ -29,8 +29,6 @@ const allowedOrigins = process.env.CORS_ORIGINS
 	? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
 	: [];
 
-
-
 // Middlewares
 app.use(
 	cors({

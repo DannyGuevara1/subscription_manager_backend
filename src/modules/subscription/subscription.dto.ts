@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
 	BILLING_UNIT_VALUES,
 	COST_TYPE_VALUES,
+	STATUS_SUBSCRIPTION_VALUES,
 } from '@/shared/types/domain.enums.js';
 
 const moneyAmountSchema = z
@@ -35,6 +36,12 @@ export const subscriptionCursorPaginationQuerySchema = z.object({
 		.enum(BILLING_UNIT_VALUES, {
 			error: () =>
 				`Billing cycle must be one of: ${BILLING_UNIT_VALUES.join(', ')}`,
+		})
+		.optional(),
+	status: z
+		.enum(STATUS_SUBSCRIPTION_VALUES, {
+			error: () =>
+				`Status must be one of: ${STATUS_SUBSCRIPTION_VALUES.join(', ')}`,
 		})
 		.optional(),
 });
@@ -87,10 +94,16 @@ export const updateSubscriptionSchema = z
 			error: () =>
 				`Billing unit must be one of: ${BILLING_UNIT_VALUES.join(', ')}`,
 		}),
-		firstPaymentDate: z.coerce.date(),
 		trialEndsOn: z.coerce.date().optional(),
 	})
 	.partial();
+
+export const updateSubscriptionStatusSchema = z.object({
+	status: z.enum(STATUS_SUBSCRIPTION_VALUES, {
+		error: () =>
+			`Status must be one of: ${STATUS_SUBSCRIPTION_VALUES.join(', ')}`,
+	}),
+});
 
 // Request Schema
 export const createSubscriptionRequestSchema = z.object({
@@ -107,6 +120,10 @@ export const updateSubscriptionRequestSchema = z.object({
 });
 
 export const subscriptionParamsRequestSchema = z.object({
+	params: subscriptionParamsSchema,
+});
+export const updateSubscriptionStatusRequestSchema = z.object({
+	body: updateSubscriptionStatusSchema,
 	params: subscriptionParamsSchema,
 });
 //RESPONSE DTOs
@@ -129,6 +146,9 @@ export type SafeSubscriptionDto = z.infer<typeof safeSubscriptionSchema>;
 // Infer the TypeScript types from the Zod schemas
 export type CreateSubscriptionDto = z.infer<typeof createSubscriptionSchema>;
 export type UpdateSubscriptionDto = z.infer<typeof updateSubscriptionSchema>;
+export type UpdateSubscriptionStatusDto = z.infer<
+	typeof updateSubscriptionStatusSchema
+>;
 export type SubscriptionParamsDto = z.infer<typeof subscriptionParamsSchema>;
 export type SubscriptionCursorPaginationQueryDto = z.infer<
 	typeof subscriptionCursorPaginationQuerySchema

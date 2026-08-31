@@ -58,6 +58,7 @@ model Subscription {
   billingUnit      BillingUnit
   firstPaymentDate DateTime
   trialEndsOn      DateTime?
+  resumedAt        DateTime?
   status           StatusSubscription @default(ACTIVE)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt

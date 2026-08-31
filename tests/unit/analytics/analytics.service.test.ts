@@ -30,7 +30,7 @@ const makeSubscription = (
 	costType: 'FIXED',
 	billingFrequency: 1,
 	billingUnit: 'MONTHS',
-	isActive: true,
+	status: 'ACTIVE',
 	firstPaymentDate: new Date('2026-01-01T00:00:00Z'),
 	trialEndsOn: null,
 	...overrides,
@@ -276,19 +276,19 @@ describe('AnalyticsService', () => {
 			const fixture = createFixture([
 				makeSubscription({
 					id: 'sub-1',
-					isActive: true,
+					status: 'ACTIVE',
 					cost: 10,
 				}),
 				makeSubscription({
 					id: 'sub-2',
-					isActive: false,
+					status: 'PAUSED',
 					cost: 20,
 				}),
 			]);
 
 			const result = await fixture.service.getExpensesByCategory(
 				AUTH_USER,
-				{ status: false },
+				{ status: 'PAUSED' },
 			);
 
 			assert.strictEqual(result.totalExpenses, 20);

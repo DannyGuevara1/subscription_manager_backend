@@ -10,10 +10,12 @@ import type {
 	SubscriptionCursorPaginationPage,
 	SubscriptionDomain,
 	UpdateSubscriptionData,
+	UpdateSubscriptionStatusData,
 } from '@/modules/subscription/subscription.type.js';
 import {
 	forbiddenError,
 	notFoundError,
+	conflictError,
 } from '@/shared/errors/error.factory.js';
 import { buildCursorPaginationWindow } from '@/shared/utils/pagination-cursor.util.js';
 
@@ -36,13 +38,14 @@ export default class SubscriptionService {
 		userId: string,
 		options: SubscriptionCursorPaginationOptions,
 	): Promise<SubscriptionCursorPaginationPage> {
-		const { cursor, limit, billingCycle, categoryId } = options;
+		const { cursor, limit, billingCycle, categoryId, status } = options;
 		const { subscriptions: subscriptionList } =
 			await this.subscriptionRepository.findAllWithCursor(userId, {
 				cursor,
 				limit: limit + 1,
 				billingCycle,
 				categoryId,
+				status,
 			});
 
 		const paginatedWindow = buildCursorPaginationWindow({
@@ -170,16 +173,51 @@ export default class SubscriptionService {
 			}
 		}
 
-		// Auto-set firstPaymentDate when trialEndsOn is provided
 		const subscriptionData: UpdateSubscriptionData = {
 			...data,
-			...(data.trialEndsOn && { firstPaymentDate: data.trialEndsOn }),
 		};
 
 		const subscription = await this.subscriptionRepository.update(
 			id,
 			subscriptionData,
 		);
+
+		return subscription;
+	}
+
+	async updateSubscriptionStatus(
+		id: string,
+		data: UpdateSubscriptionStatusData,
+		userId: string,
+	): Promise<SubscriptionDomain> {
+		const existingSubscription = await this.subscriptionRepository.findById(id);
+		if (!existingSubscription) {
+			throw notFoundError({
+				resource: 'Subscription',
+				identifier: id,
+				extensions: {
+					detail: `No subscription found with ID ${id}.`,
+				},
+			});
+		}
+
+		if (existingSubscription.userId !== userId) {
+			throw forbiddenError({
+				detail: 'You do not have permission to modify this subscription.',
+			});
+		}
+
+		if (existingSubscription.status === 'CANCELLED') {
+			throw conflictError({
+				detail: 'Subscription is cancelled and cannot be updated.',
+				identifier: `/subscriptions/${id}`,
+			});
+		}
+
+		const subscription = await this.subscriptionRepository.update(id, {
+			...data,
+			...(data.status === 'ACTIVE' && { resumedAt: new Date() }),
+		});
 
 		return subscription;
 	}

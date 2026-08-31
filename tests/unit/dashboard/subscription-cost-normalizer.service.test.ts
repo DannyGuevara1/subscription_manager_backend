@@ -31,7 +31,7 @@ const makeSubscription = (
 	billingUnit: 'MONTHS',
 	firstPaymentDate: new Date('2026-01-01'),
 	trialEndsOn: null,
-	isActive: true,
+	status: 'ACTIVE',
 	...overrides,
 });
 

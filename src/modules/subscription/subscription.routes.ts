@@ -4,6 +4,7 @@ import {
 	subscriptionCursorPaginationRequestSchema,
 	subscriptionParamsRequestSchema,
 	updateSubscriptionRequestSchema,
+	updateSubscriptionStatusRequestSchema,
 } from '@/modules/subscription/index.js';
 import { validateRequest } from '@/shared/middleware/validate.request.js';
 import { catchAsync } from '@/shared/utils/catch.async.js';
@@ -51,6 +52,17 @@ export default function subscriptionRoutes(
 			validateRequest(subscriptionParamsRequestSchema),
 			catchAsync(
 				subscriptionController.deleteSubscription.bind(subscriptionController),
+			),
+		);
+
+	router
+		.route('/:id/status')
+		.patch(
+			validateRequest(updateSubscriptionStatusRequestSchema),
+			catchAsync(
+				subscriptionController.updateStatusSubscription.bind(
+					subscriptionController,
+				),
 			),
 		);
 

@@ -53,9 +53,7 @@ export default class AuthService {
 
 	generateAccessToken(user: AuthUser): string {
 		const SECRET = process.env.JWT_ACCESS_SECRET as string;
-		const EXPIRESIN = parseMs(
-			process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ?? '5m',
-		);
+		const EXPIRESIN = parseMs(process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ?? '5m');
 
 		const payload: JWTPayload = {
 			sub: user.id, // Subject (user ID)
@@ -75,9 +73,7 @@ export default class AuthService {
 
 	generateRefreshToken(user: AuthUser): string {
 		const SECRET = process.env.JWT_REFRESH_SECRET as string;
-		const EXPIRESIN = parseMs(
-			process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ?? '7d',
-		);
+		const EXPIRESIN = parseMs(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ?? '7d');
 
 		const payload: RefreshTokenPayload = {
 			sub: user.id, // Subject (user ID)

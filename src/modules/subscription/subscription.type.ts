@@ -1,4 +1,8 @@
-import type { BillingUnit, CostType, StatusSubscription } from '@/shared/types/domain.enums.js';
+import type {
+	BillingUnit,
+	CostType,
+	StatusSubscription,
+} from '@/shared/types/domain.enums.js';
 
 export interface CreateSubscriptionData {
 	id: string;
@@ -22,8 +26,11 @@ export interface UpdateSubscriptionData {
 	costType?: CostType;
 	billingFrequency?: number;
 	billingUnit?: BillingUnit;
-	firstPaymentDate?: Date;
 	trialEndsOn?: Date;
+}
+
+export interface UpdateSubscriptionStatusData {
+	status: StatusSubscription;
 }
 
 export interface SubscriptionDomain {
@@ -38,6 +45,7 @@ export interface SubscriptionDomain {
 	billingUnit: BillingUnit;
 	status: StatusSubscription;
 	firstPaymentDate: Date;
+	resumedAt?: Date | null;
 	trialEndsOn?: Date | null;
 }
 
@@ -46,6 +54,7 @@ export interface SubscriptionCursorPaginationOptions {
 	limit: number;
 	categoryId?: number;
 	billingCycle?: BillingUnit;
+	status?: StatusSubscription;
 }
 
 export interface SubscriptionCursorPaginationResult {

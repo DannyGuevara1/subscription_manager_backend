@@ -470,9 +470,10 @@ describe('Modulo de Suscripciones', () => {
 	);
 
 	it(
-		'Debería actualizar firstPaymentDate al actualizar trialEndsOn',
+		'Debería actualizar trialEndsOn sin tocar firstPaymentDate (campo inmutable)',
 		{ timeout: 10000 },
 		async () => {
+			const originalFirstPaymentDate = new Date().toISOString();
 			const createRes = await request(env.getApp())
 				.post('/api/v1/subscriptions')
 				.set('Origin', 'http://localhost:3000')
@@ -485,7 +486,7 @@ describe('Modulo de Suscripciones', () => {
 					costType: 'FIXED',
 					billingFrequency: 1,
 					billingUnit: 'MONTHS',
-					firstPaymentDate: new Date().toISOString(),
+					firstPaymentDate: originalFirstPaymentDate,
 				})
 				.expect(201);
 
@@ -506,8 +507,12 @@ describe('Modulo de Suscripciones', () => {
 
 			assert.strictEqual(
 				res.body.data.firstPaymentDate,
+				originalFirstPaymentDate,
+				'firstPaymentDate debe permanecer inmutable tras la creación',
+			);
+			assert.strictEqual(
 				res.body.data.trialEndsOn,
-				'firstPaymentDate no se actualizó al cambiar trialEndsOn',
+				newTrialEndDate.toISOString(),
 			);
 		},
 	);
