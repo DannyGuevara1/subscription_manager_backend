@@ -10,7 +10,7 @@ import type SubscriptionCostNormalizerService from '@/modules/dashboard/subscrip
 import type SubscriptionCalculatorService from '@/modules/subscription/subscription-calculator.service.js';
 import type { SubscriptionService } from '@/modules/subscription/index.js';
 import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
-
+import { getBillingAnchor } from '@/modules/subscription/subscription-billing-anchor.js';
 const UPCOMING_RENEWALS_LIMIT = 5;
 const ALERT_WINDOW_DAYS = 7;
 
@@ -73,7 +73,7 @@ export default class DashboardService {
 
 		for (const sub of subscriptions) {
 			const nextDate = this.subscriptionCalculatorService.nextPaymentDate({
-				firstPaymentDate: sub.firstPaymentDate,
+				firstPaymentDate: getBillingAnchor(sub),
 				billingFrequency: sub.billingFrequency,
 				billingUnit: sub.billingUnit,
 				trialEndsOn: sub.trialEndsOn,
@@ -133,7 +133,7 @@ export default class DashboardService {
 
 		for (const sub of subscriptions) {
 			const nextDate = this.subscriptionCalculatorService.nextPaymentDate({
-				firstPaymentDate: sub.firstPaymentDate,
+				firstPaymentDate: getBillingAnchor(sub),
 				billingFrequency: sub.billingFrequency,
 				billingUnit: sub.billingUnit,
 				trialEndsOn: sub.trialEndsOn,

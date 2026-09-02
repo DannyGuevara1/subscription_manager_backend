@@ -109,7 +109,7 @@ export class AppError extends Error {
 	 * Convierte el error a formato completo para logging interno
 	 */
 	toLogFormat(): Record<string, unknown> {
-		const hasExtensions =
+		const _hasExtensions =
 			this.extensions !== undefined && Object.keys(this.extensions).length > 0;
 
 		return {

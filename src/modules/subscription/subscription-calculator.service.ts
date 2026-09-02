@@ -55,7 +55,7 @@ export default class SubscriptionCalculatorService
 
 			return this.toJsDate(nextDate);
 		} catch (err) {
-			throw new Error('Error al calcular la fecha del próximo pago: ' + err);
+			throw new Error(`Error al calcular la fecha del próximo pago: ${err}`);
 		}
 	}
 
