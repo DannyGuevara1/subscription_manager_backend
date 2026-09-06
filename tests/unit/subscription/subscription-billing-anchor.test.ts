@@ -18,12 +18,13 @@ describe('getBillingAnchor', () => {
 	});
 
 	it('debe devolver resumedAt cuando la suscripción fue reanudada', () => {
+		const resumedAt = new Date('2026-01-02T00:00:00Z');
 		const result = getBillingAnchor({
 			...BASE,
-			resumedAt: new Date('2026-01-02T00:00:00Z'),
+			resumedAt,
 		});
 
-		assert.deepStrictEqual(result, new Date('2026-01-02T00:00:00Z'));
+		assert.deepStrictEqual(result, resumedAt);
 	});
 
 	it('debe devolver firstPaymentDate cuando la suscripcion esta pausada y tiene resumedAt', () => {
