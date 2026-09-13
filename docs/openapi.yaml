@@ -415,6 +415,11 @@ paths:
           description: Filter by billing cycle
           schema:
             $ref: "#/components/schemas/BillingUnit"
+        - name: status
+          in: query
+          description: Filter by lifecycle status (ACTIVE, PAUSED, CANCELLED)
+          schema:
+            $ref: "#/components/schemas/SubscriptionStatus"
       responses:
         "200":
           description: Paginated subscriptions
@@ -532,6 +537,48 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /subscriptions/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/SubscriptionIdPath"
+
+    patch:
+      operationId: updateSubscriptionStatus
+      tags: [Subscriptions]
+      summary: Change subscription lifecycle status
+      description: >
+        Allowed transitions: ACTIVE ↔ PAUSED, ACTIVE/PAUSED → CANCELLED.
+        CANCELLED is terminal (409 on any further change). When resuming
+        (PAUSED → ACTIVE), the server stamps `resumedAt` with the current
+        date; clients cannot set it. Same-state transitions are idempotent
+        no-ops. The request schema is strict: unknown fields are rejected.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubscriptionStatusRequest"
+      responses:
+        "200":
+          description: Subscription status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/SafeSubscription"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/ValidationError"
 
@@ -1044,6 +1091,14 @@ components:
       type: string
       enum: [DAYS, WEEKS, MONTHS, YEARS]
 
+    SubscriptionStatus:
+      type: string
+      enum: [ACTIVE, PAUSED, CANCELLED]
+      description: >
+        Lifecycle status. CANCELLED is terminal: once cancelled, a
+        subscription can never transition back. PAUSED subscriptions are
+        excluded from dashboard totals, upcoming renewals and payment alerts.
+
     NonDailyBillingUnit:
       type: string
       enum: [WEEKS, MONTHS, YEARS]
@@ -1220,6 +1275,7 @@ components:
         - costType
         - billingFrequency
         - billingUnit
+        - status
         - firstPaymentDate
       properties:
         id:
@@ -1249,9 +1305,18 @@ components:
           minimum: 1
         billingUnit:
           $ref: "#/components/schemas/BillingUnit"
+        status:
+          $ref: "#/components/schemas/SubscriptionStatus"
         firstPaymentDate:
           type: string
           format: date-time
+        resumedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: >
+            Server-stamped date of the last reactivation (PAUSED → ACTIVE).
+            Used as billing anchor for future projections.
         trialEndsOn:
           type: string
           format: date-time
@@ -1298,9 +1363,19 @@ components:
           type: string
           format: date-time
 
+    UpdateSubscriptionStatusRequest:
+      type: object
+      required: [status]
+      additionalProperties: false
+      properties:
+        status:
+          $ref: "#/components/schemas/SubscriptionStatus"
+
     UpdateSubscriptionRequest:
       type: object
-      description: All fields are optional (partial update)
+      description: >
+        All fields are optional (partial update). firstPaymentDate is
+        immutable after creation; only trialEndsOn may still be adjusted.
       properties:
         categoryId:
           type: integer
@@ -1323,9 +1398,6 @@ components:
           minimum: 1
         billingUnit:
           $ref: "#/components/schemas/BillingUnit"
-        firstPaymentDate:
-          type: string
-          format: date-time
         trialEndsOn:
           type: string
           format: date-time

@@ -95,8 +95,22 @@ describe('DashboardService - ancla de facturación', () => {
 	});
 
 	it('usa firstPaymentDate como ancla para una suscripción nunca pausada', async () => {
-		// TODO: Tu turno. Crea una variante de RESUMED_SUBSCRIPTION con
-		// resumedAt: null, pásala al fixture, llama a getUpcomingRenewals y
-		// verifica que calculatorCalls recibió firstPaymentDate.
+		const NEVER_PAUSED_SUBSCRIPTION: SubscriptionDomain = {
+			...RESUMED_SUBSCRIPTION,
+			resumedAt: null,
+			firstPaymentDate: new Date('2026-09-11T00:00:00Z')
+		};
+
+		const fixture = createDashboardFixture([NEVER_PAUSED_SUBSCRIPTION]);
+
+		await fixture.service.getUpcomingRenewals(AUTH_USER);
+
+		assert.strictEqual(fixture.calculatorCalls.length, 1);
+		assert.deepStrictEqual(
+			fixture.calculatorCalls[0]?.firstPaymentDate,
+			NEVER_PAUSED_SUBSCRIPTION.firstPaymentDate,
+			'El dashboard debe anclar la proyección a firstPaymentDate cuando resumedAt es null',
+		);
+		assert.strictEqual(fixture.calculatorCalls[0].firstPaymentDate.toISOString(), '2026-09-11T00:00:00.000Z');
 	});
 });

@@ -98,12 +98,14 @@ export const updateSubscriptionSchema = z
 	})
 	.partial();
 
-export const updateSubscriptionStatusSchema = z.object({
-	status: z.enum(STATUS_SUBSCRIPTION_VALUES, {
-		error: () =>
-			`Status must be one of: ${STATUS_SUBSCRIPTION_VALUES.join(', ')}`,
-	}),
-});
+export const updateSubscriptionStatusSchema = z
+	.object({
+		status: z.enum(STATUS_SUBSCRIPTION_VALUES, {
+			error: () =>
+				`Status must be one of: ${STATUS_SUBSCRIPTION_VALUES.join(', ')}`,
+		}),
+	})
+	.strict(); // El cliente no sella resumedAt: campos desconocidos → 422
 
 // Request Schema
 export const createSubscriptionRequestSchema = z.object({
@@ -137,7 +139,9 @@ export const safeSubscriptionSchema = z.object({
 	costType: z.enum(COST_TYPE_VALUES),
 	billingFrequency: z.number().int().positive(),
 	billingUnit: z.enum(BILLING_UNIT_VALUES),
+	status: z.enum(STATUS_SUBSCRIPTION_VALUES),
 	firstPaymentDate: z.date(),
+	resumedAt: z.date().nullable().optional(),
 	trialEndsOn: z.date().nullable().optional(),
 });
 

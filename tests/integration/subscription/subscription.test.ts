@@ -270,7 +270,7 @@ describe('Modulo de Suscripciones', () => {
 			assert.equal(typeof res.body.meta.hasNextPage, 'boolean');
 			assert(
 				res.body.meta.nextCursor === null ||
-					typeof res.body.meta.nextCursor === 'string',
+				typeof res.body.meta.nextCursor === 'string',
 			);
 			// Verificar que cada suscripción tenga el userId correcto
 			res.body.data.subscriptions.forEach((sub: { userId: string }) => {
@@ -819,5 +819,192 @@ describe('Modulo de Suscripciones', () => {
 				);
 			},
 		);
+	});
+
+	describe('PATCH /:id/status - ciclo de vida', () => {
+		// Helper local: crea una suscripción ACTIVE y devuelve su id
+		const createSubscription = async () => {
+			const res = await request(env.getApp())
+				.post('/api/v1/subscriptions')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({
+					categoryId,
+					currencyCode: 'USD',
+					name: 'Gym Status Test',
+					cost: 30,
+					costType: 'FIXED',
+					billingFrequency: 1,
+					billingUnit: 'MONTHS',
+					firstPaymentDate: new Date().toISOString(),
+				})
+				.expect(201);
+			return res.body.data.id as string;
+		};
+
+		it(
+			'ciclo feliz: ACTIVE → PAUSED → ACTIVE actualiza status y resumedAt',
+			{ timeout: 10000 },
+			async () => {
+				const id = await createSubscription();
+
+				// Pausar
+				const pausedRes = await request(env.getApp())
+					.patch(`/api/v1/subscriptions/${id}/status`)
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.send({ status: 'PAUSED' })
+					.expect(200);
+
+				assert.strictEqual(pausedRes.body.data.status, 'PAUSED');
+				assert.strictEqual(
+					pausedRes.body.data.resumedAt,
+					null,
+					'Pausar NO debe tocar resumedAt',
+				);
+
+				// Reanudar
+				const resumedRes = await request(env.getApp())
+					.patch(`/api/v1/subscriptions/${id}/status`)
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.send({ status: 'ACTIVE' })
+					.expect(200);
+
+				assert.strictEqual(resumedRes.body.data.status, 'ACTIVE');
+				assert.ok(
+					resumedRes.body.data.resumedAt,
+					'Reanudar debe sellar resumedAt con la fecha actual',
+				);
+			},
+		);
+		it('debe devolver error si se intenta pausar una suscripción cancelada', { timeout: 10000 },
+			async () => {
+				const id = await createSubscription();
+				const cancelled = await request(env.getApp())
+					.patch(`/api/v1/subscriptions/${id}/status`)
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.send({ status: 'CANCELLED' })
+					.expect(200);
+
+				await request(env.getApp())
+					.patch(`/api/v1/subscriptions/${id}/status`)
+					.set('Origin', 'http://localhost:3000')
+					.set('Cookie', cookie)
+					.send({ status: 'PAUSED' })
+					.expect(409);
+
+				assert.strictEqual(cancelled.body.data.status, 'CANCELLED');
+			}
+		);
+
+		it('deberia lanzar error si otro usuario intenta actualizar el status de la subscripcion', {
+			timeout: 10000
+		}, async () => {
+			const id = await createSubscription();
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${id}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', otherUserCookie)
+				.send({ status: 'PAUSED' })
+				.expect(403);
+		});
+
+		it('debe devolver un error si la subscripcion no existe', { timeout: 10000 }, async () => {
+			const invalidId = '0197f644-0000-7000-8000-000000000000';
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${invalidId}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({ status: 'PAUSED' })
+				.expect(404);
+		});
+
+		it('debe devolver un error si el status es invalido', { timeout: 10000 }, async () => {
+			const id = await createSubscription();
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${id}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({ status: 'INVALID' })
+				.expect(422);
+		});
+
+		it('debe devolver un error si el body se envia vacio', { timeout: 10000 }, async () => {
+			const id = await createSubscription();
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${id}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({})
+				.expect(422);
+		});
+
+		it('debe rechazar una fecha de reanudación en el pasado', { timeout: 10000 }, async () => {
+			const id = await createSubscription();
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${id}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({ status: 'ACTIVE', resumedAt: new Date('2022-01-01').toISOString() })
+				.expect(422);
+		});
+
+		it('debe mantener el mismo estado al intentar actualizar al mismo status', { timeout: 10000 }, async () => {
+			const id = await createSubscription();
+
+			const initialRes = await request(env.getApp())
+				.get(`/api/v1/subscriptions/${id}`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.expect(200);
+
+			assert.strictEqual(initialRes.body.data.status, 'ACTIVE');
+
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${id}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({ status: 'PAUSED' })
+				.expect(200);
+
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${id}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({ status: 'PAUSED' })
+				.expect(200);
+
+			const res = await request(env.getApp())
+				.get(`/api/v1/subscriptions/${id}`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.expect(200);
+
+			assert.strictEqual(res.body.data.status, 'PAUSED');
+		});
+
+		it('debe devolver el listado de las subscritions por estado', { timeout: 10000 }, async () => {
+			const id = await createSubscription();
+
+			await request(env.getApp())
+				.patch(`/api/v1/subscriptions/${id}/status`)
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.send({ status: 'PAUSED' })
+				.expect(200);
+
+			const res = await request(env.getApp())
+				.get('/api/v1/subscriptions?status=PAUSED')
+				.set('Origin', 'http://localhost:3000')
+				.set('Cookie', cookie)
+				.expect(200);
+
+			const status = res.body.data.subscriptions.every((s: { status: string; }) => s.status === 'PAUSED');
+
+			assert.strictEqual(status, true);
+
+		});
 	});
 });

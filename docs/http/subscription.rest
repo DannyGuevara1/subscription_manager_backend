@@ -24,7 +24,7 @@ content-type: application/json
 
 {
     "userId": "019d9eb9-df8b-707e-8168-f54923fa4d6c",
-    "categoryId": 5,
+    "categoryId": 4,
     "currencyCode": "EUR",
     "name": "AWS S3 Storage",
     "cost": 10.99,
