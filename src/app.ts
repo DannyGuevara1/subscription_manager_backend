@@ -1,5 +1,7 @@
 // src/app.ts
 
+import 'dotenv/config';
+import { requestLogger } from '@/shared/middleware/request-logger.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, {
@@ -28,6 +30,9 @@ const app = express();
 const allowedOrigins = process.env.CORS_ORIGINS
 	? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
 	: [];
+
+// Capture even CORS, parse and rate-limit errors.
+app.use(requestLogger);
 
 // Middlewares
 app.use(

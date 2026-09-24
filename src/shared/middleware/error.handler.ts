@@ -15,8 +15,15 @@ export const errorHandler = (
 
 	res.setHeader('Content-Type', 'application/problem+json');
 
-	// Pasamos el objeto completo del error (del toLogFormat) para un log estructurado.
-	logger.error({ error: err.toLogFormat() }, err.message);
+	// Do not log validation input values, which can contain passwords or tokens.
+	logger.error(
+		{
+			requestId: res.locals.requestId,
+			status: err.status,
+			problemType: err.type,
+		},
+		'request failed',
+	);
 
 	if (process.env.NODE_ENV === 'development') {
 		res.status(err.status).json(err.toLogFormat());

@@ -15,6 +15,11 @@ COPY prisma ./prisma/
 RUN npx prisma generate
 
 
+# Release job: pinned local CLI, no runtime downloads and no application replicas.
+FROM base AS migration
+USER node
+CMD ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
+
 # ==========================================
 # 2. DEVELOPMENT STAGE: Entorno de desarrollo
 # ==========================================
@@ -53,6 +58,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 # Copiamos el código compilado
 COPY --from=builder /app/dist ./dist
+COPY docs/openapi.yaml ./docs/openapi.yaml
 
 # Schema y migraciones (necesarios para `prisma migrate deploy` en despliegue)
 COPY prisma ./prisma/
@@ -67,7 +73,7 @@ USER node
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/v1/health || exit 1
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/v1/health',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 EXPOSE 3000
 CMD ["node", "dist/src/server.js"]

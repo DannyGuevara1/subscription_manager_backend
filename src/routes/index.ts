@@ -1,4 +1,7 @@
 // src/routes/index.ts
+import prisma from '@/config/prisma.js';
+import redis from '@/config/redis.js';
+import { readinessHandler } from '@/shared/health/readiness.js';
 import express, { type Router } from 'express';
 import { authMiddleware } from '@/modules/auth/index.js';
 import apiDocsRouter from '@/shared/api-docs/swagger.routes.js';
@@ -23,6 +26,19 @@ v1.get('/health', (_req, res) => {
 		uptime: process.uptime(),
 	});
 });
+
+v1.get(
+	'/ready',
+	readinessHandler([
+		async () => {
+			await prisma.$queryRaw`SELECT 1`;
+		},
+		async () => {
+			if (!redis.isReady) throw new Error('Redis unavailable');
+			await redis.ping();
+		},
+	]),
+);
 
 v1.use('/users', authMiddleware, userRouter);
 v1.use('/currencies', authMiddleware, currencyRouter);

@@ -8,15 +8,15 @@
 	"type": "module",
 	"main": "index.ts",
 	"scripts": {
-		"clean": "npx rimraf dist",
-		"build": "npm run clean && tsc && tsc-alias",
+		"clean": "node scripts/clean.mjs",
+		"build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
 		"start": "cross-env NODE_ENV=production node dist/src/server.js",
 		"dev": "nodemon --exec tsx src/server.ts | pino-pretty",
 		"lint:fix": "npx @biomejs/biome lint --write ./src",
 		"format:fix": "npx @biomejs/biome format --write ./src",
-		"test": "tsx --test tests/integration/**/*.test.ts",
-		"test:watch": "",
-		"test:coverage": "",
+		"test": "npm run test:unit && npm run test:integration && npm run test:migrations",
+		"test:watch": "node --import tsx --test --watch \"tests/unit/**/*.test.ts\"",
+		"test:coverage": "c8 node scripts/run-tests.mjs unit",
 		"db:test:push": "prisma db push --accept-data-loss",
 		"db:migrate": "prisma migrate dev",
 		"db:generate": "prisma generate",
@@ -24,7 +24,14 @@
 		"db:validate": "prisma validate",
 		"db:reset": "prisma migrate reset",
 		"db:seed": "prisma db seed",
-		"db:studio": "prisma studio"
+		"db:studio": "prisma studio",
+		"test:unit": "node scripts/run-tests.mjs unit",
+		"test:integration": "node scripts/run-tests.mjs integration",
+		"test:migrations": "node scripts/run-tests.mjs migrations",
+		"test:smoke": "node scripts/run-tests.mjs smoke",
+		"check": "tsc --noEmit",
+		"image:build": "node scripts/build-images.mjs",
+		"rates:refresh": "node dist/src/operations/refresh-currencies.js"
 	},
 	"prisma": {
 		"seed": "npx tsx prisma/seed.ts"
@@ -63,6 +70,7 @@
 		"zod": "4.1.5"
 	},
 	"devDependencies": {
+		"@apidevtools/swagger-parser": "^13.1.0",
 		"@biomejs/biome": "2.2.4",
 		"@testcontainers/postgresql": "^11.11.0",
 		"@testcontainers/redis": "^11.11.0",
@@ -76,6 +84,7 @@
 		"@types/response-time": "2.3.9",
 		"@types/supertest": "^6.0.3",
 		"@types/swagger-ui-express": "^4.1.8",
+		"c8": "^12.0.0",
 		"cross-env": "10.1.0",
 		"dotenv-cli": "10.0.0",
 		"nodemon": "3.1.10",
@@ -85,6 +94,7 @@
 		"testcontainers": "^11.11.0",
 		"tsc-alias": "1.8.16",
 		"tsx": "4.20.5",
-		"typescript": "5.9.2"
+		"typescript": "5.9.2",
+		"yaml": "^2.9.1"
 	}
 }

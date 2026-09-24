@@ -1,6 +1,9 @@
 import rateLimit from 'express-rate-limit';
 
 export const globalLimiter = rateLimit({
+	skip: (req) =>
+		(req.method === 'GET' || req.method === 'HEAD') &&
+		['/api/v1/health', '/api/v1/ready'].includes(req.path),
 	windowMs: 15 * 60 * 1000,
 	limit: 100,
 	standardHeaders: 'draft-7',

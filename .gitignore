@@ -8,3 +8,5 @@ analisis_requisitos.pdf
 .env
 /brain
 /docs/docker-environments.md
+!/.env.example
+/coverage
