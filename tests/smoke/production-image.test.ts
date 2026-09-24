@@ -14,6 +14,7 @@ it(
 	{ timeout: 180000 },
 	async () => {
 		const network = await new Network().start();
+		let appLogs = '';
 		let pg: StartedTestContainer | undefined,
 			redis: StartedTestContainer | undefined,
 			app: StartedTestContainer | undefined,
@@ -51,7 +52,7 @@ it(
 				`INSERT INTO "Currency" (code,name,symbol,"exchangeRateToUSD","updatedAt") VALUES ('USD','Dollar','$',1,now());`,
 			]);
 			assert.equal(seed.exitCode, 0, seed.output);
-			app = await new GenericContainer('subscription-manager:release-test')
+			const application = new GenericContainer('subscription-manager:release-test')
 				.withNetwork(network)
 				.withExposedPorts(3100)
 				.withEnvironment({
@@ -65,8 +66,17 @@ it(
 					JWT_ACCESS_SECRET: 'smoke-only-access-key-32-characters',
 					JWT_REFRESH_SECRET: 'smoke-only-refresh-key-32-characters',
 				})
-				.withWaitStrategy(Wait.forHttp('/api/v1/ready', 3100))
-				.start();
+				.withLogConsumer((stream) => {
+					stream.on('data', (chunk) => {
+						appLogs += chunk.toString();
+					});
+				})
+				.withWaitStrategy(Wait.forHttp('/api/v1/ready', 3100));
+			try {
+				app = await application.start();
+			} catch (error) {
+				throw new Error(`${error}\nApplication logs:\n${appLogs}`);
+			}
 			const url = `http://${app.getHost()}:${app.getMappedPort(3100)}/api/v1`;
 			const health = await fetch(`${url}/health`);
 			assert.equal(health.status, 200);
