@@ -1,69 +1,37 @@
-# Backend Requirements TODO List
+# Backend — estado y backlog
 
-Based on the comparison between [analisis_requisitos.pdf](file://wsl.localhost/Ubuntu/home/gueva/dev/subscription_manager/subscription_manager_backend/analisis_requisitos.pdf) and the current codebase, here is the prioritized TODO list of missing or incomplete backend items, focusing strictly on Node.js, Express, TypeScript, and TestContainers.
+Estado revisado durante el cierre de release. Diagnóstico original: [plan](docs/plan-v1-release.md). Cambios y evidencia: [implementación](docs/release-implementation.md). No confundir código implementado con promoción a producción.
 
-## Priority 1: Subscription CRUD Refinements (RF-C)
+## Implementado en este cierre
 
-While the `subscription` module exists, we must ensure it completely matches the required schema fields:
+- [x] Dashboard consume tasas persistidas por lote; frecuencia divide el costo por intervalo.
+- [x] Analytics elimina N+1 de tasas y mantiene la semántica por cobro documentada.
+- [x] Refresco masivo FX persiste USD por unidad, validación y timeout, SWR deduplicado y cron UTC.
+- [x] SM-143: pasos aditivos preservan inactivos como PAUSED y preparan el renombrado del enum; históricos intactos.
+- [x] Fixtures compartidos, oráculos y E2E de registro → creación → pausa → reanudación → cancelación.
+- [x] Scripts unit/integration/migrations, cobertura financiera por archivo y CI.
+- [x] Readiness, request logging, ejemplo de configuración, imagen y checklist de despliegue.
+- [x] Contrato OpenAPI validado contra routers, CHANGELOG y decisiones documentadas.
 
-- [✅] Verify that creation and update logic properly handles `Cost Type` (Fixed/Variable), `Billing Cycle` (Frequency + Unit), `First Payment Date`, and `Trial End Date`.
+## Puertas operativas pendientes del primer deploy
 
-## Priority 2: Testing Infrastructure (TestContainers)
+- [ ] Verificar `_prisma_migrations` de cada entorno. Si ya se perdió isActive con datos, resolver la recuperación/auditoría antes de aplicar el guard aditivo. No se reconstruyen estados desde defaults.
+- [ ] Ensayar migración y restauración sobre una copia anonimizada representativa de datos reales. Los tests incluidos usan fixtures sintéticos.
+- [ ] Inicializar/refrescar tasas con el job explícito antes de tráfico; no usar seed de demo.
+- [ ] Confirmar CI remoto y smoke del SHA a publicar, secretos, HTTPS, CORS y configuración de proxy de la plataforma.
+- [ ] Medir carga representativa y confirmar objetivo de dashboard menor de 2 segundos bajo recursos/concurrencia definidos. Contar queries no sustituye una prueba de capacidad.
 
-The current integration suite already includes `login.test.ts`, `health.test.ts`, plus CRUD coverage for `user`, `category`, `currency`, and `subscription`.
+## Posterior al hito («v1.1» funcional; versión SemVer por definir)
 
-- [x] **Integrate API Tests**:
-  - [x] Add integration tests for `user`, `category`, `currency`, and `subscription` CRUD operations.
-  - [ ] Add integration tests for the new `dashboard` and `analytics` endpoints.
-  - [ ] Add integration tests for the background currency updater job.
-- [ ] **Performance Testing (RNF-02)**:
-  - [ ] Set up load/performance tests to verify that dashboard calculations and list rendering return in under 2 seconds.
+### SM-144 — Historial de estados y timeline por intervalos activos
 
-## Priority 3: Background Jobs & Data Reliability (RNF-03)
+`resumedAt` solo conserva la última reanudación. No guarda todas las pausas ni permite reconstruir pagos históricos. El timeline actual es una proyección contractual, no evidencia de cargos realizados.
 
-- [ ] **Currency Updater Cron Job**: Implement a scheduled task (e.g., using `node-cron` or `BullMQ` with Redis) to fetch and update currency exchange rates in the database every 24 hours.
+Añadir `SubscriptionStatusHistory(subscriptionId, status, changedAt)` y escribir cada transición dentro de la misma transacción que el estado. Proyectar solo en intervalos activos; conservar CANCELLED terminal. Verificar múltiples pausas/reanudaciones, cambios de período y correcciones accidentales. El dashboard puede mantener `resumedAt` como ancla denormalizada.
 
-## Priority 4: Dashboard & Analytics Business Logic
+### Otros pendientes explícitos
 
-Currently, the codebase lacks the necessary modules to fulfill **RF-B** and **RF-D**.
-
-- [ ] **Create `dashboard` module**: Add routes, controllers, and services for dashboard data.
-- [ ] **Multi-currency Conversion**: Implement logic to convert subscription costs to the user's primary currency on the fly.
-- [ ] **Expense Calculation Engine**:
-  - [ ] Endpoint to calculate total monthly and annual expenses.
-  - [ ] Endpoint to project payment history (past and future) based on start dates and billing cycles.
-- [ ] **Alerts & Insights**:
-  - [ ] Endpoint to identify the next 3-5 subscription renewals.
-  - [ ] Endpoint to identify subscriptions finishing their trial period soon.
-  - [ ] Endpoint to list all charges coming within the next 7 days.
-- [ ] **Categorization & Filtering**:
-  - [ ] Endpoint to aggregate total expenses broken down by category (for charts).
-  - [ ] Endpoint (or query params) to filter subscriptions by category and billing cycle.
-
----
-
-## Post-v1 Backlog (decisiones diferidas desde SM-142)
-
-### SM-143 — Migración de datos para producción (bloqueante para deploy)
-
-La migración `20260816053311_change_is_active_for_status_enum` hace `DROP COLUMN isActive` directamente, perdiendo la data de esa columna. Aceptable en dev/test (la data viene del seed), pero **antes del primer deploy con datos reales** hay que reescribirla:
-
-1. `ADD COLUMN status` (nullable).
-2. `UPDATE ... CASE WHEN "isActive" THEN 'ACTIVE' ELSE 'CANCELLED' END` — decisión documentada: los inactivos existentes pasan a `CANCELLED` (no se sabe por qué se desactivaron; asumir pausa activaría gastos fantasma en el dashboard, lo cual es peor).
-3. `ALTER COLUMN status SET NOT NULL` + `DROP COLUMN isActive`.
-4. Probar la migración contra una copia con data real, no solo el seed.
-
-### SM-144 — Historial de estados + timeline interval-aware (v1.1)
-
-**Problema** (caso real): usuario con gym que inicia el 1 de enero (pagos los 1 de cada mes), pausa el 1 de abril, reanuda el 7 de agosto, pausa el 22 de noviembre y reanuda el 3 de enero del año siguiente. Con el modelo actual de SM-142 (`resumedAt`, un solo campo):
-
-- Cada reanudación **pisa** la anterior → imposible reconstruir los intervalos activos.
-- La fecha de cada pausa **no se guarda en ningún lado** (`updatedAt` no sirve: se actualiza con cualquier edición).
-- El timeline de analytics muestra el "cronograma contractual" desde `firstPaymentDate`, sin los huecos de pausa — los meses sin pagar aparecen como si se hubieran pagado.
-- Caso límite conocido: pausa accidental corregida enseguida pisa `resumedAt`; el dashboard futuro se recalcula bien (aceptable), pero el historial queda incorrecto.
-
-**Solución**: tabla `SubscriptionStatusHistory(subscriptionId, status, changedAt)` con una fila por transición. El timeline de analytics proyecta pagos solo dentro de intervalos `[ACTIVE → PAUSED|CANCELLED)`. El dashboard NO necesita la tabla: su ancla (`resumedAt ?? firstPaymentDate`) es la denormalización del último evento ACTIVE.
-
-**Scope**: modelo + migración, escritura del evento dentro de `updateSubscriptionStatus` (misma transacción que el update), proyección interval-aware en `analytics.service.ts`, tests con múltiples pausas/reanudaciones.
-
-**Restricción de diseño**: `CANCELLED` es terminal (SM-142 lo garantiza), así que un historial nunca tiene eventos posteriores a un CANCELLED.
+- Rate limiting Redis y coordinación de refrescos/cron para múltiples instancias.
+- Cambio de moneda primaria del usuario con estrategia de actualización de sesiones y semántica financiera.
+- Verificación de email.
+- Métricas y tracing distribuidos. Los logs y health de este cierre no los sustituyen.

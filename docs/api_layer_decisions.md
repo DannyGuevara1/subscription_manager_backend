@@ -224,3 +224,15 @@ Patron aplicado:
 - Controller: borde HTTP (entrada validada y salida serializada).
 
 Esta separacion permite evolucionar API, dominio y persistencia con menor friccion y menor riesgo de regresiones.
+
+## Decisiones del cierre de release (2026-09-23)
+
+1. **Unidad financiera:** cost es importe por cobro; billingFrequency es intervalo. Normalizar divide por frecuencia y redondea después de agregar. VARIABLE usa el importe registrado como estimación. Trial afecta el total corriente, no el proyectado.
+2. **Moneda:** el dominio almacena USD por unidad. El puerto bulk conserva el payload base USD y el servicio invierte al persistir. Dashboard/analytics usan un batch por cálculo con SWR; deduplicación de refrescos por proceso. No se inventa paridad para tasas ausentes/inválidas.
+3. **Anclas:** dashboard usa `resumedAt` para ACTIVE reanudadas. El calculador toma el posterior entre ancla y fin de trial. Timeline contractual conserva inicio/trial y no reconstruye pausas (SM-144).
+4. **Analytics:** importes por cobro, sin prometer equivalencia mensual. Status legacy true/false se normaliza a ACTIVE/PAUSED; filtros explícitos aceptados. Ambos operan sobre suscripciones activas.
+5. **Migraciones:** conservar SQL históricos. Pasos aditivos preservan/restauran el booleano alrededor del DROP y preparan el enum antes de su cast. Inactivos legados → PAUSED. Guard bloquea bases con datos que ya perdieron el booleano: necesitan recuperación/verificación externa.
+6. **Operación:** liveness independiente de dependencias, readiness con PostgreSQL/Redis y timeout. FX no condiciona readiness. Logging por allowlist con correlación y sin valores sensibles. CLI de migración en job separado, una sola instancia ejecutora.
+7. **Documentación:** toda modificación debe actualizar contrato OpenAPI, CHANGELOG o estas decisiones según corresponda en el mismo PR. Cambios breaking requieren major y transición deprecada de al menos una minor. Un cambio semántico también puede romper un contrato aunque no cambie JSON.
+
+Razonamiento, alternativas y evidencia: [implementación del cierre](release-implementation.md). Operación: [checklist](deploy-checklist.md).

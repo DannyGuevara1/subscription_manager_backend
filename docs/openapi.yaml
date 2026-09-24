@@ -72,6 +72,44 @@ paths:
                     description: Process uptime in seconds
                     example: 12345.678
 
+  /ready:
+    get:
+      operationId: getReadiness
+      tags: [Health]
+      summary: PostgreSQL and Redis readiness
+      description: Checks required dependencies within a bounded timeout. Does not call the exchange-rate provider.
+      security: []
+      responses:
+        "200":
+          description: Required dependencies are available
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: ready
+        "503":
+          description: A required dependency is unavailable or timed out
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required: [type, title, status, detail]
+                properties:
+                  type:
+                    type: string
+                    example: /problems/service-unavailable
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                    const: 503
+                  detail:
+                    type: string
+
   # ── Auth ───────────────────────────────────
   /auth/login:
     post:
@@ -851,7 +889,12 @@ paths:
       summary: Get financial summary
       description: >
         Returns monthly and annual totals for the authenticated user's
-        active subscriptions, normalized to their primary currency.
+        active subscriptions, normalized to their primary currency using persisted
+        USD-per-unit exchange rates (stale rates may be served during refresh).
+        Frequency is the number of units between charges: divide cost by frequency,
+        then use 365/12 for DAYS, 52/12 for WEEKS, 1 for MONTHS and 1/12 for YEARS.
+        Current totals exclude ongoing trials; projected totals include them.
+        VARIABLE costs use the recorded amount as an estimate. Round totals only at output.
         Requires role: ADMIN or USER.
       responses:
         "200":
@@ -937,13 +980,21 @@ paths:
       summary: Get expenses grouped by category
       description: >
         Returns aggregated expenses grouped by category, normalized
-        to the user's primary currency. Requires role: ADMIN or USER.
+        to the user's primary currency using persisted exchange rates.
+        Amounts are per charge, not monthly equivalents: frequencies are not normalized
+        and ongoing trials are included. Only ACTIVE subscriptions are considered;
+        filtering PAUSED or CANCELLED therefore returns an empty result.
+        Requires role: ADMIN or USER.
       parameters:
         - name: status
           in: query
-          description: Filter by active (true) or inactive (false) subscriptions
+          description: Filter within ACTIVE subscriptions; PAUSED and CANCELLED yield no results. Legacy true maps to ACTIVE and false to PAUSED.
           schema:
-            type: boolean
+            anyOf:
+              - type: string
+                enum: [ACTIVE, PAUSED, CANCELLED]
+              - type: boolean
+                deprecated: true
         - name: billingUnit
           in: query
           description: Filter by billing unit
@@ -973,15 +1024,21 @@ paths:
       tags: [Analytics]
       summary: Get payment timeline
       description: >
-        Returns a chronological timeline of all payments from each
-        subscription's firstPaymentDate up to one year from now.
-        Includes past and future payments. Requires role: ADMIN or USER.
+        Returns a contractual projection for ACTIVE subscriptions up to one year from now,
+        starting at the later of firstPaymentDate and trialEndsOn.
+        It is not a record of actual payments and does not reconstruct historical pauses.
+        Resumption affects future dashboard renewals; this contractual timeline retains
+        the original anchor. Requires role: ADMIN or USER.
       parameters:
         - name: status
           in: query
-          description: Filter by active (true) or inactive (false) subscriptions
+          description: Filter within ACTIVE subscriptions; PAUSED and CANCELLED yield no results. Legacy true maps to ACTIVE and false to PAUSED.
           schema:
-            type: boolean
+            anyOf:
+              - type: string
+                enum: [ACTIVE, PAUSED, CANCELLED]
+              - type: boolean
+                deprecated: true
         - name: billingUnit
           in: query
           description: Filter by billing unit
