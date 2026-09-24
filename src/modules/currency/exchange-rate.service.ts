@@ -1,72 +1,63 @@
 import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
 import type CurrencyRepository from '@/modules/currency/currency.repository.js';
-import { Temporal } from 'temporal-polyfill';
 import logger from '@/config/logger.js';
-import { notFoundError } from '@/shared/errors/error.factory.js';
+import { internalError, notFoundError } from '@/shared/errors/error.factory.js';
+
+const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export default class ExchangeRateService {
-	private exchangeRateProvider: ExchangeRateProvider;
-	private currencyRepository: CurrencyRepository;
-	constructor(
-		exchangeRateProvider: ExchangeRateProvider,
-		currencyRepository: CurrencyRepository,
-	) {
-		this.exchangeRateProvider = exchangeRateProvider;
-		this.currencyRepository = currencyRepository;
-	}
+	private readonly refreshing = new Map<string, Promise<void>>();
 
-	private toTemporal(d: Date) {
-		return Temporal.Instant.fromEpochMilliseconds(
-			d.getTime(),
-		).toZonedDateTimeISO('UTC');
+	constructor(
+		private readonly exchangeRateProvider: ExchangeRateProvider,
+		private readonly currencyRepository: CurrencyRepository,
+	) {}
+
+	private validateRate(rate: number): number {
+		if (!Number.isFinite(rate) || rate <= 0) {
+			throw internalError({
+				detail: 'Exchange rate is unavailable or invalid.',
+			});
+		}
+		return rate;
 	}
 
 	async getRateToUSD(currencyCode: string): Promise<number> {
-		if (currencyCode === 'USD') return 1;
-
-		const currency = await this.currencyRepository.findByCode(currencyCode);
-		if (!currency) {
-			throw notFoundError({
-				resource: 'Currency',
-				identifier: currencyCode,
-				extensions: {
-					detail: `No currency found with code ${currencyCode}.`,
-				},
-			});
-		}
-
-		const hourSave = this.toTemporal(currency.rateUpdatedAt);
-		const hourAgo = Temporal.Now.instant().toZonedDateTimeISO('UTC');
-
-		const isStale = hourSave.until(hourAgo, { largestUnit: 'hours' });
-
-		if (isStale.hours > 24) {
-			this.updateRateInBackground(currencyCode).catch((err) => {
-				logger.error(
-					{ err, currencyCode },
-					'Background exchange rate update failed',
-				);
-			});
-		}
-
-		return currency.exchangeRateToUSD ?? 1;
+		return (await this.getRatesToUSD([currencyCode])).get(currencyCode)!;
 	}
 
-	/**
-	 * Actualiza las tasas de TODAS las monedas en una sola llamada al provider.
-	 * Devuelve cuántas monedas se actualizaron. No lanza errores: un fallo del
-	 * job no debe tumbar el servidor; el SWR sigue sirviendo las tasas viejas.
-	 */
+	/** One DB snapshot per calculation. Values are USD per unit of currency. */
+	async getRatesToUSD(currencyCodes: string[]): Promise<Map<string, number>> {
+		const codes = [...new Set(currencyCodes)].filter((code) => code !== 'USD');
+		const rates = new Map<string, number>([['USD', 1]]);
+		if (codes.length === 0) return rates;
+		const currencies = await this.currencyRepository.findByCodes(codes);
+		const byCode = new Map(
+			currencies.map((currency) => [currency.code, currency]),
+		);
+		for (const code of codes) {
+			const currency = byCode.get(code);
+			if (!currency)
+				throw notFoundError({ resource: 'Currency', identifier: code });
+			rates.set(code, this.validateRate(currency.exchangeRateToUSD));
+			if (Date.now() - currency.rateUpdatedAt.getTime() >= MAX_AGE_MS) {
+				void this.refreshRate(code);
+			}
+		}
+		return rates;
+	}
+
+	/** Provider bulk contract: currency units per USD; persist the reciprocal. */
 	async updateAllRates(): Promise<number> {
 		try {
 			const rates = await this.exchangeRateProvider.getAllRates();
 			const currencies = await this.currencyRepository.findAll();
 			const now = new Date();
-
 			let updated = 0;
 			for (const currency of currencies) {
-				const rate = rates[currency.code];
-				if (rate == null) continue;
+				const quote = rates[currency.code];
+				if (quote == null) continue;
+				const rate = this.validateRate(1 / this.validateRate(quote));
 				await this.currencyRepository.update(currency.code, {
 					exchangeRateToUSD: rate,
 					rateUpdatedAt: now,
@@ -80,15 +71,23 @@ export default class ExchangeRateService {
 		}
 	}
 
-	private async updateRateInBackground(currencyCode: string) {
-		try {
-			const newRate = await this.exchangeRateProvider.getRate(
-				currencyCode,
-				'USD',
-			);
+	private refreshRate(code: string): Promise<void> {
+		const pending = this.refreshing.get(code);
+		if (pending) return pending;
+		const refresh = this.updateRateInBackground(code).finally(() => {
+			this.refreshing.delete(code);
+		});
+		this.refreshing.set(code, refresh);
+		return refresh;
+	}
 
+	private async updateRateInBackground(currencyCode: string): Promise<void> {
+		try {
+			const rate = this.validateRate(
+				await this.exchangeRateProvider.getRate(currencyCode, 'USD'),
+			);
 			await this.currencyRepository.update(currencyCode, {
-				exchangeRateToUSD: newRate,
+				exchangeRateToUSD: rate,
 				rateUpdatedAt: new Date(),
 			});
 		} catch (err) {

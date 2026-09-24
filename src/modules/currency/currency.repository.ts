@@ -34,6 +34,13 @@ export default class CurrencyRepository {
 		return currencies.map((currency) => this.toDomain(currency));
 	}
 
+	async findByCodes(codes: string[]): Promise<CurrencyDomain[]> {
+		const currencies = await this.prisma.currency.findMany({
+			where: { code: { in: codes } },
+		});
+		return currencies.map((currency) => this.toDomain(currency));
+	}
+
 	async findByCode(code: string): Promise<CurrencyDomain | null> {
 		const currency = await this.prisma.currency.findUnique({ where: { code } });
 		return currency ? this.toDomain(currency) : null;

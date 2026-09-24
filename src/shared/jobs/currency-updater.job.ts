@@ -9,11 +9,15 @@ import type ExchangeRateService from '@/modules/currency/exchange-rate.service.j
 export function startCurrencyUpdaterJob(
 	exchangeRateService: ExchangeRateService,
 ): ScheduledTask {
-	const task = cron.schedule('0 0 * * *', async () => {
-		logger.info('Currency updater job started');
-		const updated = await exchangeRateService.updateAllRates();
-		logger.info({ updated }, 'Currency updater job finished');
-	});
+	const task = cron.schedule(
+		'0 0 * * *',
+		async () => {
+			logger.info('Currency updater job started');
+			const updated = await exchangeRateService.updateAllRates();
+			logger.info({ updated }, 'Currency updater job finished');
+		},
+		{ timezone: 'UTC' },
+	);
 
 	logger.info('Currency updater job scheduled (daily at 00:00)');
 	return task;

@@ -1,12 +1,15 @@
 import z from 'zod';
-import { NON_DAILY_UNITS } from '@/shared/types/domain.enums.js';
+import {
+	NON_DAILY_UNITS,
+	STATUS_SUBSCRIPTION_VALUES,
+} from '@/shared/types/domain.enums.js';
 
 export const expensesByCategoryQueryParamsSchema = z.object({
 	status: z.preprocess((val) => {
-		if (val === 'true') return true;
-		if (val === 'false') return false;
+		if (val === 'true' || val === true) return 'ACTIVE';
+		if (val === 'false' || val === false) return 'PAUSED';
 		return val;
-	}, z.boolean().optional()),
+	}, z.enum(STATUS_SUBSCRIPTION_VALUES).optional()),
 	billingUnit: z.enum(NON_DAILY_UNITS).optional(),
 });
 

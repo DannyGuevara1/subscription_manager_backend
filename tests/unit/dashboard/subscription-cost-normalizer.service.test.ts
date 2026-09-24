@@ -1,98 +1,98 @@
-import assert from 'node:assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
 import SubscriptionCostNormalizerService from '@/modules/dashboard/subscription-cost-normalizer.service.js';
-import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
+import {
+	financialSubscription,
+	financialPortfolio,
+	REFERENCE_DATE,
+	RATES_TO_USD,
+	PORTFOLIO_ORACLE,
+} from '../../fixtures/financial.js';
 
-const sameCurrencyProvider: ExchangeRateProvider = {
-	async getRate(from: string, to: string) {
-		if (from !== to) throw new Error('Currency mismatch');
-		return 1;
-	},
-	async getAllRates() {
-		return { USD: 1 };
-	},
-};
-
-const createNormalizer = () =>
-	new SubscriptionCostNormalizerService(sameCurrencyProvider);
-
-const makeSubscription = (
-	overrides: Partial<SubscriptionDomain> = {},
-): SubscriptionDomain => ({
-	id: 'sub-1',
-	userId: 'user-1',
-	categoryId: 1,
-	currencyCode: 'USD',
-	name: 'Test Sub',
-	cost: 10,
-	costType: 'FIXED',
-	billingFrequency: 1,
-	billingUnit: 'MONTHS',
-	firstPaymentDate: new Date('2026-01-01'),
-	trialEndsOn: null,
-	status: 'ACTIVE',
-	...overrides,
-});
-
-describe('SubscriptionCostNormalizerService', () => {
-	describe('DAYS normalization', () => {
-		it('calcula mensual equivalente para DAYS: ((cost * freq) * 365) / 12', async () => {
-			const normalizer = createNormalizer();
-			const sub = makeSubscription({
-				cost: 10,
-				billingFrequency: 1,
-				billingUnit: 'DAYS',
-			});
-			// ((10 * 1) * 365) / 12 = 304.1666... -> totalMonthly rounded is 304.17.
-			// Annual precise calculation: (10 * 1) * 365 = 3650.00.
-			const result = await normalizer.normalizeAll([sub], 'USD');
-			assert.strictEqual(result.totalMonthly, '304.17');
-			assert.strictEqual(result.totalAnnual, '3650.00');
-		});
+const normalizer = () =>
+	new SubscriptionCostNormalizerService({
+		getRatesToUSD: async () => new Map(Object.entries(RATES_TO_USD)),
 	});
 
-	describe('WEEKS normalization', () => {
-		it('calcula mensual equivalente para WEEKS: ((cost * freq) * 52) / 12', async () => {
-			const normalizer = createNormalizer();
-			const sub = makeSubscription({
-				cost: 50,
-				billingFrequency: 2,
-				billingUnit: 'WEEKS',
-			});
-			// ((50 * 2) * 52) / 12 = 433.3333... -> totalMonthly rounded is 433.33.
-			// Annual precise calculation: (50 * 2) * 52 = 5200.00.
-			const result = await normalizer.normalizeAll([sub], 'USD');
-			assert.strictEqual(result.totalMonthly, '433.33');
-			assert.strictEqual(result.totalAnnual, '5200.00');
+describe('Financial normalization oracle', () => {
+	for (const [unit, cost, frequency, monthly, annual] of [
+		['DAYS', 6, 2, '91.25', '1095.00'], // $6 every two days: $3/day *365.
+		['WEEKS', 50, 2, '108.33', '1300.00'], // $50 every two weeks: 26 charges/year.
+		['MONTHS', 30, 3, '10.00', '120.00'], // $30 per quarter.
+		['YEARS', 24, 2, '1.00', '12.00'], // $24 domain every two years.
+	] as const) {
+		it(`divides the ${unit} interval instead of multiplying`, async () => {
+			const result = await normalizer().normalizeAll(
+				[
+					financialSubscription({
+						cost,
+						billingFrequency: frequency,
+						billingUnit: unit,
+					}),
+				],
+				'USD',
+			);
+			assert.equal(result.totalMonthly, monthly);
+			assert.equal(result.totalAnnual, annual);
 		});
+	}
+	it('freezes the shared portfolio and trial boundaries', async (t) => {
+		t.mock.timers.enable({ apis: ['Date'], now: REFERENCE_DATE });
+		const result = await normalizer().normalizeAll(
+			financialPortfolio().filter((s) => s.status === 'ACTIVE'),
+			'USD',
+		);
+		for (const key of [
+			'projectedMonthly',
+			'currentMonthly',
+			'projectedAnnual',
+			'currentAnnual',
+		] as const) {
+			assert.equal(result[key], PORTFOLIO_ORACLE[key]);
+		}
+		const expired = await normalizer().normalize(
+			financialSubscription({ cost: 10, trialEndsOn: REFERENCE_DATE }),
+			'USD',
+		);
+		assert.equal(expired.currentMonthly, 10);
 	});
-
-	describe('MONTHS normalization', () => {
-		it('calcula mensual equivalente para MONTHS: cost * freq', async () => {
-			const normalizer = createNormalizer();
-			const sub = makeSubscription({
-				cost: 15.99,
-				billingFrequency: 1,
-				billingUnit: 'MONTHS',
-			});
-			const result = await normalizer.normalizeAll([sub], 'USD');
-			assert.strictEqual(result.totalMonthly, '15.99');
-			assert.strictEqual(result.totalAnnual, '191.88');
-		});
+	it('converts EUR to GBP through USD using independently calculated values', async () => {
+		// EUR 25 * 1.08 USD/EUR / 1.25 USD/GBP = GBP 21.60.
+		const result = await normalizer().normalize(
+			financialSubscription({ cost: 25, currencyCode: 'EUR' }),
+			'GBP',
+		);
+		assert.equal(result.projectedMonthly, 21.6);
 	});
-
-	describe('YEARS normalization', () => {
-		it('calcula mensual equivalente para YEARS: (cost * freq) / 12', async () => {
-			const normalizer = createNormalizer();
-			const sub = makeSubscription({
-				cost: 120,
-				billingFrequency: 1,
-				billingUnit: 'YEARS',
-			});
-			const result = await normalizer.normalizeAll([sub], 'USD');
-			assert.strictEqual(result.totalAnnual, '120.00');
-			assert.strictEqual(result.totalMonthly, '10.00');
+	it('returns zero totals for empty and zero-cost subscriptions', async () => {
+		assert.equal(
+			(await normalizer().normalizeAll([], 'USD')).totalAnnual,
+			'0.00',
+		);
+		assert.equal(
+			(
+				await normalizer().normalizeAll(
+					[financialSubscription({ cost: 0 })],
+					'USD',
+				)
+			).totalMonthly,
+			'0.00',
+		);
+	});
+	it('reads the portfolio rates only once', async () => {
+		let reads = 0;
+		const service = new SubscriptionCostNormalizerService({
+			getRatesToUSD: async () => {
+				reads++;
+				return new Map(Object.entries(RATES_TO_USD));
+			},
 		});
+		await service.normalizeAll(
+			Array.from({ length: 10 }, () =>
+				financialSubscription({ currencyCode: 'EUR' }),
+			),
+			'USD',
+		);
+		assert.equal(reads, 1);
 	});
 });

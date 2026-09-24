@@ -24,7 +24,7 @@ export default class OpenExchangeRateProvider implements ExchangeRateProvider {
 
 	private async fetchRates(): Promise<OpenExchangeRatesResponse> {
 		const url = `https://openexchangerates.org/api/latest.json?app_id=${this.apiKey}`;
-		const response = await fetch(url);
+		const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
 
 		if (!response.ok) {
 			throw internalError({
@@ -41,7 +41,18 @@ export default class OpenExchangeRateProvider implements ExchangeRateProvider {
 				isOperational: false,
 			});
 		}
-		return (await response.json()) as OpenExchangeRatesResponse;
+		const data = (await response.json()) as OpenExchangeRatesResponse;
+		if (
+			data.base !== 'USD' ||
+			!data.rates ||
+			data.rates.USD !== 1 ||
+			Object.values(data.rates).some(
+				(rate) => !Number.isFinite(rate) || rate <= 0,
+			)
+		) {
+			throw internalError({ detail: 'Invalid exchange rate response.' });
+		}
+		return data;
 	}
 
 	async getAllRates(): Promise<Record<string, number>> {

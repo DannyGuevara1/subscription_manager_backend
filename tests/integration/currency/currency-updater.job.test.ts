@@ -8,7 +8,7 @@ import { setupIntegrationEnvironment } from '../../setup/test-environment.js';
 // Stub: tasas fijas, sin HTTP. 1 sola llamada bulk como hace OXR.
 const stubProvider: ExchangeRateProvider = {
 	getRate: async () => 1,
-	getAllRates: async () => ({ USD: 1, EUR: 0.92 }),
+	getAllRates: async () => ({ USD: 1, EUR: 0.8 }),
 };
 
 const failingProvider: ExchangeRateProvider = {
@@ -52,7 +52,7 @@ describe('Currency Updater Job - Integración', () => {
 		);
 
 		const eur = await prisma.currency.findUnique({ where: { code: 'EUR' } });
-		assert.strictEqual(Number(eur.exchangeRateToUSD), 0.92);
+		assert.strictEqual(Number(eur.exchangeRateToUSD), 1.25);
 		assert.ok(
 			eur.rateUpdatedAt > staleDate,
 			'rateUpdatedAt debe refrescarse tras el job',

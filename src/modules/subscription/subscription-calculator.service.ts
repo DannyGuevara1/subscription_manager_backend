@@ -42,7 +42,7 @@ export default class SubscriptionCalculatorService
 			}
 
 			let nextDate = baseDate;
-			const temporalFirstPaymentDate = this.toTemporal(firstPaymentDate);
+			const temporalFirstPaymentDate = baseDate;
 			let periods = 1;
 			while (
 				Temporal.ZonedDateTime.compare(nextDate, this.toTemporal(today)) < 0
@@ -71,7 +71,7 @@ export default class SubscriptionCalculatorService
 
 		// 2. Preparamos las variables para el bucle de alta performance
 		let temporalCurrent = this.toTemporal(firstFuturePayment);
-		const temporalFirstPaymentDate = this.toTemporal(config.firstPaymentDate);
+		const temporalFirstPaymentDate = this.toTemporal(firstFuturePayment);
 		const temporalEndDate = this.toTemporal(endDate);
 		const durationStr = this.unitMap[billingUnit] as keyof Temporal.Duration;
 

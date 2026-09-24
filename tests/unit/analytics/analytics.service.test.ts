@@ -55,7 +55,7 @@ const createFixture = (subscriptions: SubscriptionDomain[] = []) => {
 	} as unknown as SubscriptionService;
 
 	const exchangeRateService = {
-		getRateToUSD: async (code: string) => RATES_TO_USD[code] ?? 1,
+		getRatesToUSD: async () => new Map(Object.entries(RATES_TO_USD)),
 	} as unknown as ExchangeRateService;
 
 	const categoryService = {
@@ -115,10 +115,7 @@ describe('AnalyticsService', () => {
 			};
 			const fixture = createFixture([makeSubscription()]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				authUser,
-				{},
-			);
+			const result = await fixture.service.getExpensesByCategory(authUser, {});
 
 			assert.strictEqual(result.currency, 'EUR');
 		});
@@ -131,17 +128,13 @@ describe('AnalyticsService', () => {
 				makeSubscription({ currencyCode: 'EUR', cost: 10 }),
 			]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getExpensesByCategory(AUTH_USER, {});
 
 			assert.strictEqual(result.currency, 'USD');
 			assert.strictEqual(result.totalExpenses, 11);
 			assert.strictEqual(result.breakdown[0]?.amount, 11);
 			assert.strictEqual(result.breakdown[0]?.percentage, 100);
 			assert.strictEqual(result.breakdown[0]?.category, 'Streaming');
-
 		});
 
 		it('normaliza costos al currency primario del usuario (EUR)', async () => {
@@ -153,17 +146,13 @@ describe('AnalyticsService', () => {
 				makeSubscription({ currencyCode: 'USD', cost: 10 }),
 			]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				authUser,
-				{},
-			);
+			const result = await fixture.service.getExpensesByCategory(authUser, {});
 
 			assert.strictEqual(result.currency, 'EUR');
 			assert.strictEqual(result.totalExpenses, 9.09);
 			assert.strictEqual(result.breakdown[0]?.amount, 9.09);
 			assert.strictEqual(result.breakdown[0]?.percentage, 100);
 			assert.strictEqual(result.breakdown[0]?.category, 'Streaming');
-
 		});
 
 		it('agrega gastos por categoría con múltiples suscripciones', async () => {
@@ -185,10 +174,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getExpensesByCategory(AUTH_USER, {});
 
 			assert.strictEqual(result.totalExpenses, 35);
 			assert.strictEqual(result.breakdown.length, 2);
@@ -220,10 +206,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getExpensesByCategory(AUTH_USER, {});
 
 			const streaming = result.breakdown.find(
 				(breakdown) => breakdown.category === 'Streaming',
@@ -239,10 +222,7 @@ describe('AnalyticsService', () => {
 		it('retorna breakdown vacío y totalExpenses 0 sin suscripciones', async () => {
 			const fixture = createFixture([]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getExpensesByCategory(AUTH_USER, {});
 
 			assert.strictEqual(result.totalExpenses, 0);
 			assert.deepStrictEqual(result.breakdown, []);
@@ -263,10 +243,9 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				AUTH_USER,
-				{ billingUnit: 'MONTHS' },
-			);
+			const result = await fixture.service.getExpensesByCategory(AUTH_USER, {
+				billingUnit: 'MONTHS',
+			});
 
 			assert.strictEqual(result.totalExpenses, 10);
 			assert.strictEqual(result.breakdown.length, 1);
@@ -286,10 +265,9 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				AUTH_USER,
-				{ status: 'PAUSED' },
-			);
+			const result = await fixture.service.getExpensesByCategory(AUTH_USER, {
+				status: 'PAUSED',
+			});
 
 			assert.strictEqual(result.totalExpenses, 20);
 			assert.strictEqual(result.breakdown.length, 1);
@@ -317,10 +295,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getExpensesByCategory(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getExpensesByCategory(AUTH_USER, {});
 
 			assert.strictEqual(result.totalExpenses, 160);
 			assert.strictEqual(result.currency, 'USD');
@@ -340,7 +315,7 @@ describe('AnalyticsService', () => {
 			const authUser: JWTPayload = {
 				...AUTH_USER,
 				primaryCurrencyCode: 'EUR',
-			}
+			};
 			const fixture = createFixture([
 				makeSubscription({
 					currencyCode: 'ARS',
@@ -353,9 +328,7 @@ describe('AnalyticsService', () => {
 			]);
 
 			const result = await fixture.service.getExpensesByCategory(authUser, {});
-
 		});
-
 	});
 
 	// ── Tests: getPaymentTimeline ──
@@ -368,10 +341,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentTimeline(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getPaymentTimeline(AUTH_USER, {});
 
 			assert.ok(result.length > 0, 'Debería retornar al menos un pago');
 
@@ -397,10 +367,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentTimeline(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getPaymentTimeline(AUTH_USER, {});
 
 			assert.ok(result.length > 0);
 			const first = result[0];
@@ -426,10 +393,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentTimeline(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getPaymentTimeline(AUTH_USER, {});
 
 			assert.ok(result.length > 2, 'Debería tener pagos de ambas subs');
 
@@ -449,10 +413,7 @@ describe('AnalyticsService', () => {
 		it('retorna array vacío sin suscripciones activas', async () => {
 			const fixture = createFixture([]);
 
-			const result = await fixture.service.getPaymentTimeline(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getPaymentTimeline(AUTH_USER, {});
 
 			assert.deepStrictEqual(result, []);
 		});
@@ -479,10 +440,7 @@ describe('AnalyticsService', () => {
 
 			const names = new Set(result.map((r) => r.subscriptionName));
 			assert.ok(names.has('Yearly Sub'));
-			assert.ok(
-				!names.has('Monthly Sub'),
-				'No debería incluir subs mensuales',
-			);
+			assert.ok(!names.has('Monthly Sub'), 'No debería incluir subs mensuales');
 		});
 
 		it('cada entrada del historial tiene date como ISO string válido', async () => {
@@ -492,10 +450,7 @@ describe('AnalyticsService', () => {
 				}),
 			]);
 
-			const result = await fixture.service.getPaymentTimeline(
-				AUTH_USER,
-				{},
-			);
+			const result = await fixture.service.getPaymentTimeline(AUTH_USER, {});
 
 			for (const entry of result) {
 				const parsed = new Date(entry.date);
@@ -506,4 +461,15 @@ describe('AnalyticsService', () => {
 			}
 		});
 	});
+});
+
+it('handles zero-valued and unknown categories without invalid percentages', async () => {
+	const fixture = createFixture([makeSubscription({ cost: 0 })]);
+	fixture.categoryService.getCategoriesByIds = async () => new Map();
+	const result = await fixture.service.getExpensesByCategory(AUTH_USER, {});
+	assert.deepStrictEqual(result.breakdown, [
+		{ category: 'Unknown', amount: 0, percentage: 0 },
+	]);
+	const timeline = await fixture.service.getPaymentTimeline(AUTH_USER, {});
+	assert.strictEqual(timeline[0]?.category, 'Unknown');
 });

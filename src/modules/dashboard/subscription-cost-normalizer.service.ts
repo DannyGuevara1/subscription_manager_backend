@@ -3,25 +3,35 @@ import type {
 	DashboardSummary,
 	NormalizedSubscriptionCost,
 } from '@/modules/dashboard/dashboard.type.js';
-import type { ExchangeRateProvider } from '@/modules/currency/ports/exchange-rate.provider.js';
+import type ExchangeRateService from '@/modules/currency/exchange-rate.service.js';
 import type { SubscriptionDomain } from '@/modules/subscription/subscription.type.js';
 export default class SubscriptionCostNormalizerService {
-	private exchangeRateProvider: ExchangeRateProvider;
-
-	constructor(exchangeRateProvider: ExchangeRateProvider) {
-		this.exchangeRateProvider = exchangeRateProvider;
-	}
+	constructor(
+		private readonly exchangeRateService: Pick<
+			ExchangeRateService,
+			'getRatesToUSD'
+		>,
+	) {}
 	async normalize(
 		subscription: SubscriptionDomain,
 		primaryCurrency: string,
 	): Promise<NormalizedSubscriptionCost> {
-		const rate = await this.exchangeRateProvider.getRate(
+		const rates = await this.exchangeRateService.getRatesToUSD([
 			subscription.currencyCode,
 			primaryCurrency,
+		]);
+		return this.normalizeWithRate(
+			subscription,
+			rates.get(subscription.currencyCode)! / rates.get(primaryCurrency)!,
 		);
+	}
 
-		const baseCost: number =
-			subscription.cost * subscription.billingFrequency * rate;
+	private normalizeWithRate(
+		subscription: SubscriptionDomain,
+		rate: number,
+	): NormalizedSubscriptionCost {
+		// Frequency is the interval between charges (e.g. USD 24 every 2 years).
+		const baseCost = (subscription.cost / subscription.billingFrequency) * rate;
 		let projectedMonthly: number = 0;
 		switch (subscription.billingUnit) {
 			case 'DAYS':
@@ -58,15 +68,14 @@ export default class SubscriptionCostNormalizerService {
 		subscriptions: SubscriptionDomain[],
 		primaryCurrency: string,
 	): Promise<DashboardSummary> {
-		const normalizedCosts: NormalizedSubscriptionCost[] = [];
-
-		for (const subscription of subscriptions) {
-			const normalizedCost = await this.normalize(
-				subscription,
-				primaryCurrency,
-			);
-			normalizedCosts.push(normalizedCost);
-		}
+		const rates = await this.exchangeRateService.getRatesToUSD([
+			primaryCurrency,
+			...subscriptions.map((sub) => sub.currencyCode),
+		]);
+		const primaryRate = rates.get(primaryCurrency)!;
+		const normalizedCosts = subscriptions.map((sub) =>
+			this.normalizeWithRate(sub, rates.get(sub.currencyCode)! / primaryRate),
+		);
 
 		let totalProjectedMonthly = 0;
 		let totalCurrentMonthly = 0;

@@ -50,8 +50,11 @@ export default class AnalyticsService {
 		const filtered = this.applyFilters(subscriptions, query);
 
 		// Rate del currency primario del usuario (para convertir de USD → primary)
-		const primaryRate =
-			await this.exchangeRateService.getRateToUSD(primaryCurrency);
+		const rates = await this.exchangeRateService.getRatesToUSD([
+			primaryCurrency,
+			...filtered.map((sub) => sub.currencyCode),
+		]);
+		const primaryRate = rates.get(primaryCurrency)!;
 
 		// Aggregate expenses by category, normalizing to user's primary currency
 		const categoryTotals = new Map<string, number>();
@@ -64,9 +67,7 @@ export default class AnalyticsService {
 		);
 
 		for (const sub of filtered) {
-			const sourceRate = await this.exchangeRateService.getRateToUSD(
-				sub.currencyCode,
-			);
+			const sourceRate = rates.get(sub.currencyCode)!;
 			// Two-step: source → USD → primary
 			const costInPrimary = (sub.cost * sourceRate) / primaryRate;
 
