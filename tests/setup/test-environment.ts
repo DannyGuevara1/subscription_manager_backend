@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { after, before } from 'node:test';
 import {
 	PostgreSqlContainer,
@@ -50,13 +50,6 @@ export function setupIntegrationEnvironment() {
 				process.env.NODE_ENV = 'test';
 				process.env.CORS_ORIGINS = 'http://localhost:3000';
 
-				console.log('📊 DATABASE_URL:', process.env.DATABASE_URL);
-				console.log('🔴 REDIS_URL:', process.env.REDIS_URL);
-				console.log(
-					'🔑 JWT_SECRET:',
-					process.env.JWT_ACCESS_SECRET ? '✓ configurado' : '✗ falta',
-				);
-
 				const prismaModule = await import('@/config/prisma.js');
 				prismaClient = prismaModule.default;
 
@@ -68,18 +61,26 @@ export function setupIntegrationEnvironment() {
 
 				console.log('✅ Redis de la App conectado');
 
-				console.log('🔄 Sincronizando schema de base de datos...');
-				execSync('npx prisma db push --force-reset --skip-generate', {
-					stdio: 'inherit',
-					env: process.env,
-				});
+				console.log('🔄 Aplicando migraciones reales en la base efímera...');
+				execFileSync(
+					process.execPath,
+					['node_modules/prisma/build/index.js', 'migrate', 'deploy'],
+					{
+						stdio: 'inherit',
+						env: process.env,
+					},
+				);
 
 				// 6. Ejecutar seed
 				console.log('🌱 Ejecutando seed...');
-				execSync('npx prisma db seed', {
-					stdio: 'inherit',
-					env: process.env,
-				});
+				execFileSync(
+					process.execPath,
+					['node_modules/prisma/build/index.js', 'db', 'seed'],
+					{
+						stdio: 'inherit',
+						env: process.env,
+					},
+				);
 
 				console.log('✅ Schema sincronizado');
 

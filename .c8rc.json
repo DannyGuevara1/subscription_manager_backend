@@ -1,0 +1,16 @@
+{
+	"all": true,
+	"include": [
+		"src/modules/subscription/subscription-calculator.service.ts",
+		"src/modules/dashboard/subscription-cost-normalizer.service.ts",
+		"src/modules/currency/exchange-rate.service.ts",
+		"src/modules/analytics/analytics.service.ts"
+	],
+	"reporter": ["text", "html", "lcov", "json"],
+	"check-coverage": true,
+	"per-file": true,
+	"lines": 100,
+	"statements": 100,
+	"functions": 100,
+	"branches": 100
+}
