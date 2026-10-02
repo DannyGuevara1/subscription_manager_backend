@@ -1,5 +1,8 @@
 # Checklist de despliegue y recuperación
 
+Para la plataforma elegida y el orden de puesta en marcha, consultar
+[Koyeb, Supabase y Upstash](koyeb-supabase-upstash-deployment.md).
+
 Aplicable a una única instancia inicial. No ejecutar contra producción sin identificar explícitamente el entorno. Las pruebas automáticas usan contenedores efímeros; no validan por sí solas los datos de clientes.
 
 ## Antes de publicar

@@ -235,4 +235,11 @@ Esta separacion permite evolucionar API, dominio y persistencia con menor fricci
 6. **Operación:** liveness independiente de dependencias, readiness con PostgreSQL/Redis y timeout. FX no condiciona readiness. Logging por allowlist con correlación y sin valores sensibles. CLI de migración en job separado, una sola instancia ejecutora.
 7. **Documentación:** toda modificación debe actualizar contrato OpenAPI, CHANGELOG o estas decisiones según corresponda en el mismo PR. Cambios breaking requieren major y transición deprecada de al menos una minor. Un cambio semántico también puede romper un contrato aunque no cambie JSON.
 
+8. **Infraestructura inicial:** Koyeb Eco Nano aloja una única API, Supabase
+   Free es PostgreSQL y Upstash Free es Redis. Eco Nano evita la suspensión tras
+   inactividad de la instancia gratuita, pero sus 256 MB requieren observación;
+   Eco Micro es el siguiente escalón si hay presión de memoria. Las decisiones
+   de región, configuración y criterios de cambio están en
+   [koyeb-supabase-upstash-deployment.md](koyeb-supabase-upstash-deployment.md).
+
 Razonamiento, alternativas y evidencia: [implementación del cierre](release-implementation.md). Operación: [checklist](deploy-checklist.md).
